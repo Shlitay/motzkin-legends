@@ -1,0 +1,25 @@
+@import "tailwindcss";
+
+/* Home Pitch kit — turf green + trophy gold. See the Motzkin Legends style guide. */
+@theme {
+  --color-brand: #1b6b3c;
+  --color-brand-dark: #123f24;
+  --color-accent: #c9a227;
+  --color-legend: #c9a227;
+  --color-legend-contrast: #2a2005;
+  --color-bg: #f7f8f2;
+  --color-surface: #ffffff;
+  --color-ink: #17231c;
+  --color-muted: #55645a;
+  --color-danger: #b3261e;
+  --color-draw: #c98a34;
+
+  --font-display: var(--font-oswald), "Arial Narrow", sans-serif;
+  --font-sans: var(--font-work-sans), system-ui, sans-serif;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
