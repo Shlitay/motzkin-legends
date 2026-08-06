@@ -27,7 +27,7 @@ export default function OnboardingPage() {
 
   return (
     <main className="flex min-h-screen flex-col items-center gap-10 px-6 pb-12 pt-28 text-center">
-      <TopBar href={null} />
+      <TopBar href={null} rightAction={null} />
       <div>
         <span className="rounded bg-brand px-3 py-1 text-sm font-medium text-white">
           One-time setup

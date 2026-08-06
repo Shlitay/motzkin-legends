@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import BottomNav from "@/components/BottomNav";
 import TopBar from "@/components/TopBar";
 import { TEAM_COLORS, currentRound, historyRounds, roundMatches } from "@/lib/mock-data";
@@ -13,10 +13,36 @@ function emptyEntries(): Record<string, ScoreEntry> {
   );
 }
 
+// Real app: this lives in `predictions` rows in Supabase, keyed to the
+// logged-in user. Until that's wired up, localStorage stands in so a
+// submitted round survives navigating away and coming back.
+const STORAGE_KEY = `motzkin-legends:predictions:${currentRound.id}`;
+
+function formatDeadline(iso: string) {
+  const d = new Date(iso);
+  const day = d.getDate();
+  const month = d.getMonth() + 1;
+  const hh = String(d.getHours()).padStart(2, "0");
+  const mm = String(d.getMinutes()).padStart(2, "0");
+  return `${day}.${month} · ${hh}:${mm}`;
+}
+
 export default function PredictionsPage() {
   const [entries, setEntries] = useState<Record<string, ScoreEntry>>(emptyEntries);
   const [submitted, setSubmitted] = useState(false);
   const [selectedRound, setSelectedRound] = useState(currentRound.roundNumber);
+
+  useEffect(() => {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    try {
+      const saved = JSON.parse(raw) as Record<string, ScoreEntry>;
+      setEntries(saved);
+      setSubmitted(true);
+    } catch {
+      // ignore corrupt/old data
+    }
+  }, []);
 
   const allFilled = roundMatches.every(
     (m) => entries[m.id].home !== "" && entries[m.id].away !== ""
@@ -27,11 +53,22 @@ export default function PredictionsPage() {
     setEntries((prev) => ({ ...prev, [matchId]: { ...prev[matchId], [side]: value } }));
   }
 
+  function sendPrediction() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+    setSubmitted(true);
+  }
+
   if (submitted && selectedRound === currentRound.roundNumber) {
     return (
       <main className="flex min-h-screen flex-col items-center gap-6 px-6 pb-24 pt-28">
         <TopBar />
-        <h1 className="text-center text-lg font-medium">Check your history predictions</h1>
+        <div className="text-center">
+          <h1 className="text-lg font-medium">Check your history predictions</h1>
+          <p className="mt-1 text-sm text-muted">
+            Round {currentRound.roundNumber} · predictions closed{" "}
+            {formatDeadline(currentRound.deadlineAt)}
+          </p>
+        </div>
 
         <RoundPicker
           selectedRound={selectedRound}
@@ -96,7 +133,13 @@ export default function PredictionsPage() {
   return (
     <main className="flex min-h-screen flex-col items-center gap-6 px-6 pb-24 pt-28">
       <TopBar />
-      <h1 className="text-center text-lg font-medium">Set your round matches prediction</h1>
+      <div className="text-center">
+        <h1 className="text-lg font-medium">Set your round matches prediction</h1>
+        <p className="mt-1 text-sm text-muted">
+          Round {currentRound.roundNumber} · predictions close{" "}
+          {formatDeadline(currentRound.deadlineAt)}
+        </p>
+      </div>
 
       <div className="w-full max-w-md space-y-4">
         {roundMatches.map((m) => {
@@ -117,7 +160,7 @@ export default function PredictionsPage() {
 
       <button
         disabled={!allFilled}
-        onClick={() => setSubmitted(true)}
+        onClick={sendPrediction}
         className="rounded-full bg-brand px-8 py-2 font-medium text-white enabled:hover:bg-brand-dark disabled:cursor-not-allowed disabled:bg-neutral-300"
       >
         {allFilled ? "Send prediction" : "Fill predictions"}

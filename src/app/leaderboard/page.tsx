@@ -1,7 +1,12 @@
 import BottomNav from "@/components/BottomNav";
 import LeaderRow from "@/components/LeaderRow";
 import TopBar from "@/components/TopBar";
-import { mostPlayedUsers, mostWinningUsers } from "@/lib/mock-data";
+import {
+  currentRound,
+  currentRoundPoints,
+  mostPlayedUsers,
+  seasonPoints,
+} from "@/lib/mock-data";
 
 export default function LeaderboardPage() {
   return (
@@ -9,8 +14,13 @@ export default function LeaderboardPage() {
       <TopBar />
       <h1 className="text-lg font-medium text-ink">League board</h1>
 
-      <LeaderTable title="Most winning users" rows={mostWinningUsers} countLabel="wins" />
-      <LeaderTable title="Most played users" rows={mostPlayedUsers} countLabel="rounds" />
+      <LeaderTable
+        title={`Round ${currentRound.roundNumber} points`}
+        rows={currentRoundPoints}
+        countLabel="pts"
+      />
+      <LeaderTable title="Most points (season)" rows={seasonPoints} countLabel="pts" />
+      <LeaderTable title="Most played" rows={mostPlayedUsers} countLabel="rounds" />
 
       <BottomNav />
     </main>

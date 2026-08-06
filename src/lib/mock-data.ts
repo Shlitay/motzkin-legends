@@ -53,55 +53,43 @@ export const currentUser = {
   defaultAwayScore: null as number | null,
 };
 
+// Real Round 1 fixtures, 22.8.2026, all kicking off 20:00.
 export const currentRound = {
-  id: "r5",
-  roundNumber: 5,
-  deadlineAt: "2026-08-09T15:00:00+03:00",
+  id: "r1",
+  roundNumber: 1,
+  deadlineAt: "2026-08-22T20:00:00+03:00",
 };
 
 export const roundMatches: Match[] = [
-  { id: "m1", homeTeam: "Maccabi Tel-Aviv", awayTeam: "Hapoel Beer-Sheva", kickoffAt: "2026-08-09T15:00:00+03:00", homeScore: null, awayScore: null },
-  { id: "m2", homeTeam: "Beitar Jerusalem", awayTeam: "Maccabi Haifa", kickoffAt: "2026-08-09T17:15:00+03:00", homeScore: null, awayScore: null },
-  { id: "m3", homeTeam: "Hapoel Tel Aviv", awayTeam: "Bnei Sakhnin", kickoffAt: "2026-08-09T19:30:00+03:00", homeScore: null, awayScore: null },
-  { id: "m4", homeTeam: "Maccabi Petach-Tikva", awayTeam: "Hapoel Haifa", kickoffAt: "2026-08-10T15:00:00+03:00", homeScore: null, awayScore: null },
-  { id: "m5", homeTeam: "Maccabi Netanya", awayTeam: "Hapoel Kiryat Shmona", kickoffAt: "2026-08-10T17:15:00+03:00", homeScore: null, awayScore: null },
-  { id: "m6", homeTeam: "Hapoel Jerusalem", awayTeam: "Ironi Tiberias", kickoffAt: "2026-08-10T19:30:00+03:00", homeScore: null, awayScore: null },
-  { id: "m7", homeTeam: "Hapoel Petach-Tikva", awayTeam: "Hapoel Ramat Gan", kickoffAt: "2026-08-10T19:30:00+03:00", homeScore: null, awayScore: null },
+  { id: "m1", homeTeam: "Maccabi Petach-Tikva", awayTeam: "Hapoel Kiryat Shmona", kickoffAt: "2026-08-22T20:00:00+03:00", homeScore: null, awayScore: null },
+  { id: "m2", homeTeam: "Ironi Tiberias", awayTeam: "Hapoel Petach-Tikva", kickoffAt: "2026-08-22T20:00:00+03:00", homeScore: null, awayScore: null },
+  { id: "m3", homeTeam: "Hapoel Jerusalem", awayTeam: "Maccabi Tel-Aviv", kickoffAt: "2026-08-22T20:00:00+03:00", homeScore: null, awayScore: null },
+  { id: "m4", homeTeam: "Maccabi Haifa", awayTeam: "Hapoel Ramat Gan", kickoffAt: "2026-08-22T20:00:00+03:00", homeScore: null, awayScore: null },
+  { id: "m5", homeTeam: "Hapoel Beer-Sheva", awayTeam: "Hapoel Haifa", kickoffAt: "2026-08-22T20:00:00+03:00", homeScore: null, awayScore: null },
+  { id: "m6", homeTeam: "Maccabi Netanya", awayTeam: "Bnei Sakhnin", kickoffAt: "2026-08-22T20:00:00+03:00", homeScore: null, awayScore: null },
+  { id: "m7", homeTeam: "Hapoel Tel Aviv", awayTeam: "Beitar Jerusalem", kickoffAt: "2026-08-22T20:00:00+03:00", homeScore: null, awayScore: null },
 ];
 
+// Fresh DB, nobody's been scored yet — real app: these come from
+// round_participation / season_stats and start at 0 for every participant
+// until a round is scored, then update after each round (season figures
+// accumulate round 1 + round 2 + ... ; last-round figures reset each round).
 export const lastRoundStats = {
-  place: 3,
-  towards: 4,
-  points: 35,
-  hit: 2,
+  place: 0,
+  towards: 0,
+  points: 0,
+  hit: 0,
 };
 
 export const seasonStats = {
-  totalParticipation: 8,
-  towards: 21,
-  points: 210,
-  hit: 9,
+  totalParticipation: 0,
+  towards: 0,
+  points: 0,
+  hit: 0,
 };
 
-export const historyRounds = [
-  {
-    roundNumber: 4,
-    predictions: [
-      { homeTeam: "Maccabi Tel-Aviv", awayTeam: "Hapoel Beer-Sheva", predHome: 1, predAway: 3 },
-      { homeTeam: "Beitar Jerusalem", awayTeam: "Maccabi Haifa", predHome: 2, predAway: 3 },
-      { homeTeam: "Hapoel Tel Aviv", awayTeam: "Bnei Sakhnin", predHome: 1, predAway: 1 },
-      { homeTeam: "Maccabi Petach-Tikva", awayTeam: "Hapoel Haifa", predHome: 2, predAway: 3 },
-      { homeTeam: "Maccabi Netanya", awayTeam: "Hapoel Kiryat Shmona", predHome: 1, predAway: 3 },
-    ],
-  },
-  {
-    roundNumber: 3,
-    predictions: [
-      { homeTeam: "Hapoel Jerusalem", awayTeam: "Ironi Tiberias", predHome: 2, predAway: 1 },
-      { homeTeam: "Hapoel Petach-Tikva", awayTeam: "Hapoel Ramat Gan", predHome: 0, predAway: 0 },
-    ],
-  },
-];
+// Empty — round 1 is the league's first round, so there's no history yet.
+export const historyRounds: { roundNumber: number; predictions: { homeTeam: string; awayTeam: string; predHome: number; predAway: number }[] }[] = [];
 
 export const waitingForApproval = [
   { name: "Niv", avatar: "🐢" },
@@ -125,18 +113,36 @@ export const approvedThisRound = [
   { name: "Mor", avatar: "🐰" },
 ];
 
-export const mostPlayedUsers = [
-  { name: "Eran", avatar: "🐻", count: 8 },
-  { name: "Yoav", avatar: "🦖", count: 8 },
-  { name: "Itay", avatar: "🦊", count: 7 },
-  { name: "Saar", avatar: "🐯", count: 6 },
-  { name: "Gil", avatar: "🐧", count: 6 },
+// The whole friend group. Fresh DB, round 1 hasn't been played or scored
+// yet, so every leaderboard below lists everyone tied at 0 — real app:
+// these come from round_participation (current round) and season_stats
+// (season totals), populated once results start getting entered.
+export const PARTICIPANTS = [
+  { name: "Itay", avatar: "🦊" },
+  { name: "Eran", avatar: "🐻" },
+  { name: "Yoav", avatar: "🦖" },
+  { name: "Saar", avatar: "🐯" },
+  { name: "Gil", avatar: "🐧" },
+  { name: "Natan", avatar: "🦁" },
+  { name: "Omri", avatar: "🐼" },
+  { name: "Elad", avatar: "🐸" },
+  { name: "Gal", avatar: "🐙" },
+  { name: "Aviv", avatar: "🦄" },
+  { name: "Omer", avatar: "🐨" },
+  { name: "Tomer", avatar: "🐵" },
+  { name: "Lior", avatar: "🦉" },
+  { name: "Mor", avatar: "🐰" },
 ];
 
-export const mostWinningUsers = [
-  { name: "Eran", avatar: "🐻", count: 3 },
-  { name: "Yoav", avatar: "🦖", count: 2 },
-  { name: "Itay", avatar: "🦊", count: 2 },
-  { name: "Saar", avatar: "🐯", count: 1 },
-  { name: "Gil", avatar: "🐧", count: 1 },
-];
+// Table 1 on the league board: standings for the in-progress round.
+export const currentRoundPoints = PARTICIPANTS.map((p) => ({ ...p, count: 0 }));
+
+// Table 2 on the league board: most points across the whole season so far.
+export const seasonPoints = PARTICIPANTS.map((p) => ({ ...p, count: 0 }));
+
+// Table 3 on the league board (and the manager dashboard's own preview):
+// most rounds played.
+export const mostPlayedUsers = PARTICIPANTS.map((p) => ({ ...p, count: 0 }));
+
+// Manager dashboard's other leaderboard toggle: most rounds won.
+export const mostWinningUsers = PARTICIPANTS.map((p) => ({ ...p, count: 0 }));

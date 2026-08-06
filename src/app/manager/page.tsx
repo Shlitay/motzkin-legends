@@ -38,7 +38,7 @@ export default function ManagerDashboard() {
 
   return (
     <main className="flex min-h-screen flex-col items-center gap-8 px-6 pb-10 pt-28">
-      <TopBar href="/manager" />
+      <TopBar href="/manager" rightAction={{ label: "Back to game", href: "/home" }} />
       <div>
         <span className="rounded bg-fuchsia-400 px-3 py-1 text-sm font-medium text-white">
           Manager dashboard
