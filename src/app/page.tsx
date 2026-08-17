@@ -1,4 +1,5 @@
 import Link from "next/link";
+import GoogleSignInButton from "@/components/GoogleSignInButton";
 import Logo from "@/components/Logo";
 
 export default function LoginPage() {
@@ -18,15 +19,12 @@ export default function LoginPage() {
           compete for the jackpot.
         </p>
 
-        {/* Real Google sign-in wired up once Supabase Auth is connected.
-            Real app: route to /onboarding only if default_home_score /
-            default_away_score are still unset on the user row, else /home. */}
-        <Link
-          href="/onboarding"
+        <GoogleSignInButton
+          next="/home"
           className="flex items-center gap-2 rounded-full border border-neutral-300 px-6 py-3 font-medium shadow-sm hover:bg-neutral-50"
         >
           Continue with Google
-        </Link>
+        </GoogleSignInButton>
 
         <p className="text-xs text-muted">
           Not approved yet? Send your payment via Paybox, then confirm on your

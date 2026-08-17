@@ -1,4 +1,5 @@
 import Link from "next/link";
+import GoogleSignInButton from "@/components/GoogleSignInButton";
 import Logo from "@/components/Logo";
 
 export default function ManagerLoginPage() {
@@ -19,14 +20,14 @@ export default function ManagerLoginPage() {
           run the round.
         </p>
 
-        {/* Real Google sign-in wired up once Supabase Auth is connected;
-            server checks role = 'manager' on the resulting session. */}
-        <Link
-          href="/manager"
+        {/* Middleware checks role = 'manager' on the resulting session and
+            bounces non-managers to /home. */}
+        <GoogleSignInButton
+          next="/manager"
           className="flex items-center gap-2 rounded-full border border-neutral-300 px-6 py-3 font-medium shadow-sm hover:bg-neutral-50"
         >
           Continue with Google
-        </Link>
+        </GoogleSignInButton>
 
         <Link href="/" className="text-xs text-muted underline">
           Back to participant login

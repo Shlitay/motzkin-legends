@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import TopBar from "@/components/TopBar";
+import { createClient } from "@/lib/supabase/client";
 import { AVATAR_LIBRARY } from "@/lib/mock-data";
 
 export default function OnboardingPage() {
@@ -10,6 +11,8 @@ export default function OnboardingPage() {
   const [avatar, setAvatar] = useState<string | null>(null);
   const [home, setHome] = useState("");
   const [away, setAway] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const filled = avatar !== null && home !== "" && away !== "";
 
@@ -18,10 +21,37 @@ export default function OnboardingPage() {
     setter(value);
   }
 
-  function save() {
-    // Real app: write avatar + default_home_score/default_away_score onto
-    // the participant's users row, then this whole step is skipped on
-    // future logins.
+  async function save() {
+    if (!filled) return;
+    setSaving(true);
+    setError(null);
+
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      setError("You've been signed out — please log in again.");
+      setSaving(false);
+      return;
+    }
+
+    const { error: updateError } = await supabase
+      .from("users")
+      .update({
+        avatar,
+        default_home_score: Number(home),
+        default_away_score: Number(away),
+      })
+      .eq("id", user.id);
+
+    if (updateError) {
+      setError(updateError.message);
+      setSaving(false);
+      return;
+    }
+
     router.push("/home");
   }
 
@@ -77,12 +107,14 @@ export default function OnboardingPage() {
       </section>
 
       <button
-        disabled={!filled}
+        disabled={!filled || saving}
         onClick={save}
         className="rounded-full bg-brand px-8 py-2 font-medium text-white enabled:hover:bg-brand-dark disabled:cursor-not-allowed disabled:bg-neutral-300"
       >
-        Save and continue
+        {saving ? "Saving…" : "Save and continue"}
       </button>
+
+      {error && <p className="text-sm text-danger">{error}</p>}
     </main>
   );
 }
