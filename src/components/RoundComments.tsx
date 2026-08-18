@@ -114,10 +114,10 @@ export default function RoundComments({ roundId }: { roundId: string }) {
           <p className="px-5 py-4 text-sm text-muted">No comments yet — be the first.</p>
         )}
         {comments.map((c) => (
-          <div key={c.id} className="flex items-start gap-3 px-5 py-3">
+          <div key={c.id} className="flex items-start gap-3 px-5 py-3" dir="rtl">
             <span className="text-lg">{c.avatar}</span>
-            <div className="min-w-0 flex-1 text-left">
-              <p className="text-sm font-medium text-ink">{c.name}</p>
+            <div className="min-w-0 flex-1 text-right">
+              <p className="text-base font-bold text-ink">{c.name}</p>
               <p className="text-sm text-ink/90 break-words">{c.text}</p>
             </div>
           </div>
