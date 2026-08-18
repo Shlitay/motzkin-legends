@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 import LeaderRow from "@/components/LeaderRow";
+import ScoringRulesModal from "@/components/ScoringRulesModal";
 import TopBar from "@/components/TopBar";
 import { createClient } from "@/lib/supabase/client";
+import { lockExpiredRounds } from "@/lib/lockExpiredRounds";
 
 type Participant = {
   participationId: string;
@@ -36,6 +38,7 @@ export default function ManagerDashboard() {
   const [seasonStats, setSeasonStats] = useState<SeasonStatsRow[]>([]);
   const [leaderTitle, setLeaderTitle] = useState<"played" | "winning">("played");
   const [confirmingReset, setConfirmingReset] = useState(false);
+  const [showScoringRules, setShowScoringRules] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -48,6 +51,8 @@ export default function ManagerDashboard() {
 
   useEffect(() => {
     (async () => {
+      await lockExpiredRounds(supabase);
+
       const { data: round, error: roundError } = await supabase
         .from("rounds")
         .select("id, round_number")
@@ -178,12 +183,22 @@ export default function ManagerDashboard() {
         </div>
       </section>
 
-      <button
-        onClick={() => setConfirmingReset(true)}
-        className="rounded-full border border-neutral-300 px-6 py-2 text-sm font-medium hover:bg-neutral-50"
-      >
-        Reset round
-      </button>
+      <div className="flex gap-3">
+        <button
+          onClick={() => setShowScoringRules(true)}
+          className="rounded-full border border-neutral-300 px-6 py-2 text-sm font-medium hover:bg-neutral-50"
+        >
+          Scoring rules
+        </button>
+        <button
+          onClick={() => setConfirmingReset(true)}
+          className="rounded-full border border-neutral-300 px-6 py-2 text-sm font-medium hover:bg-neutral-50"
+        >
+          Reset round
+        </button>
+      </div>
+
+      {showScoringRules && <ScoringRulesModal onClose={() => setShowScoringRules(false)} />}
 
       {confirmingReset && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/40 px-6">

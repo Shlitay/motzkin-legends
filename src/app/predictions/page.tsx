@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import BottomNav from "@/components/BottomNav";
 import TopBar from "@/components/TopBar";
 import { createClient } from "@/lib/supabase/client";
+import { lockExpiredRounds } from "@/lib/lockExpiredRounds";
 import { TEAM_COLORS } from "@/lib/mock-data";
 
 type ScoreEntry = { home: string; away: string };
@@ -47,6 +48,8 @@ export default function PredictionsPage() {
   // Load every round once; default to whichever one is 'open'.
   useEffect(() => {
     (async () => {
+      await lockExpiredRounds(supabase);
+
       const { data, error: roundsError } = await supabase
         .from("rounds")
         .select("id, round_number, deadline_at, status")

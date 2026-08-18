@@ -50,8 +50,9 @@ integration — no manual deploy step needed.
 - `/home` — avatar/name (real), a "Request approval" flow that inserts a real `round_participation` row when a participant clicks "I've sent payment via Paybox," and status display (waiting/approved/rejected). Stat cards (towards/points/hit for last round + season) are **still mock/placeholder** — not yet wired.
 - `/predictions` — reads real rounds/matches, reads/writes real `predictions` rows (upsert on submit). Generic across rounds (not hardcoded to round 1), though only round 1 exists so far. Round 1 fixtures: 22.8.2026, 20:00.
 - `/leaderboard` — three real tables (this round's points, season points, most played), each row **clickable** → opens `ParticipantModal` with that participant's avatar/name/last-round/season stats
+- `/home` also now has a **round discussion** section (`RoundComments.tsx`) — one public comment per participant per round, see decision below
 - `/rules` — static
-- `/manager` — real approve/un-approve (writes `round_participation.payment_status`), real leaderboard widget. **"Reset round" is still local-only / fake** — doesn't touch the database (see Phase 0 below)
+- `/manager` — real approve/un-approve (writes `round_participation.payment_status`), real leaderboard widget, a **"Scoring rules" editor** (prefilled from the current `scoring_rules` row, saves a new versioned row — see decision below). **"Reset round" is still local-only / fake** — doesn't touch the database (see Phase 0 below)
 
 **Profile** (`ProfileModal.tsx`) — real avatar picker, real default-score editor, and a **nickname** field (shown instead of the Google name everywhere a name displays; falls back to the Google name when unset).
 
@@ -72,6 +73,8 @@ project has everything applied), run these in the SQL editor in order:
 4. `fix-default-score-nullability.sql` — fixes a bug where default scores defaulted to `1` instead of `null`, which broke the "needs onboarding" check (already applied on the live project)
 5. `add-avatar-to-season-stats.sql` — extends the `season_stats` view with `avatar` (already applied)
 6. `add-nickname.sql` — adds the `nickname` column + extends `season_stats` with `display_name` (already applied, but worth double-checking if anything nickname-related ever errors)
+7. `add-round-comments.sql` — creates the `round_comments` table + RLS for the `/home` discussion feature. **Not yet applied** — run this before the comment box will work.
+8. `add-lock-expired-rounds-function.sql` — creates `lock_expired_rounds()`, called lazily by the app (on `/home`, `/predictions`, `/leaderboard`, `/manager` load) to lock a round and fill per-match default scores once its deadline passes. **Not yet applied** — run this before auto-lock will work. It's a no-op for any round whose deadline hasn't passed yet, so applying it won't touch round 1's current data.
 
 Also, to make the manager account actually a manager (role defaults to
 `participant` for everyone, including this account, on first login):
@@ -86,12 +89,12 @@ update users set role = 'manager' where email = 'contact@shlitay.com';
 1. **Manager fixture-entry screen** — no UI yet to type in a round's 7 matches + deadline. This is why "Reset round" is still fake: a real reset means creating a new round + matches, which needs this screen first.
 2. **Manager result-entry** — input final scores once matches finish.
 3. **Scoring engine** — compute `points_earned` per prediction, update `round_participation` (totals, rank, `is_round_winner`). Without this, the leaderboards will keep showing 0s even after round 1 is actually played.
-4. **Auto-lock scheduled job** — nothing currently stops predictions being edited after kickoff; needs a scheduled job to lock the round and fill in default scores for anyone who didn't predict.
+4. ~~**Auto-lock scheduled job**~~ — **built** (2026-08-18): `lock_expired_rounds()` (see migration 8 above) locks a round and fills per-match default scores once its deadline passes, called lazily whenever a round-dependent page loads (`src/lib/lockExpiredRounds.ts`). Requires migration 8 to be applied.
 5. **`/home` stat cards** — still mock, needs the same real-data treatment `/leaderboard` already got.
-6. **Fun/social layer** — crown badge for round winner (schema supports it via `is_round_winner`, no UI yet), trash-talk/reactions (no table designed yet).
+6. **Fun/social layer** — crown badge for round winner (schema supports it via `is_round_winner`, no UI yet); ~~round comments~~ **built** (2026-08-18): `RoundComments.tsx` on `/home`, requires migration 7 to be applied.
 
-## Open items still worth nailing down
-- Exact wording/UI for the manager's scoring-rules settings screen.
-- Whether default-score predictions should visually differ for the participant (e.g. a badge like "auto-filled").
-- Does the manager's own account also play/predict, or is it admin-only? (Currently `season_stats` excludes `role = 'manager'` rows entirely — but the Admin panel / Back to game links assume one person uses both views.)
-- Design of the trash-talk/social feature.
+## Decisions (resolved 2026-08-18, built same day)
+- **Scoring-rules settings screen** (in the manager panel): a simple form with two fields — "Exact score points" and "Correct result (towards) points" — prefilled from the current `scoring_rules` row (default 10 / 5). Saving inserts a new versioned row (`effective_from = now()`); past rounds keep whatever scoring was current when they were played. **Built** — `ScoringRulesModal.tsx`, opened from a button on `/manager`. No migration needed (table + RLS already existed).
+- **Default-score predictions**: filled in **per match, not per round**. If a participant predicts only some of a round's matches before it locks (e.g. 4 of 7), only the *unpredicted* matches get the default score — and that only happens once the round has started/locked. **Built** — see item 4 above. Still open: exact visual treatment for marking these as auto-filled (badge styling TBD).
+- **Does the manager play?** Admin-only. `contact@shlitay.com` is the workspace/manager account and never predicts. Itay's personal participation happens through a separate account, `itay88arad@gmail.com`, which plays like any other participant. The current `season_stats` exclusion of `role = 'manager'` rows is correct as-is — no code change was needed.
+- **Trash-talk/social feature — v1 scope**: one public discussion thread per round, shown on `/home`. Any participant can post a comment visible to everyone; each participant can post **exactly one comment per round**, enforced both in the UI and by a DB unique constraint on `(round_id, user_id)`. **Built** — see item 6 above.

@@ -6,6 +6,7 @@ import LeaderRow from "@/components/LeaderRow";
 import ParticipantModal from "@/components/ParticipantModal";
 import TopBar from "@/components/TopBar";
 import { createClient } from "@/lib/supabase/client";
+import { lockExpiredRounds } from "@/lib/lockExpiredRounds";
 
 type Row = { userId: string; name: string; avatar: string; count: number };
 
@@ -33,6 +34,8 @@ export default function LeaderboardPage() {
 
   useEffect(() => {
     (async () => {
+      await lockExpiredRounds(supabase);
+
       const { data: round } = await supabase
         .from("rounds")
         .select("id, round_number")

@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from "react";
 import BottomNav from "@/components/BottomNav";
+import RoundComments from "@/components/RoundComments";
 import StatCard from "@/components/StatCard";
 import TopBar from "@/components/TopBar";
 import { createClient } from "@/lib/supabase/client";
+import { lockExpiredRounds } from "@/lib/lockExpiredRounds";
 import { currentUser, lastRoundStats, seasonStats } from "@/lib/mock-data";
 
 type ProfileRow = { full_name: string; nickname: string | null; avatar: string | null };
@@ -23,6 +25,8 @@ export default function HomePage() {
 
   useEffect(() => {
     (async () => {
+      await lockExpiredRounds(supabase);
+
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -146,6 +150,8 @@ export default function HomePage() {
         points={seasonStats.points}
         hit={seasonStats.hit}
       />
+
+      {!loading && openRound && <RoundComments roundId={openRound.id} />}
 
       <BottomNav />
     </main>
