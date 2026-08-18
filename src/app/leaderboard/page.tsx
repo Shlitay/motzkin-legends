@@ -3,17 +3,20 @@
 import { useEffect, useState } from "react";
 import BottomNav from "@/components/BottomNav";
 import LeaderRow from "@/components/LeaderRow";
+import ParticipantModal from "@/components/ParticipantModal";
 import TopBar from "@/components/TopBar";
 import { createClient } from "@/lib/supabase/client";
 
-type Row = { name: string; avatar: string; count: number };
+type Row = { userId: string; name: string; avatar: string; count: number };
 
 type RawRoundParticipationRow = {
+  user_id: string;
   total_points: number | null;
   users: { full_name: string; nickname: string | null; avatar: string | null } | null;
 };
 
 type SeasonStatsRow = {
+  user_id: string;
   display_name: string;
   avatar: string | null;
   total_points: number;
@@ -26,6 +29,7 @@ export default function LeaderboardPage() {
   const [currentRoundPoints, setCurrentRoundPoints] = useState<Row[]>([]);
   const [seasonPoints, setSeasonPoints] = useState<Row[]>([]);
   const [mostPlayed, setMostPlayed] = useState<Row[]>([]);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -40,13 +44,14 @@ export default function LeaderboardPage() {
 
         const { data: rows } = await supabase
           .from("round_participation")
-          .select("total_points, users(full_name, nickname, avatar)")
+          .select("user_id, total_points, users(full_name, nickname, avatar)")
           .eq("round_id", round.id)
           .overrideTypes<RawRoundParticipationRow[], { merge: false }>();
 
         setCurrentRoundPoints(
           (rows ?? [])
             .map((r) => ({
+              userId: r.user_id,
               name: r.users?.nickname ?? r.users?.full_name ?? "Unknown",
               avatar: r.users?.avatar ?? "🙂",
               count: r.total_points ?? 0,
@@ -57,18 +62,28 @@ export default function LeaderboardPage() {
 
       const { data: stats } = await supabase
         .from("season_stats")
-        .select("display_name, avatar, total_points, rounds_played")
+        .select("user_id, display_name, avatar, total_points, rounds_played")
         .overrideTypes<SeasonStatsRow[], { merge: false }>();
 
       const seasonRows = stats ?? [];
       setSeasonPoints(
         seasonRows
-          .map((s) => ({ name: s.display_name, avatar: s.avatar ?? "🙂", count: s.total_points }))
+          .map((s) => ({
+            userId: s.user_id,
+            name: s.display_name,
+            avatar: s.avatar ?? "🙂",
+            count: s.total_points,
+          }))
           .sort((a, b) => b.count - a.count)
       );
       setMostPlayed(
         seasonRows
-          .map((s) => ({ name: s.display_name, avatar: s.avatar ?? "🙂", count: s.rounds_played }))
+          .map((s) => ({
+            userId: s.user_id,
+            name: s.display_name,
+            avatar: s.avatar ?? "🙂",
+            count: s.rounds_played,
+          }))
           .sort((a, b) => b.count - a.count)
       );
     })();
@@ -80,17 +95,46 @@ export default function LeaderboardPage() {
       <h1 className="text-lg font-medium text-ink">League board</h1>
 
       {roundNumber !== null && (
-        <LeaderTable title={`Round ${roundNumber} points`} rows={currentRoundPoints} countLabel="pts" />
+        <LeaderTable
+          title={`Round ${roundNumber} points`}
+          rows={currentRoundPoints}
+          countLabel="pts"
+          onSelect={setSelectedUserId}
+        />
       )}
-      <LeaderTable title="Most points (season)" rows={seasonPoints} countLabel="pts" />
-      <LeaderTable title="Most played" rows={mostPlayed} countLabel="rounds" />
+      <LeaderTable
+        title="Most points (season)"
+        rows={seasonPoints}
+        countLabel="pts"
+        onSelect={setSelectedUserId}
+      />
+      <LeaderTable
+        title="Most played"
+        rows={mostPlayed}
+        countLabel="rounds"
+        onSelect={setSelectedUserId}
+      />
+
+      {selectedUserId && (
+        <ParticipantModal userId={selectedUserId} onClose={() => setSelectedUserId(null)} />
+      )}
 
       <BottomNav />
     </main>
   );
 }
 
-function LeaderTable({ title, rows, countLabel }: { title: string; rows: Row[]; countLabel: string }) {
+function LeaderTable({
+  title,
+  rows,
+  countLabel,
+  onSelect,
+}: {
+  title: string;
+  rows: Row[];
+  countLabel: string;
+  onSelect: (userId: string) => void;
+}) {
   return (
     <section className="w-full max-w-md overflow-hidden rounded-[28px] bg-surface shadow-[0_1px_2px_rgba(0,0,0,0.04),0_16px_32px_-18px_rgba(0,0,0,0.28)]">
       <h2 className="px-5 pb-1 pt-5 text-sm font-semibold uppercase tracking-wide text-muted">
@@ -99,12 +143,13 @@ function LeaderTable({ title, rows, countLabel }: { title: string; rows: Row[]; 
       <div className="divide-y divide-neutral-100">
         {rows.map((r, i) => (
           <LeaderRow
-            key={r.name}
+            key={r.userId}
             rank={i + 1}
             avatar={r.avatar}
             name={r.name}
             count={r.count}
             countLabel={countLabel}
+            onClick={() => onSelect(r.userId)}
           />
         ))}
       </div>
