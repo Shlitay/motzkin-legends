@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import LeaderRow from "@/components/LeaderRow";
+import NewsStripModal from "@/components/NewsStripModal";
+import NewsTicker from "@/components/NewsTicker";
 import ScoringRulesModal from "@/components/ScoringRulesModal";
 import TopBar from "@/components/TopBar";
 import { createClient } from "@/lib/supabase/client";
@@ -39,6 +41,7 @@ export default function ManagerDashboard() {
   const [leaderTitle, setLeaderTitle] = useState<"played" | "winning">("played");
   const [confirmingReset, setConfirmingReset] = useState(false);
   const [showScoringRules, setShowScoringRules] = useState(false);
+  const [showNewsStrip, setShowNewsStrip] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -145,6 +148,7 @@ export default function ManagerDashboard() {
   return (
     <main className="flex min-h-screen flex-col items-center gap-8 px-6 pb-10 pt-28">
       <TopBar href="/manager" rightAction={{ label: "Back to game", href: "/home" }} />
+      <NewsTicker />
       <div>
         <span className="rounded bg-fuchsia-400 px-3 py-1 text-sm font-medium text-white">
           Manager dashboard
@@ -183,12 +187,18 @@ export default function ManagerDashboard() {
         </div>
       </section>
 
-      <div className="flex gap-3">
+      <div className="flex flex-wrap justify-center gap-3">
         <button
           onClick={() => setShowScoringRules(true)}
           className="rounded-full border border-neutral-300 px-6 py-2 text-sm font-medium hover:bg-neutral-50"
         >
           Scoring rules
+        </button>
+        <button
+          onClick={() => setShowNewsStrip(true)}
+          className="rounded-full border border-neutral-300 px-6 py-2 text-sm font-medium hover:bg-neutral-50"
+        >
+          News strip
         </button>
         <button
           onClick={() => setConfirmingReset(true)}
@@ -199,6 +209,7 @@ export default function ManagerDashboard() {
       </div>
 
       {showScoringRules && <ScoringRulesModal onClose={() => setShowScoringRules(false)} />}
+      {showNewsStrip && <NewsStripModal onClose={() => setShowNewsStrip(false)} />}
 
       {confirmingReset && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/40 px-6">

@@ -52,7 +52,9 @@ integration — no manual deploy step needed.
 - `/leaderboard` — three real tables (this round's points, season points, most played), each row **clickable** → opens `ParticipantModal` with that participant's avatar/name/last-round/season stats
 - `/home` also now has a **round discussion** section (`RoundComments.tsx`) — one public comment per participant per round, see decision below
 - `/rules` — static
-- `/manager` — real approve/un-approve (writes `round_participation.payment_status`), real leaderboard widget, a **"Scoring rules" editor** (prefilled from the current `scoring_rules` row, saves a new versioned row — see decision below). **"Reset round" is still local-only / fake** — doesn't touch the database (see Phase 0 below)
+- `/manager` — real approve/un-approve (writes `round_participation.payment_status`), real leaderboard widget, a **"Scoring rules" editor** (prefilled from the current `scoring_rules` row, saves a new versioned row — see decision below), and a **"News strip" editor** (see below). **"Reset round" is still local-only / fake** — doesn't touch the database (see Phase 0 below)
+
+**News ticker** (`NewsTicker.tsx`) — a scrolling marquee shown on `/home`, `/predictions`, `/leaderboard`, `/rules`, and `/manager`. Reads a single `news_strip` row with 3 fixed text slots (`slot_1`/`slot_2`/`slot_3`) that the manager overwrites directly from `/manager` → "News strip" (`NewsStripModal.tsx`) — not a list, just 3 boxes; a blank box just doesn't show. Requires migration 9 below.
 
 **Profile** (`ProfileModal.tsx`) — real avatar picker, real default-score editor, and a **nickname** field (shown instead of the Google name everywhere a name displays; falls back to the Google name when unset).
 
@@ -73,8 +75,9 @@ project has everything applied), run these in the SQL editor in order:
 4. `fix-default-score-nullability.sql` — fixes a bug where default scores defaulted to `1` instead of `null`, which broke the "needs onboarding" check (already applied on the live project)
 5. `add-avatar-to-season-stats.sql` — extends the `season_stats` view with `avatar` (already applied)
 6. `add-nickname.sql` — adds the `nickname` column + extends `season_stats` with `display_name` (already applied, but worth double-checking if anything nickname-related ever errors)
-7. `add-round-comments.sql` — creates the `round_comments` table + RLS for the `/home` discussion feature. **Not yet applied** — run this before the comment box will work.
-8. `add-lock-expired-rounds-function.sql` — creates `lock_expired_rounds()`, called lazily by the app (on `/home`, `/predictions`, `/leaderboard`, `/manager` load) to lock a round and fill per-match default scores once its deadline passes. **Not yet applied** — run this before auto-lock will work. It's a no-op for any round whose deadline hasn't passed yet, so applying it won't touch round 1's current data.
+7. `add-round-comments.sql` — creates the `round_comments` table + RLS for the `/home` discussion feature (already applied)
+8. `add-lock-expired-rounds-function.sql` — creates `lock_expired_rounds()`, called lazily by the app (on `/home`, `/predictions`, `/leaderboard`, `/manager` load) to lock a round and fill per-match default scores once its deadline passes. It's a no-op for any round whose deadline hasn't passed yet, so applying it doesn't touch round 1's current data (already applied)
+9. `add-news-strip.sql` — creates the singleton `news_strip` table + RLS for the manager-editable news ticker. **Not yet applied** — run this before "News strip" on `/manager` will work.
 
 Also, to make the manager account actually a manager (role defaults to
 `participant` for everyone, including this account, on first login):

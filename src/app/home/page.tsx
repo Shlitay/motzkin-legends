@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import BottomNav from "@/components/BottomNav";
+import NewsTicker from "@/components/NewsTicker";
 import RoundComments from "@/components/RoundComments";
 import StatCard from "@/components/StatCard";
 import TopBar from "@/components/TopBar";
@@ -88,6 +89,7 @@ export default function HomePage() {
   return (
     <main className="flex min-h-screen flex-col items-center gap-10 px-6 pb-24 pt-28">
       <TopBar />
+      <NewsTicker />
       <div className="flex flex-col items-center gap-2">
         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-neutral-100 text-3xl">
           {profile?.avatar ?? currentUser.avatar}

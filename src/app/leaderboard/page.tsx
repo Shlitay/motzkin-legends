@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import BottomNav from "@/components/BottomNav";
 import LeaderRow from "@/components/LeaderRow";
+import NewsTicker from "@/components/NewsTicker";
 import ParticipantModal from "@/components/ParticipantModal";
 import TopBar from "@/components/TopBar";
 import { createClient } from "@/lib/supabase/client";
@@ -95,6 +96,7 @@ export default function LeaderboardPage() {
   return (
     <main className="flex min-h-screen flex-col items-center gap-8 px-6 pb-24 pt-28">
       <TopBar />
+      <NewsTicker />
       <h1 className="text-lg font-medium text-ink">League board</h1>
 
       {roundNumber !== null && (

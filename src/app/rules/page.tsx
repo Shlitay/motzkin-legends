@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import BottomNav from "@/components/BottomNav";
+import NewsTicker from "@/components/NewsTicker";
 import ProfileModal from "@/components/ProfileModal";
 import TopBar from "@/components/TopBar";
 
@@ -11,6 +12,7 @@ export default function RulesPage() {
   return (
     <main className="flex min-h-screen flex-col items-center gap-6 px-6 pb-24 pt-28">
       <TopBar />
+      <NewsTicker />
       <h1 className="text-lg font-medium text-ink">Rules</h1>
 
       <ul className="w-full max-w-md space-y-3 text-sm text-ink">
