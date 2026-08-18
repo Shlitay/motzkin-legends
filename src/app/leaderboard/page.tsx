@@ -10,11 +10,11 @@ type Row = { name: string; avatar: string; count: number };
 
 type RawRoundParticipationRow = {
   total_points: number | null;
-  users: { full_name: string; avatar: string | null } | null;
+  users: { full_name: string; nickname: string | null; avatar: string | null } | null;
 };
 
 type SeasonStatsRow = {
-  full_name: string;
+  display_name: string;
   avatar: string | null;
   total_points: number;
   rounds_played: number;
@@ -40,14 +40,14 @@ export default function LeaderboardPage() {
 
         const { data: rows } = await supabase
           .from("round_participation")
-          .select("total_points, users(full_name, avatar)")
+          .select("total_points, users(full_name, nickname, avatar)")
           .eq("round_id", round.id)
           .overrideTypes<RawRoundParticipationRow[], { merge: false }>();
 
         setCurrentRoundPoints(
           (rows ?? [])
             .map((r) => ({
-              name: r.users?.full_name ?? "Unknown",
+              name: r.users?.nickname ?? r.users?.full_name ?? "Unknown",
               avatar: r.users?.avatar ?? "🙂",
               count: r.total_points ?? 0,
             }))
@@ -57,18 +57,18 @@ export default function LeaderboardPage() {
 
       const { data: stats } = await supabase
         .from("season_stats")
-        .select("full_name, avatar, total_points, rounds_played")
+        .select("display_name, avatar, total_points, rounds_played")
         .overrideTypes<SeasonStatsRow[], { merge: false }>();
 
       const seasonRows = stats ?? [];
       setSeasonPoints(
         seasonRows
-          .map((s) => ({ name: s.full_name, avatar: s.avatar ?? "🙂", count: s.total_points }))
+          .map((s) => ({ name: s.display_name, avatar: s.avatar ?? "🙂", count: s.total_points }))
           .sort((a, b) => b.count - a.count)
       );
       setMostPlayed(
         seasonRows
-          .map((s) => ({ name: s.full_name, avatar: s.avatar ?? "🙂", count: s.rounds_played }))
+          .map((s) => ({ name: s.display_name, avatar: s.avatar ?? "🙂", count: s.rounds_played }))
           .sort((a, b) => b.count - a.count)
       );
     })();

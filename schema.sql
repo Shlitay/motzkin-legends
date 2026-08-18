@@ -13,7 +13,8 @@
 create table users (
   id uuid primary key references auth.users(id) on delete cascade,
   email text not null unique,
-  full_name text not null,
+  full_name text not null,              -- from Google; the fallback display name
+  nickname text,                        -- optional, set in Profile — shown instead of full_name when set
   role text not null default 'participant' check (role in ('manager', 'participant')),
   avatar text,                          -- emoji or avatar identifier (separate from Google photo)
   default_home_score int,               -- null until onboarding sets it
@@ -156,11 +157,12 @@ select
   coalesce(sum(rp.exact_score_count), 0) as season_hits,
   coalesce(sum(rp.correct_result_count), 0) as season_towards,
   round(avg(rp.total_points) filter (where rp.payment_status = 'approved'), 2) as avg_points,
-  u.avatar
+  u.avatar,
+  coalesce(u.nickname, u.full_name) as display_name
 from users u
 left join round_participation rp on rp.user_id = u.id
 where u.role = 'participant'
-group by u.id, u.full_name, u.avatar;
+group by u.id, u.full_name, u.avatar, u.nickname;
 
 -- =========================================================
 -- Notes

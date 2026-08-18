@@ -14,12 +14,12 @@ type Participant = {
 type RawParticipationRow = {
   id: string;
   payment_status: string;
-  users: { full_name: string; avatar: string | null } | null;
+  users: { full_name: string; nickname: string | null; avatar: string | null } | null;
 };
 
 type SeasonStatsRow = {
   user_id: string;
-  full_name: string;
+  display_name: string;
   avatar: string | null;
   rounds_played: number;
   rounds_won: number;
@@ -41,7 +41,7 @@ export default function ManagerDashboard() {
     (async () => {
       const { data: stats } = await supabase
         .from("season_stats")
-        .select("user_id, full_name, avatar, rounds_played, rounds_won");
+        .select("user_id, display_name, avatar, rounds_played, rounds_won");
       setSeasonStats(stats ?? []);
     })();
   }, [supabase]);
@@ -65,7 +65,7 @@ export default function ManagerDashboard() {
 
       const { data: rows, error: rowsError } = await supabase
         .from("round_participation")
-        .select("id, payment_status, users(full_name, avatar)")
+        .select("id, payment_status, users(full_name, nickname, avatar)")
         .eq("round_id", round.id)
         .overrideTypes<RawParticipationRow[], { merge: false }>();
 
@@ -77,7 +77,7 @@ export default function ManagerDashboard() {
 
       const toParticipant = (row: RawParticipationRow): Participant => ({
         participationId: row.id,
-        name: row.users?.full_name ?? "Unknown",
+        name: row.users?.nickname ?? row.users?.full_name ?? "Unknown",
         avatar: row.users?.avatar ?? null,
       });
 
@@ -123,7 +123,7 @@ export default function ManagerDashboard() {
       leaderTitle === "played" ? b.rounds_played - a.rounds_played : b.rounds_won - a.rounds_won
     )
     .map((s) => ({
-      name: s.full_name,
+      name: s.display_name,
       avatar: s.avatar ?? "🙂",
       count: leaderTitle === "played" ? s.rounds_played : s.rounds_won,
     }));

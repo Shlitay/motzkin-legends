@@ -7,7 +7,7 @@ import TopBar from "@/components/TopBar";
 import { createClient } from "@/lib/supabase/client";
 import { currentUser, lastRoundStats, seasonStats } from "@/lib/mock-data";
 
-type ProfileRow = { full_name: string; avatar: string | null };
+type ProfileRow = { full_name: string; nickname: string | null; avatar: string | null };
 type OpenRound = { id: string; round_number: number };
 type ParticipationStatus = "waiting" | "approved" | "rejected" | null;
 
@@ -32,7 +32,7 @@ export default function HomePage() {
       }
 
       const [{ data: profileRow }, { data: roundRow }] = await Promise.all([
-        supabase.from("users").select("full_name, avatar").eq("id", user.id).single(),
+        supabase.from("users").select("full_name, nickname, avatar").eq("id", user.id).single(),
         supabase.from("rounds").select("id, round_number").eq("status", "open").single(),
       ]);
 
@@ -88,7 +88,9 @@ export default function HomePage() {
         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-neutral-100 text-3xl">
           {profile?.avatar ?? currentUser.avatar}
         </div>
-        <p className="font-medium text-ink">{profile?.full_name ?? currentUser.fullName}</p>
+        <p className="font-medium text-ink">
+          {profile?.nickname ?? profile?.full_name ?? currentUser.fullName}
+        </p>
       </div>
 
       {!loading && openRound && (

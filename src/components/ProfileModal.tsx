@@ -11,6 +11,8 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
   const [error, setError] = useState<string | null>(null);
 
   const [avatar, setAvatar] = useState<string | null>(null);
+  const [fullName, setFullName] = useState("");
+  const [nickname, setNickname] = useState("");
   const [home, setHome] = useState("");
   const [away, setAway] = useState("");
 
@@ -28,7 +30,7 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
 
       const { data: profile, error: profileError } = await supabase
         .from("users")
-        .select("avatar, default_home_score, default_away_score")
+        .select("full_name, nickname, avatar, default_home_score, default_away_score")
         .eq("id", user.id)
         .single();
 
@@ -39,6 +41,8 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
       }
 
       setAvatar(profile.avatar);
+      setFullName(profile.full_name);
+      setNickname(profile.nickname ?? "");
       setHome(profile.default_home_score === null ? "" : String(profile.default_home_score));
       setAway(profile.default_away_score === null ? "" : String(profile.default_away_score));
       setLoading(false);
@@ -71,6 +75,7 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
       .from("users")
       .update({
         avatar,
+        nickname: nickname.trim() === "" ? null : nickname.trim(),
         default_home_score: Number(home),
         default_away_score: Number(away),
       })
@@ -95,6 +100,18 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
           <p className="text-sm text-muted">Loading…</p>
         ) : (
           <>
+            <p className="mb-1 text-sm font-medium text-ink">Nickname</p>
+            <p className="mb-3 text-xs text-muted">
+              Shown instead of your Google name. Leave blank to use &quot;{fullName}&quot;.
+            </p>
+            <input
+              value={nickname}
+              onChange={(e) => setNickname(e.target.value)}
+              placeholder={fullName}
+              maxLength={40}
+              className="mb-7 w-full rounded-lg border border-neutral-300 px-3 py-2 text-center text-sm"
+            />
+
             <p className="mb-3 text-sm font-medium text-ink">Avatar</p>
             <div className="mb-7 grid grid-cols-6 gap-2">
               {AVATAR_LIBRARY.map((emoji) => {
