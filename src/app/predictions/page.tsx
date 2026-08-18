@@ -3,20 +3,24 @@
 import { useEffect, useState } from "react";
 import BottomNav from "@/components/BottomNav";
 import TopBar from "@/components/TopBar";
-import { TEAM_COLORS, currentRound, historyRounds, roundMatches } from "@/lib/mock-data";
+import { createClient } from "@/lib/supabase/client";
+import { TEAM_COLORS } from "@/lib/mock-data";
 
 type ScoreEntry = { home: string; away: string };
 
-function emptyEntries(): Record<string, ScoreEntry> {
-  return Object.fromEntries(
-    roundMatches.map((m) => [m.id, { home: "", away: "" }])
-  );
-}
+type DbMatch = {
+  id: string;
+  home_team: string;
+  away_team: string;
+  kickoff_at: string;
+};
 
-// Real app: this lives in `predictions` rows in Supabase, keyed to the
-// logged-in user. Until that's wired up, localStorage stands in so a
-// submitted round survives navigating away and coming back.
-const STORAGE_KEY = `motzkin-legends:predictions:${currentRound.id}`;
+type DbRound = {
+  id: string;
+  round_number: number;
+  deadline_at: string;
+  status: string;
+};
 
 function formatDeadline(iso: string) {
   const d = new Date(iso);
@@ -28,143 +32,221 @@ function formatDeadline(iso: string) {
 }
 
 export default function PredictionsPage() {
-  const [entries, setEntries] = useState<Record<string, ScoreEntry>>(emptyEntries);
+  const [supabase] = useState(() => createClient());
+
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  const [rounds, setRounds] = useState<DbRound[]>([]);
+  const [selectedRoundId, setSelectedRoundId] = useState<string | null>(null);
+  const [matches, setMatches] = useState<DbMatch[]>([]);
+  const [entries, setEntries] = useState<Record<string, ScoreEntry>>({});
   const [submitted, setSubmitted] = useState(false);
-  const [selectedRound, setSelectedRound] = useState(currentRound.roundNumber);
 
+  // Load every round once; default to whichever one is 'open'.
   useEffect(() => {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return;
-    try {
-      const saved = JSON.parse(raw) as Record<string, ScoreEntry>;
-      setEntries(saved);
-      setSubmitted(true);
-    } catch {
-      // ignore corrupt/old data
-    }
-  }, []);
+    (async () => {
+      const { data, error: roundsError } = await supabase
+        .from("rounds")
+        .select("id, round_number, deadline_at, status")
+        .order("round_number", { ascending: true });
 
-  const allFilled = roundMatches.every(
-    (m) => entries[m.id].home !== "" && entries[m.id].away !== ""
-  );
+      if (roundsError) {
+        setError(roundsError.message);
+        setLoading(false);
+        return;
+      }
+
+      const roundList = data ?? [];
+      setRounds(roundList);
+      const openRound = roundList.find((r) => r.status === "open") ?? roundList[roundList.length - 1];
+      if (openRound) {
+        setSelectedRoundId(openRound.id);
+      } else {
+        setLoading(false);
+      }
+    })();
+  }, [supabase]);
+
+  // Whenever the selected round changes, load its matches + this user's
+  // existing predictions for it.
+  useEffect(() => {
+    if (!selectedRoundId) return;
+    setLoading(true);
+
+    (async () => {
+      const { data: matchRows, error: matchesError } = await supabase
+        .from("matches")
+        .select("id, home_team, away_team, kickoff_at")
+        .eq("round_id", selectedRoundId)
+        .order("kickoff_at");
+
+      if (matchesError) {
+        setError(matchesError.message);
+        setLoading(false);
+        return;
+      }
+
+      const matchList = matchRows ?? [];
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      let predictionRows: { match_id: string; pred_home_score: number; pred_away_score: number }[] = [];
+      if (user && matchList.length > 0) {
+        const { data } = await supabase
+          .from("predictions")
+          .select("match_id, pred_home_score, pred_away_score")
+          .eq("user_id", user.id)
+          .in("match_id", matchList.map((m) => m.id));
+        predictionRows = data ?? [];
+      }
+
+      const byMatch = new Map(predictionRows.map((p) => [p.match_id, p]));
+      const nextEntries: Record<string, ScoreEntry> = {};
+      matchList.forEach((m) => {
+        const existing = byMatch.get(m.id);
+        nextEntries[m.id] = existing
+          ? { home: String(existing.pred_home_score), away: String(existing.pred_away_score) }
+          : { home: "", away: "" };
+      });
+
+      setMatches(matchList);
+      setEntries(nextEntries);
+      setSubmitted(matchList.length > 0 && predictionRows.length === matchList.length);
+      setError(null);
+      setLoading(false);
+    })();
+  }, [supabase, selectedRoundId]);
+
+  const selectedRound = rounds.find((r) => r.id === selectedRoundId) ?? null;
+  const isOpenRound = selectedRound?.status === "open";
+
+  const allFilled =
+    matches.length > 0 &&
+    matches.every((m) => entries[m.id]?.home !== "" && entries[m.id]?.away !== "");
 
   function setScore(matchId: string, side: "home" | "away", value: string) {
     if (value !== "" && !/^\d$/.test(value)) return;
     setEntries((prev) => ({ ...prev, [matchId]: { ...prev[matchId], [side]: value } }));
   }
 
-  function sendPrediction() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+  async function sendPrediction() {
+    setSaving(true);
+    setError(null);
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      setError("You've been signed out — please log in again.");
+      setSaving(false);
+      return;
+    }
+
+    const rows = matches.map((m) => ({
+      user_id: user.id,
+      match_id: m.id,
+      pred_home_score: Number(entries[m.id].home),
+      pred_away_score: Number(entries[m.id].away),
+    }));
+
+    const { error: upsertError } = await supabase
+      .from("predictions")
+      .upsert(rows, { onConflict: "user_id,match_id" });
+
+    if (upsertError) {
+      setError(upsertError.message);
+      setSaving(false);
+      return;
+    }
+
     setSubmitted(true);
+    setSaving(false);
   }
 
-  if (submitted && selectedRound === currentRound.roundNumber) {
+  if (loading) {
     return (
-      <main className="flex min-h-screen flex-col items-center gap-6 px-6 pb-24 pt-28">
+      <main className="flex min-h-screen flex-col items-center justify-center gap-4 px-6 pt-28 text-center">
         <TopBar />
-        <div className="text-center">
-          <h1 className="text-lg font-medium">Check your history predictions</h1>
-          <p className="mt-1 text-sm text-muted">
-            Round {currentRound.roundNumber} · predictions closed{" "}
-            {formatDeadline(currentRound.deadlineAt)}
-          </p>
-        </div>
+        <p className="text-sm text-muted">Loading…</p>
+      </main>
+    );
+  }
 
-        <RoundPicker
-          selectedRound={selectedRound}
-          onChange={(n) => setSelectedRound(n)}
-        />
-
-        <div className="w-full max-w-md space-y-4">
-          {roundMatches.map((m) => {
-            const e = entries[m.id];
-            return (
-              <MatchRow
-                key={m.id}
-                homeTeam={m.homeTeam}
-                awayTeam={m.awayTeam}
-                home={e.home}
-                away={e.away}
-                readOnly
-              />
-            );
-          })}
-        </div>
-
-        <button
-          onClick={() => setSubmitted(false)}
-          className="rounded-full bg-draw px-8 py-2 font-medium text-white hover:brightness-95"
-        >
-          Update prediction
-        </button>
-
+  if (!selectedRound) {
+    return (
+      <main className="flex min-h-screen flex-col items-center justify-center gap-4 px-6 pt-28 text-center">
+        <TopBar />
+        <p className="text-sm text-muted">No round is open for predictions yet.</p>
         <BottomNav />
       </main>
     );
   }
 
-  if (selectedRound !== currentRound.roundNumber) {
-    const past = historyRounds.find((r) => r.roundNumber === selectedRound);
-    return (
-      <main className="flex min-h-screen flex-col items-center gap-6 px-6 pb-24 pt-28">
-        <TopBar />
-        <h1 className="text-center text-lg font-medium">Check your history predictions</h1>
-
-        <RoundPicker selectedRound={selectedRound} onChange={(n) => setSelectedRound(n)} />
-
-        <div className="w-full max-w-md space-y-4">
-          {past?.predictions.map((p, i) => (
-            <MatchRow
-              key={i}
-              homeTeam={p.homeTeam}
-              awayTeam={p.awayTeam}
-              home={String(p.predHome)}
-              away={String(p.predAway)}
-              readOnly
-            />
-          ))}
-        </div>
-
-        <BottomNav />
-      </main>
-    );
-  }
+  const heading = !isOpenRound || submitted
+    ? "Check your history predictions"
+    : "Set your round matches prediction";
 
   return (
     <main className="flex min-h-screen flex-col items-center gap-6 px-6 pb-24 pt-28">
       <TopBar />
       <div className="text-center">
-        <h1 className="text-lg font-medium">Set your round matches prediction</h1>
+        <h1 className="text-lg font-medium">{heading}</h1>
         <p className="mt-1 text-sm text-muted">
-          Round {currentRound.roundNumber} · predictions close{" "}
-          {formatDeadline(currentRound.deadlineAt)}
+          Round {selectedRound.round_number} · predictions {isOpenRound ? "close" : "closed"}{" "}
+          {formatDeadline(selectedRound.deadline_at)}
         </p>
       </div>
 
+      {rounds.length > 1 && (
+        <RoundPicker
+          rounds={rounds}
+          selectedRoundId={selectedRoundId!}
+          onChange={setSelectedRoundId}
+        />
+      )}
+
       <div className="w-full max-w-md space-y-4">
-        {roundMatches.map((m) => {
+        {matches.map((m) => {
           const e = entries[m.id];
+          const readOnly = !isOpenRound || submitted;
           return (
             <MatchRow
               key={m.id}
-              homeTeam={m.homeTeam}
-              awayTeam={m.awayTeam}
+              homeTeam={m.home_team}
+              awayTeam={m.away_team}
               home={e.home}
               away={e.away}
-              onChangeHome={(v) => setScore(m.id, "home", v)}
-              onChangeAway={(v) => setScore(m.id, "away", v)}
+              readOnly={readOnly}
+              onChangeHome={readOnly ? undefined : (v) => setScore(m.id, "home", v)}
+              onChangeAway={readOnly ? undefined : (v) => setScore(m.id, "away", v)}
             />
           );
         })}
       </div>
 
-      <button
-        disabled={!allFilled}
-        onClick={sendPrediction}
-        className="rounded-full bg-brand px-8 py-2 font-medium text-white enabled:hover:bg-brand-dark disabled:cursor-not-allowed disabled:bg-neutral-300"
-      >
-        {allFilled ? "Send prediction" : "Fill predictions"}
-      </button>
+      {isOpenRound &&
+        (submitted ? (
+          <button
+            onClick={() => setSubmitted(false)}
+            className="rounded-full bg-draw px-8 py-2 font-medium text-white hover:brightness-95"
+          >
+            Update prediction
+          </button>
+        ) : (
+          <button
+            disabled={!allFilled || saving}
+            onClick={sendPrediction}
+            className="rounded-full bg-brand px-8 py-2 font-medium text-white enabled:hover:bg-brand-dark disabled:cursor-not-allowed disabled:bg-neutral-300"
+          >
+            {saving ? "Saving…" : allFilled ? "Send prediction" : "Fill predictions"}
+          </button>
+        ))}
+
+      {error && <p className="text-sm text-danger">{error}</p>}
 
       <BottomNav />
     </main>
@@ -172,22 +254,23 @@ export default function PredictionsPage() {
 }
 
 function RoundPicker({
-  selectedRound,
+  rounds,
+  selectedRoundId,
   onChange,
 }: {
-  selectedRound: number;
-  onChange: (n: number) => void;
+  rounds: DbRound[];
+  selectedRoundId: string;
+  onChange: (id: string) => void;
 }) {
-  const rounds = [currentRound.roundNumber, ...historyRounds.map((r) => r.roundNumber)];
   return (
     <select
-      value={selectedRound}
-      onChange={(e) => onChange(Number(e.target.value))}
+      value={selectedRoundId}
+      onChange={(e) => onChange(e.target.value)}
       className="rounded-lg border border-neutral-300 px-4 py-2 text-sm"
     >
-      {rounds.map((n) => (
-        <option key={n} value={n}>
-          Round {n}
+      {rounds.map((r) => (
+        <option key={r.id} value={r.id}>
+          Round {r.round_number}
         </option>
       ))}
     </select>

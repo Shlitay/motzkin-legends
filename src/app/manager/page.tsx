@@ -1,40 +1,116 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import LeaderRow from "@/components/LeaderRow";
 import TopBar from "@/components/TopBar";
-import {
-  approvedThisRound as initialApproved,
-  mostPlayedUsers,
-  mostWinningUsers,
-  waitingForApproval as initialWaiting,
-} from "@/lib/mock-data";
+import { createClient } from "@/lib/supabase/client";
+import { mostPlayedUsers, mostWinningUsers } from "@/lib/mock-data";
 
-type Person = { name: string; avatar: string };
+type Participant = {
+  participationId: string;
+  name: string;
+  avatar: string | null;
+};
+
+type RawParticipationRow = {
+  id: string;
+  payment_status: string;
+  users: { full_name: string; avatar: string | null } | null;
+};
 
 export default function ManagerDashboard() {
-  const [waiting, setWaiting] = useState<Person[]>(initialWaiting);
-  const [approved, setApproved] = useState<Person[]>(initialApproved);
+  const [supabase] = useState(() => createClient());
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [roundId, setRoundId] = useState<string | null>(null);
+  const [roundNumber, setRoundNumber] = useState<number | null>(null);
+  const [waiting, setWaiting] = useState<Participant[]>([]);
+  const [approved, setApproved] = useState<Participant[]>([]);
   const [leaderTitle, setLeaderTitle] = useState<"played" | "winning">("played");
   const [confirmingReset, setConfirmingReset] = useState(false);
 
-  function approve(person: Person) {
-    setWaiting((w) => w.filter((p) => p.name !== person.name));
+  useEffect(() => {
+    (async () => {
+      const { data: round, error: roundError } = await supabase
+        .from("rounds")
+        .select("id, round_number")
+        .eq("status", "open")
+        .single();
+
+      if (roundError || !round) {
+        setError(roundError?.message ?? "No open round yet.");
+        setLoading(false);
+        return;
+      }
+
+      setRoundId(round.id);
+      setRoundNumber(round.round_number);
+
+      const { data: rows, error: rowsError } = await supabase
+        .from("round_participation")
+        .select("id, payment_status, users(full_name, avatar)")
+        .eq("round_id", round.id)
+        .overrideTypes<RawParticipationRow[], { merge: false }>();
+
+      if (rowsError) {
+        setError(rowsError.message);
+        setLoading(false);
+        return;
+      }
+
+      const toParticipant = (row: RawParticipationRow): Participant => ({
+        participationId: row.id,
+        name: row.users?.full_name ?? "Unknown",
+        avatar: row.users?.avatar ?? null,
+      });
+
+      const all = rows ?? [];
+      setWaiting(all.filter((r) => r.payment_status === "waiting").map(toParticipant));
+      setApproved(all.filter((r) => r.payment_status === "approved").map(toParticipant));
+      setLoading(false);
+    })();
+  }, [supabase]);
+
+  async function setPaymentStatus(participationId: string, status: "waiting" | "approved") {
+    const { error: updateError } = await supabase
+      .from("round_participation")
+      .update({ payment_status: status })
+      .eq("id", participationId);
+    setError(updateError ? updateError.message : null);
+    return !updateError;
+  }
+
+  async function approve(person: Participant) {
+    if (!(await setPaymentStatus(person.participationId, "approved"))) return;
+    setWaiting((w) => w.filter((p) => p.participationId !== person.participationId));
     setApproved((a) => [...a, person]);
   }
 
-  function unapprove(person: Person) {
-    setApproved((a) => a.filter((p) => p.name !== person.name));
+  async function unapprove(person: Participant) {
+    if (!(await setPaymentStatus(person.participationId, "waiting"))) return;
+    setApproved((a) => a.filter((p) => p.participationId !== person.participationId));
     setWaiting((w) => [...w, person]);
   }
 
   function resetRound() {
+    // Real reset (a fresh round + new fixtures) needs the manager
+    // fixture-entry screen, which is still Phase 0 / on hold — so this
+    // only clears the local view for now, it doesn't touch the database.
     setWaiting([]);
     setApproved([]);
     setConfirmingReset(false);
   }
 
   const leaderRows = leaderTitle === "played" ? mostPlayedUsers : mostWinningUsers;
+
+  if (loading) {
+    return (
+      <main className="flex min-h-screen flex-col items-center justify-center gap-4 px-6 pt-28 text-center">
+        <TopBar href="/manager" rightAction={{ label: "Back to game", href: "/home" }} />
+        <p className="text-sm text-muted">Loading…</p>
+      </main>
+    );
+  }
 
   return (
     <main className="flex min-h-screen flex-col items-center gap-8 px-6 pb-10 pt-28">
@@ -45,12 +121,18 @@ export default function ManagerDashboard() {
         </span>
       </div>
 
-      <h1 className="text-lg font-semibold">Round participants</h1>
+      <h1 className="text-lg font-semibold">
+        {roundNumber ? `Round ${roundNumber} participants` : "Round participants"}
+      </h1>
 
-      <div className="grid w-full max-w-2xl grid-cols-1 gap-8 sm:grid-cols-2">
-        <NameList title="Waiting for approval" people={waiting} onAction={approve} actionLabel="Approve →" />
-        <NameList title="Approved this round" people={approved} onAction={unapprove} actionLabel="← Waiting" />
-      </div>
+      {error && <p className="text-sm text-danger">{error}</p>}
+
+      {roundId && (
+        <div className="grid w-full max-w-2xl grid-cols-1 gap-8 sm:grid-cols-2">
+          <NameList title="Waiting for approval" people={waiting} onAction={approve} actionLabel="Approve →" />
+          <NameList title="Approved this round" people={approved} onAction={unapprove} actionLabel="← Waiting" />
+        </div>
+      )}
 
       <section className="w-full max-w-md overflow-hidden rounded-[28px] bg-surface shadow-[0_1px_2px_rgba(0,0,0,0.04),0_16px_32px_-18px_rgba(0,0,0,0.28)]">
         <div className="flex items-center justify-between px-5 pt-5">
@@ -112,8 +194,8 @@ function NameList({
   actionLabel,
 }: {
   title: string;
-  people: Person[];
-  onAction?: (person: Person) => void;
+  people: Participant[];
+  onAction?: (person: Participant) => void;
   actionLabel?: string;
 }) {
   return (
@@ -122,7 +204,7 @@ function NameList({
       <ol className="min-h-[10rem] space-y-1 rounded-xl border border-dashed border-neutral-300 p-4 text-sm">
         {people.length === 0 && <li className="text-muted">Empty</li>}
         {people.map((person, i) => (
-          <li key={person.name + i} className="flex items-center justify-between">
+          <li key={person.participationId} className="flex items-center justify-between">
             <span className="flex items-center gap-2">
               <span className="text-muted">{i + 1}.</span>
               <span className="text-base">{person.avatar}</span>
