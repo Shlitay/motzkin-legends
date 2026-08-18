@@ -4,9 +4,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import ProfileModal from "@/components/ProfileModal";
-import { BookIcon, GaugeIcon, OneXTwoIcon, WinnerIcon } from "@/components/icons";
+import { BookIcon, GaugeIcon, HomeIcon, OneXTwoIcon, WinnerIcon } from "@/components/icons";
 
 const links = [
+  { href: "/home", label: "Home", Icon: HomeIcon },
   { href: "/predictions", label: "Predictions", Icon: OneXTwoIcon },
   { href: "/leaderboard", label: "League board", Icon: WinnerIcon },
   { href: "/rules", label: "Rules", Icon: BookIcon },

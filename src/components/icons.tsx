@@ -14,18 +14,25 @@ const base = {
 export function OneXTwoIcon({ className, size }: IconProps) {
   return (
     <svg {...base} width={size ?? base.width} height={size ?? base.height} className={className}>
-      <rect x="2" y="7" width="20" height="10" rx="2" />
-      <line x1="8.67" y1="7" x2="8.67" y2="17" />
-      <line x1="15.33" y1="7" x2="15.33" y2="17" />
-      <text x="5.3" y="14.3" fontSize="6.5" fontWeight="600" stroke="none" fill="currentColor">
+      <text x="0" y="17" fontSize="10" fontWeight="700" stroke="none" fill="currentColor">
         1
       </text>
-      <text x="10.9" y="14.3" fontSize="6.5" fontWeight="600" stroke="none" fill="currentColor">
+      <text x="8" y="17" fontSize="10" fontWeight="700" stroke="none" fill="currentColor">
         X
       </text>
-      <text x="17.5" y="14.3" fontSize="6.5" fontWeight="600" stroke="none" fill="currentColor">
+      <text x="17" y="17" fontSize="10" fontWeight="700" stroke="none" fill="currentColor">
         2
       </text>
+    </svg>
+  );
+}
+
+export function HomeIcon({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M4 11.5 12 4l8 7.5" />
+      <path d="M6 10v9a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-9" />
+      <path d="M10 20v-5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v5" />
     </svg>
   );
 }
