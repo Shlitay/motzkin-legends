@@ -7,37 +7,16 @@ score of 7 Israeli league matches per round and compete for a jackpot.
 **Live:** https://motzkin-legends.vercel.app
 **Repo:** https://github.com/Shlitay/motzkin-legends
 **Supabase project:** `teuqvtarqminvutoozsx`
+**Manager account:** `contact@shlitay.com` (must have `role = 'manager'` in the `users` table — see below if it ever needs re-setting)
 
-## Status: deployed, real auth works, rest of the app still on mock data
+## Status: real, deployed, and live-tested with real friends
 
-Login (Google OAuth) and onboarding (avatar + default score) write to the
-real Supabase database. Everything past that — predictions, home stats,
-leaderboard, manager dashboard — still reads/writes `src/lib/mock-data.ts`,
-not the real tables. So right now: a friend can log in and register for
-real, but predicting/approving/stats don't persist anywhere yet.
-
-**Also:** the Google OAuth consent screen is still in **Testing** mode —
-only Google accounts added as test users can log in at all; anyone else is
-blocked outright. Not ready to send to friends until this is fixed.
-
-## Next session — before sending this to friends for real
-
-1. **Publish the Google OAuth consent screen** (Google Cloud Console →
-   Audience → Publish App). Removes the test-user restriction so any Google
-   account can log in — no more manual allow-listing per friend. Since the
-   app only requests basic profile/email scopes, this shouldn't require
-   Google's formal verification review.
-2. **Finish wiring the app to real Supabase** so what friends do actually
-   saves to the DB:
-   - Seed real round 1 (season + round + the 7 matches) into Supabase
-   - Wire `/predictions` to read real matches and write real `predictions` rows (replacing the `localStorage` stand-in)
-   - Wire `/home` and `/leaderboard` to read real `round_participation` / `season_stats`
-   - Wire `/manager` approve/reject/reset to real `round_participation` writes
-3. Do a small real dry run yourself (or with one friend) end-to-end before opening it up to everyone.
+This is **not** a mock-data demo anymore. Google login, onboarding, predictions,
+payment-approval requests, manager approve/reject, and both leaderboards all
+read and write the real Supabase database. As of this writing, 6 real
+participants have registered and set round 1 predictions.
 
 ## Getting started (local dev)
-
-This is a [Next.js](https://nextjs.org) app (TypeScript, Tailwind v4, App Router).
 
 ```bash
 npm install   # if you haven't already
@@ -45,47 +24,71 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000). Needs `.env.local` with
-`NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` (already set up
-locally — not committed, since it's gitignored).
+`NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` (gitignored,
+already set up locally — values are the same as the Vercel env vars below).
 
-## What's built
+```
+NEXT_PUBLIC_SUPABASE_URL=https://teuqvtarqminvutoozsx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_-f7C2NCsa3oGQxFT3aHEtw_vDxNLmyf
+```
 
-**Pages** (all under `src/app/`):
-- `/` and `/manager/login` — real Google sign-in (Supabase Auth)
-- `/onboarding` — required first-login step: pick an avatar, set a default score — writes to the real `users` row
-- `/home` — last-round + season stat cards (towards / points / hit); still mock data, all zero
-- `/predictions` — real round 1 fixtures (22.8.2026, kickoff shown on-page), 3 states (empty → filled → submitted/history), kit-colored team dots, win/draw tinting. Still mock: submitting saves to `localStorage`, not the DB.
-- `/leaderboard` — three tables (this round's points, season points, most played), full participant roster, still mock/zero
-- `/rules`
-- `/manager` — approve/un-approve participants, leaderboard, reset-round flow — still mock; real route protection *is* live (only `role = 'manager'` accounts can reach it)
+Deploys automatically on every push to `master` via Vercel's GitHub
+integration — no manual deploy step needed.
 
-**Admin/participant switching:** every page's top bar (`TopBar.tsx`) links to
-the other side — "Admin panel" on participant pages, "Back to game" on the
-manager dashboard, since you're the only manager and use both views.
+## What's built and real
 
-**Auth & backend** (real, live):
-- Google OAuth via Supabase Auth — `src/lib/supabase/{client,server,middleware}.ts`, `src/proxy.ts` (Next.js 16 renamed `middleware.ts` → `proxy.ts` — same thing)
-- `src/app/auth/callback/route.ts` — exchanges the OAuth code, routes to `/onboarding` if the profile's default scores are still unset
-- `proxy.ts` refreshes the session on every request and gate-keeps `/manager/*` behind `role = 'manager'` — real server-side protection, not just a hidden link
-- `schema.sql` — full data model, run against the real project
-- `rls.sql` — Row Level Security policies, also applied. Everyone can read shared game data (rounds/matches/teams/scoring); only the manager can write it. Each user reads/writes only their own profile & predictions. A trigger blocks anyone from self-promoting to `role = 'manager'` through the app.
-- **To become the manager**, run once in the Supabase SQL editor after your first login: `update users set role = 'manager' where email = 'contact@shlitay.com';`
+**Auth**
+- Real Google OAuth via Supabase Auth (`src/lib/supabase/{client,server,middleware}.ts`, `src/proxy.ts` — Next.js 16 renamed `middleware.ts` → `proxy.ts`, same thing)
+- `src/app/auth/callback/route.ts` exchanges the OAuth code, routes to `/onboarding` only if avatar/default-score are still unset on the profile row
+- `proxy.ts` refreshes the session every request and gate-keeps `/manager/*` behind `role = 'manager'` — real server-side protection
+- Google OAuth consent screen is **published** (not Testing mode) — any Google account can log in, no allow-listing needed
+- `rls.sql` — Row Level Security on every table. Shared game data (rounds/matches/teams/scoring) is world-readable, manager-only-writable. Each user reads/writes only their own profile & predictions. A trigger blocks self-promotion to `role = 'manager'` through the app — that can only be set directly in SQL
+
+**Pages** (`src/app/`), all wired to real data:
+- `/` and `/manager/login` — real Google sign-in
+- `/onboarding` — required first login: avatar + default score, writes to `users`
+- `/home` — avatar/name (real), a "Request approval" flow that inserts a real `round_participation` row when a participant clicks "I've sent payment via Paybox," and status display (waiting/approved/rejected). Stat cards (towards/points/hit for last round + season) are **still mock/placeholder** — not yet wired.
+- `/predictions` — reads real rounds/matches, reads/writes real `predictions` rows (upsert on submit). Generic across rounds (not hardcoded to round 1), though only round 1 exists so far. Round 1 fixtures: 22.8.2026, 20:00.
+- `/leaderboard` — three real tables (this round's points, season points, most played), each row **clickable** → opens `ParticipantModal` with that participant's avatar/name/last-round/season stats
+- `/rules` — static
+- `/manager` — real approve/un-approve (writes `round_participation.payment_status`), real leaderboard widget. **"Reset round" is still local-only / fake** — doesn't touch the database (see Phase 0 below)
+
+**Profile** (`ProfileModal.tsx`) — real avatar picker, real default-score editor, and a **nickname** field (shown instead of the Google name everywhere a name displays; falls back to the Google name when unset).
 
 **Design system — "Home Pitch" kit** (turf green + trophy gold):
-- Brand colors as Tailwind v4 theme tokens in `src/app/globals.css` (`bg-brand`, `text-muted`, `bg-draw`, etc.)
-- Typefaces: Oswald (headlines/scores/numbers) + Work Sans (body), loaded via `next/font/google` in `src/lib/fonts.ts`; Caveat (handwriting) for the logo signature only
-- Logo: 1X2-icon + handwritten "Motzkin Legends" — `src/components/Logo.tsx` (large, login hero) and `src/components/TopBar.tsx` (compact, fixed top bar on every app page)
-- A living style guide comparing this kit against two alternatives (Floodlights, Derby Day) was built as a Claude Artifact during design — ask if you want it re-shared; it's not part of this repo.
+- Tailwind v4 theme tokens in `src/app/globals.css`
+- Oswald (headlines/scores) + Work Sans (body) via `next/font/google`; Caveat (handwriting) for the logo signature only
+- Logo: "1X2" wordmark (plain text, no border box) + handwritten "Motzkin Legends" — `Logo.tsx` (large, login hero), `TopBar.tsx` (compact, fixed top bar, links back to `/home` on every page via an explicit `BottomNav` "Home" item too)
+- A living style guide (3 kit alternatives) was built as a Claude Artifact during design — not part of this repo, ask if you want it re-shared
+
+## Database migrations — run in this order on a fresh Supabase project
+
+If ever setting this up again from scratch (or double-checking the current
+project has everything applied), run these in the SQL editor in order:
+
+1. `schema.sql` — full data model
+2. `rls.sql` — Row Level Security policies
+3. `seed-round1.sql` — creates the season, round 1, and its 7 matches
+4. `fix-default-score-nullability.sql` — fixes a bug where default scores defaulted to `1` instead of `null`, which broke the "needs onboarding" check (already applied on the live project)
+5. `add-avatar-to-season-stats.sql` — extends the `season_stats` view with `avatar` (already applied)
+6. `add-nickname.sql` — adds the `nickname` column + extends `season_stats` with `display_name` (already applied, but worth double-checking if anything nickname-related ever errors)
+
+Also, to make the manager account actually a manager (role defaults to
+`participant` for everyone, including this account, on first login):
+```sql
+update users set role = 'manager' where email = 'contact@shlitay.com';
+```
 
 ## UI reference
 `Prediction game for users.drawio.pdf` — original wireframes. Superseded in spirit by what's actually built, but still useful for the manager fixture-entry screen, which isn't built yet.
 
 ## Still to build (Phase 0 — on hold, pending info from you)
-1. Manager fixture-entry screen — no UI yet to type in a round's 7 matches + deadline; "Reset round" currently just clears mock lists.
-2. Manager result-entry — input final scores once matches finish.
-3. Scoring engine — compute `points_earned` per prediction, update `round_participation` (totals, rank, `is_round_winner`).
-4. Auto-lock scheduled job (fills in default scores at deadline).
-5. Fun/social layer (crown UI, trash-talk — no table designed yet).
+1. **Manager fixture-entry screen** — no UI yet to type in a round's 7 matches + deadline. This is why "Reset round" is still fake: a real reset means creating a new round + matches, which needs this screen first.
+2. **Manager result-entry** — input final scores once matches finish.
+3. **Scoring engine** — compute `points_earned` per prediction, update `round_participation` (totals, rank, `is_round_winner`). Without this, the leaderboards will keep showing 0s even after round 1 is actually played.
+4. **Auto-lock scheduled job** — nothing currently stops predictions being edited after kickoff; needs a scheduled job to lock the round and fill in default scores for anyone who didn't predict.
+5. **`/home` stat cards** — still mock, needs the same real-data treatment `/leaderboard` already got.
+6. **Fun/social layer** — crown badge for round winner (schema supports it via `is_round_winner`, no UI yet), trash-talk/reactions (no table designed yet).
 
 ## Open items still worth nailing down
 - Exact wording/UI for the manager's scoring-rules settings screen.
