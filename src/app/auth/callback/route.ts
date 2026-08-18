@@ -13,12 +13,15 @@ export async function GET(request: Request) {
     if (!error && data.user) {
       const { data: profile } = await supabase
         .from("users")
-        .select("default_home_score, default_away_score")
+        .select("avatar, default_home_score, default_away_score")
         .eq("id", data.user.id)
         .single();
 
       const needsOnboarding =
-        !profile || profile.default_home_score === null || profile.default_away_score === null;
+        !profile ||
+        profile.avatar === null ||
+        profile.default_home_score === null ||
+        profile.default_away_score === null;
 
       return NextResponse.redirect(`${origin}${needsOnboarding ? "/onboarding" : next}`);
     }

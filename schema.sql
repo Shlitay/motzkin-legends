@@ -16,8 +16,8 @@ create table users (
   full_name text not null,
   role text not null default 'participant' check (role in ('manager', 'participant')),
   avatar text,                          -- emoji or avatar identifier (separate from Google photo)
-  default_home_score int not null default 1,   -- fallback prediction (set during onboarding)
-  default_away_score int not null default 1,
+  default_home_score int,               -- null until onboarding sets it
+  default_away_score int,
   created_at timestamptz not null default now()
 );
 
