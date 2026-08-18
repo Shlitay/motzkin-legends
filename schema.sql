@@ -155,11 +155,12 @@ select
   coalesce(sum(rp.total_points), 0) as total_points,
   coalesce(sum(rp.exact_score_count), 0) as season_hits,
   coalesce(sum(rp.correct_result_count), 0) as season_towards,
-  round(avg(rp.total_points) filter (where rp.payment_status = 'approved'), 2) as avg_points
+  round(avg(rp.total_points) filter (where rp.payment_status = 'approved'), 2) as avg_points,
+  u.avatar
 from users u
 left join round_participation rp on rp.user_id = u.id
 where u.role = 'participant'
-group by u.id, u.full_name;
+group by u.id, u.full_name, u.avatar;
 
 -- =========================================================
 -- Notes

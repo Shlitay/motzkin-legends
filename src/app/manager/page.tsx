@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import LeaderRow from "@/components/LeaderRow";
 import TopBar from "@/components/TopBar";
 import { createClient } from "@/lib/supabase/client";
-import { mostPlayedUsers, mostWinningUsers } from "@/lib/mock-data";
 
 type Participant = {
   participationId: string;
@@ -18,6 +17,14 @@ type RawParticipationRow = {
   users: { full_name: string; avatar: string | null } | null;
 };
 
+type SeasonStatsRow = {
+  user_id: string;
+  full_name: string;
+  avatar: string | null;
+  rounds_played: number;
+  rounds_won: number;
+};
+
 export default function ManagerDashboard() {
   const [supabase] = useState(() => createClient());
   const [loading, setLoading] = useState(true);
@@ -26,8 +33,18 @@ export default function ManagerDashboard() {
   const [roundNumber, setRoundNumber] = useState<number | null>(null);
   const [waiting, setWaiting] = useState<Participant[]>([]);
   const [approved, setApproved] = useState<Participant[]>([]);
+  const [seasonStats, setSeasonStats] = useState<SeasonStatsRow[]>([]);
   const [leaderTitle, setLeaderTitle] = useState<"played" | "winning">("played");
   const [confirmingReset, setConfirmingReset] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      const { data: stats } = await supabase
+        .from("season_stats")
+        .select("user_id, full_name, avatar, rounds_played, rounds_won");
+      setSeasonStats(stats ?? []);
+    })();
+  }, [supabase]);
 
   useEffect(() => {
     (async () => {
@@ -101,7 +118,15 @@ export default function ManagerDashboard() {
     setConfirmingReset(false);
   }
 
-  const leaderRows = leaderTitle === "played" ? mostPlayedUsers : mostWinningUsers;
+  const leaderRows = [...seasonStats]
+    .sort((a, b) =>
+      leaderTitle === "played" ? b.rounds_played - a.rounds_played : b.rounds_won - a.rounds_won
+    )
+    .map((s) => ({
+      name: s.full_name,
+      avatar: s.avatar ?? "🙂",
+      count: leaderTitle === "played" ? s.rounds_played : s.rounds_won,
+    }));
 
   if (loading) {
     return (
