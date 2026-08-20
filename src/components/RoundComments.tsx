@@ -37,6 +37,7 @@ export default function RoundComments({ roundId }: { roundId: string }) {
   const [supabase] = useState(() => createClient());
   const [loading, setLoading] = useState(true);
   const [posting, setPosting] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const [comments, setComments] = useState<Comment[]>([]);
@@ -101,6 +102,25 @@ export default function RoundComments({ roundId }: { roundId: string }) {
     setPosting(false);
   }
 
+  async function remove(commentId: string) {
+    setDeletingId(commentId);
+    setError(null);
+
+    const { error: deleteError } = await supabase
+      .from("round_comments")
+      .delete()
+      .eq("id", commentId);
+
+    if (deleteError) {
+      setError(deleteError.message);
+      setDeletingId(null);
+      return;
+    }
+
+    setComments((prev) => prev.filter((c) => c.id !== commentId));
+    setDeletingId(null);
+  }
+
   if (loading) return null;
 
   return (
@@ -120,6 +140,15 @@ export default function RoundComments({ roundId }: { roundId: string }) {
               <p className="text-base font-bold text-ink">{c.name}</p>
               <p className="text-sm text-ink/90 break-words">{c.text}</p>
             </div>
+            {c.userId === currentUserId && (
+              <button
+                onClick={() => remove(c.id)}
+                disabled={deletingId === c.id}
+                className="shrink-0 text-xs text-danger underline disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {deletingId === c.id ? "…" : "Delete"}
+              </button>
+            )}
           </div>
         ))}
       </div>
