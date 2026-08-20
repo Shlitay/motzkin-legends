@@ -144,9 +144,10 @@ export default function RoundComments({ roundId }: { roundId: string }) {
               <button
                 onClick={() => remove(c.id)}
                 disabled={deletingId === c.id}
-                className="shrink-0 text-xs text-danger underline disabled:cursor-not-allowed disabled:opacity-50"
+                aria-label="Delete comment"
+                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-muted hover:bg-danger/10 hover:text-danger disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {deletingId === c.id ? "…" : "Delete"}
+                {deletingId === c.id ? "…" : "✕"}
               </button>
             )}
           </div>
