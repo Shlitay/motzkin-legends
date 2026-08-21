@@ -74,3 +74,21 @@ export function GaugeIcon({ className }: IconProps) {
     </svg>
   );
 }
+
+export function ClockIcon({ className, size }: IconProps) {
+  return (
+    <svg {...base} width={size ?? base.width} height={size ?? base.height} className={className}>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M12 7.5V12l3 2" />
+    </svg>
+  );
+}
+
+export function CheckCircleIcon({ className, size }: IconProps) {
+  return (
+    <svg {...base} width={size ?? base.width} height={size ?? base.height} className={className}>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M8.5 12.5l2.3 2.3L15.7 9.5" />
+    </svg>
+  );
+}

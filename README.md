@@ -52,7 +52,8 @@ integration — no manual deploy step needed.
 **Pages** (`src/app/`), all wired to real data:
 - `/` and `/manager/login` — real Google sign-in
 - `/onboarding` — required first login: avatar + default score, writes to `users`
-- `/home` — avatar/name (real), a "Request approval" flow that inserts a real `round_participation` row when a participant clicks "I've sent payment via Paybox," and status display (waiting/approved/rejected). Stat cards (towards/points/hit for last round + season) are **still mock/placeholder** — not yet wired.
+- `/home` — avatar/name (real). Stat cards (towards/points/hit for last round + season) are **still mock/placeholder** — not yet wired.
+- **Round approval status** (`RoundApprovalStatus.tsx`) — self-contained (fetches its own open round + the current user's `round_participation` status), shown on `/home`, `/predictions`, `/leaderboard`, `/rules` (not `/manager` — the manager account doesn't participate). Inserts a real `round_participation` row when a participant clicks "שלחתי תשלום דרך Paybox." Status is color-coded: waiting = light orange (`border-draw`/`bg-draw`) with a clock icon, approved = light green (`border-brand`/`bg-brand`) with a checkmark icon, rejected = plain card with red text (not color-coded — wasn't asked for).
 - `/predictions` — reads real rounds/matches, reads/writes real `predictions` rows (upsert on submit). Generic across rounds (not hardcoded to round 1), though only round 1 exists so far. Round 1 fixtures: 22.8.2026, 20:00.
 - `/leaderboard` — three real tables (this round's points, season points, most played), each row **clickable** → opens `ParticipantModal` with that participant's avatar/name/last-round/season stats
 - `/home` also now has a **round discussion** section (`RoundComments.tsx`) — one public comment per participant per round, see decision below

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import BottomNav from "@/components/BottomNav";
 import NewsTicker from "@/components/NewsTicker";
+import RoundApprovalStatus from "@/components/RoundApprovalStatus";
 import TopBar from "@/components/TopBar";
 import { createClient } from "@/lib/supabase/client";
 import { lockExpiredRounds } from "@/lib/lockExpiredRounds";
@@ -198,6 +199,7 @@ export default function PredictionsPage() {
     <main className="flex min-h-screen flex-col items-center gap-6 px-6 pb-24 pt-28">
       <TopBar />
       <NewsTicker />
+      <RoundApprovalStatus />
       <div className="text-center">
         <h1 className="text-lg font-medium">{heading}</h1>
         <p className="mt-1 text-sm text-muted">
