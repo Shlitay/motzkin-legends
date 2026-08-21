@@ -32,7 +32,7 @@ export default function OnboardingPage() {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      setError("You've been signed out — please log in again.");
+      setError("התנתקתם מהמערכת — יש להתחבר מחדש.");
       setSaving(false);
       return;
     }
@@ -60,14 +60,14 @@ export default function OnboardingPage() {
       <TopBar href={null} rightAction={null} />
       <div>
         <span className="rounded bg-brand px-3 py-1 text-sm font-medium text-white">
-          One-time setup
+          הגדרה חד-פעמית
         </span>
       </div>
 
       <section className="w-full max-w-sm">
-        <h1 className="mb-2 text-2xl font-bold">Pick your avatar</h1>
+        <h1 className="mb-2 text-2xl font-bold">בחרו אווטאר</h1>
         <p className="mb-5 text-sm text-muted">
-          Shows up next to your name on the leaderboard and everywhere else.
+          יופיע לצד השם שלכם בטבלת הליגה ובכל מקום אחר.
         </p>
         <div className="grid grid-cols-6 gap-2">
           {AVATAR_LIBRARY.map((emoji) => {
@@ -77,7 +77,7 @@ export default function OnboardingPage() {
                 key={emoji}
                 onClick={() => setAvatar(emoji)}
                 aria-pressed={selected}
-                aria-label={`Pick avatar ${emoji}`}
+                aria-label={`בחירת אווטאר ${emoji}`}
                 className={
                   "flex h-11 w-11 items-center justify-center rounded-full text-xl transition " +
                   (selected
@@ -93,16 +93,15 @@ export default function OnboardingPage() {
       </section>
 
       <section className="w-full max-w-sm">
-        <h2 className="mb-2 text-lg font-bold">Set your default prediction</h2>
+        <h2 className="mb-2 text-lg font-bold">הגדירו ניחוש ברירת מחדל</h2>
         <p className="mb-5 text-sm text-muted">
-          If you ever forget to submit a prediction before the deadline, this
-          score gets used automatically so you don&apos;t lose your spot in
-          the round.
+          אם תשכחו להגיש ניחוש לפני המועד האחרון, התוצאה הזו תוזן אוטומטית
+          כדי שלא תפספסו את המחזור.
         </p>
         <div className="flex items-center justify-center gap-3">
-          <ScoreInput label="Home" value={home} onChange={(v) => setScore(setHome, v)} />
+          <ScoreInput label="בית" value={home} onChange={(v) => setScore(setHome, v)} />
           <span className="text-lg font-semibold text-neutral-400">–</span>
-          <ScoreInput label="Away" value={away} onChange={(v) => setScore(setAway, v)} />
+          <ScoreInput label="חוץ" value={away} onChange={(v) => setScore(setAway, v)} />
         </div>
       </section>
 
@@ -111,7 +110,7 @@ export default function OnboardingPage() {
         onClick={save}
         className="rounded-full bg-brand px-8 py-2 font-medium text-white enabled:hover:bg-brand-dark disabled:cursor-not-allowed disabled:bg-neutral-300"
       >
-        {saving ? "Saving…" : "Save and continue"}
+        {saving ? "שומר..." : "שמור והמשך"}
       </button>
 
       {error && <p className="text-sm text-danger">{error}</p>}

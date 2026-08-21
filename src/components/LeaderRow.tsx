@@ -20,7 +20,7 @@ export default function LeaderRow({ rank, avatar, name, count, countLabel, onCli
   return (
     <Wrapper
       onClick={onClick}
-      className={`flex w-full items-center gap-3 px-5 py-3 text-left ${ROW_TINT[rank] ?? ""} ${
+      className={`flex w-full items-center gap-3 px-5 py-3 text-start ${ROW_TINT[rank] ?? ""} ${
         onClick ? "hover:bg-black/5" : ""
       }`}
     >
@@ -31,7 +31,7 @@ export default function LeaderRow({ rank, avatar, name, count, countLabel, onCli
       <span className="flex-1 font-medium text-ink">{name}</span>
       <span className="font-display text-sm font-semibold tabular-nums text-ink">
         {count}
-        {countLabel && <span className="ml-1 font-normal text-muted">{countLabel}</span>}
+        {countLabel && <span className="ms-1 font-normal text-muted">{countLabel}</span>}
       </span>
     </Wrapper>
   );

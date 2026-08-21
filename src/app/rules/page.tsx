@@ -13,28 +13,28 @@ export default function RulesPage() {
     <main className="flex min-h-screen flex-col items-center gap-6 px-6 pb-24 pt-28">
       <TopBar />
       <NewsTicker />
-      <h1 className="text-lg font-medium text-ink">Rules</h1>
+      <h1 className="text-lg font-medium text-ink">חוקים</h1>
 
       <ul className="w-full max-w-md space-y-3 text-sm text-ink">
-        <li>Predict the score of all 7 matches before the round&apos;s first kickoff.</li>
-        <li>Exact score → 10 points (&quot;hit&quot;).</li>
-        <li>Correct winner, wrong score → 5 points (&quot;towards&quot;).</li>
-        <li>Wrong winner → 0 points.</li>
+        <li>נחשו את התוצאה של כל 7 המשחקים לפני הבעיטה הראשונה של המחזור.</li>
+        <li>תוצאה מדויקת ← 10 נקודות (&quot;פגיעה&quot;).</li>
+        <li>כיוון נכון, תוצאה לא מדויקת ← 5 נקודות (&quot;כיוון&quot;).</li>
+        <li>כיוון לא נכון ← 0 נקודות.</li>
         <li>
-          Missed the deadline? Your{" "}
+          פספסתם את המועד?{" "}
           <button
             onClick={() => setShowProfile(true)}
             className="text-brand underline"
           >
-            default score
+            ניחוש ברירת המחדל
           </button>{" "}
-          fills in automatically.
+          שלכם יוזן אוטומטית.
         </li>
-        <li>Most points in the round wins the jackpot. Ties are broken by most exact scores.</li>
+        <li>מי שצובר הכי הרבה נקודות במחזור זוכה בקופה. שוויון נשבר לפי מספר הפגיעות המדויקות.</li>
       </ul>
 
       <p className="max-w-md text-center text-xs text-muted">
-        Point values are set by the manager and may change between rounds.
+        ערכי הניקוד נקבעים ע&quot;י המנהל ועשויים להשתנות בין מחזורים.
       </p>
 
       {showProfile && <ProfileModal onClose={() => setShowProfile(false)} />}

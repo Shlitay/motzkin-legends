@@ -15,7 +15,7 @@
   --color-draw: #c98a34;
 
   --font-display: var(--font-oswald), "Arial Narrow", sans-serif;
-  --font-sans: var(--font-work-sans), system-ui, sans-serif;
+  --font-sans: var(--font-heebo), system-ui, sans-serif;
 }
 
 body {

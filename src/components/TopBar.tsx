@@ -8,7 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 
 type RightAction = { label: string; href: string };
 
-const DEFAULT_ACTION: RightAction = { label: "Admin panel", href: "/manager" };
+const DEFAULT_ACTION: RightAction = { label: "פאנל ניהול", href: "/manager" };
 
 export default function TopBar({
   href = "/home",

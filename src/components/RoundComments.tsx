@@ -126,17 +126,17 @@ export default function RoundComments({ roundId }: { roundId: string }) {
   return (
     <section className="w-full max-w-md overflow-hidden rounded-[28px] bg-surface shadow-[0_1px_2px_rgba(0,0,0,0.04),0_16px_32px_-18px_rgba(0,0,0,0.28)]">
       <h2 className="px-5 pb-1 pt-5 text-sm font-semibold uppercase tracking-wide text-muted">
-        Round discussion
+        דיון על המחזור
       </h2>
 
       <div className="divide-y divide-neutral-100">
         {comments.length === 0 && (
-          <p className="px-5 py-4 text-sm text-muted">No comments yet — be the first.</p>
+          <p className="px-5 py-4 text-sm text-muted">אין עדיין תגובות — היו הראשונים.</p>
         )}
         {comments.map((c) => (
-          <div key={c.id} className="flex items-start gap-3 px-5 py-3" dir="rtl">
+          <div key={c.id} className="flex items-start gap-3 px-5 py-3">
             <span className="text-lg">{c.avatar}</span>
-            <div className="min-w-0 flex-1 text-right">
+            <div className="min-w-0 flex-1 text-start">
               <p className="text-base font-bold text-ink">{c.name}</p>
               <p className="text-sm text-ink/90 break-words">{c.text}</p>
             </div>
@@ -144,7 +144,7 @@ export default function RoundComments({ roundId }: { roundId: string }) {
               <button
                 onClick={() => remove(c.id)}
                 disabled={deletingId === c.id}
-                aria-label="Delete comment"
+                aria-label="מחיקת תגובה"
                 className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-muted hover:bg-danger/10 hover:text-danger disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {deletingId === c.id ? "…" : "✕"}
@@ -159,7 +159,7 @@ export default function RoundComments({ roundId }: { roundId: string }) {
           <textarea
             value={draft}
             onChange={(e) => setDraft(e.target.value.slice(0, MAX_LENGTH))}
-            placeholder="Say something about this round…"
+            placeholder="כתבו משהו על המחזור..."
             rows={2}
             className="w-full resize-none rounded-lg border border-neutral-300 px-3 py-2 text-sm"
           />
@@ -172,7 +172,7 @@ export default function RoundComments({ roundId }: { roundId: string }) {
               onClick={post}
               className="rounded-full bg-brand px-5 py-1.5 text-sm font-medium text-white enabled:hover:bg-brand-dark disabled:cursor-not-allowed disabled:bg-neutral-300"
             >
-              {posting ? "Posting…" : "Post"}
+              {posting ? "מפרסם..." : "פרסום"}
             </button>
           </div>
         </div>

@@ -16,6 +16,11 @@ payment-approval requests, manager approve/reject, and both leaderboards all
 read and write the real Supabase database. As of this writing, 6 real
 participants have registered and set round 1 predictions.
 
+The whole UI is **Hebrew + RTL** (converted 2026-08-21, straight replace — no
+language toggle exists or is planned). `<html lang="he" dir="rtl">` in
+`src/app/layout.tsx` drives the mirroring; see "Design system" below for the
+font swap this required.
+
 ## Getting started (local dev)
 
 ```bash
@@ -60,8 +65,8 @@ integration — no manual deploy step needed.
 
 **Design system — "Home Pitch" kit** (turf green + trophy gold):
 - Tailwind v4 theme tokens in `src/app/globals.css`
-- Oswald (headlines/scores) + Work Sans (body) via `next/font/google`; Caveat (handwriting) for the logo signature only
-- Logo: "1X2" wordmark (plain text, no border box) + handwritten "Motzkin Legends" — `Logo.tsx` (large, login hero), `TopBar.tsx` (compact, fixed top bar, links back to `/home` on every page via an explicit `BottomNav` "Home" item too)
+- Oswald (numeric displays only — scores, ranks, counts) + **Heebo** (body text and headings, Hebrew+Latin) via `next/font/google`; Caveat (handwriting) for the logo signature only. Heebo replaced Work Sans on 2026-08-21 — Work Sans has no Hebrew glyphs at all, so it silently fell back to a mismatched system font once the UI went Hebrew.
+- Logo: "1X2" wordmark (plain text, no border box) + handwritten "Motzkin Legends" — `Logo.tsx` (large, login hero), `TopBar.tsx` (compact, fixed top bar, links back to `/home` on every page via an explicit `BottomNav` "Home" item too). Brand name stays in **Latin script** even in the Hebrew UI (decided during the RTL conversion) — the `OneXTwoIcon` SVG in `icons.tsx` has an explicit `direction: ltr` style, since SVG `<text>` inherits the page's `dir` otherwise and clips/misplaces glyphs (hit this for real during the RTL conversion — the "1" disappeared until that fix landed).
 - A living style guide (3 kit alternatives) was built as a Claude Artifact during design — not part of this repo, ask if you want it re-shared
 
 ## Database migrations — run in this order on a fresh Supabase project
@@ -79,6 +84,7 @@ project has everything applied), run these in the SQL editor in order:
 8. `add-lock-expired-rounds-function.sql` — creates `lock_expired_rounds()`, called lazily by the app (on `/home`, `/predictions`, `/leaderboard`, `/manager` load) to lock a round and fill per-match default scores once its deadline passes. It's a no-op for any round whose deadline hasn't passed yet, so applying it doesn't touch round 1's current data (already applied)
 9. `add-news-strip.sql` — creates the singleton `news_strip` table + RLS for the manager-editable news ticker (already applied)
 10. `add-round-comments-delete-policy.sql` — adds a `delete` RLS policy so a participant can delete their own round comment (to free up their one-per-round slot and post a new one). **Not yet applied** — run this before the "Delete" button on `/home` comments will work.
+11. `add-hebrew-team-names.sql` — translates `teams.name` and round 1's existing `matches.home_team`/`away_team` text to Hebrew, as part of the Hebrew/RTL conversion. Pure `UPDATE` of existing rows' text (both tables are free text, not foreign-keyed), doesn't touch `predictions`/`round_participation` at all. **Not yet applied** — until it runs, `/predictions` shows round 1's fixtures with English club names (and the team-color dots won't match, since `TEAM_COLORS` in `mock-data.ts` was already renamed to the Hebrew keys in the same commit).
 
 Also, to make the manager account actually a manager (role defaults to
 `participant` for everyone, including this account, on first login):
@@ -102,3 +108,13 @@ update users set role = 'manager' where email = 'contact@shlitay.com';
 - **Default-score predictions**: filled in **per match, not per round**. If a participant predicts only some of a round's matches before it locks (e.g. 4 of 7), only the *unpredicted* matches get the default score — and that only happens once the round has started/locked. **Built** — see item 4 above. Still open: exact visual treatment for marking these as auto-filled (badge styling TBD).
 - **Does the manager play?** Admin-only. `contact@shlitay.com` is the workspace/manager account and never predicts. Itay's personal participation happens through a separate account, `itay88arad@gmail.com`, which plays like any other participant. The current `season_stats` exclusion of `role = 'manager'` rows is correct as-is — no code change was needed.
 - **Trash-talk/social feature — v1 scope**: one public discussion thread per round, shown on `/home`. Any participant can post a comment visible to everyone; each participant can have **at most one comment per round**, enforced both in the UI and by a DB unique constraint on `(round_id, user_id)`. A participant can delete their own comment (`round_comments_delete_own` policy) to free up their one slot and post a new one instead — there's no in-place edit. **Built** — see item 6 above.
+
+## Hebrew + RTL conversion (2026-08-21)
+
+Wording was worked out first in a reviewed glossary (a Claude Artifact, not part of this repo — every English string mapped to a proposed Hebrew one, with review comments applied) before any code changed. Key terms, now used consistently everywhere they appear:
+- Scoring vocabulary: **כיוון** ("towards" — correct result, wrong score) and **פגיעה** ("hit" — exact score). Standard Israeli toto-pool language, matches the existing "1X2" branding.
+- "Jackpot" → **קופה**.
+- Gendered phrasing defaults to **informal plural** for anything addressing the whole group; **masculine singular** only for the one-line manager-specific greeting on `/manager/login` ("ברוך שובך").
+- Brand name **"Motzkin Legends" stays in Latin script** — see the `OneXTwoIcon` note under Design system above for the RTL glyph-clipping bug that caused.
+
+**Verification caveat**: only `/` and `/manager/login` were actually visually checked in a browser (screenshotted via Playwright) — every other page requires a real Google-authenticated session, which isn't available in the dev/build environment this was built in. `npx tsc --noEmit` and `next build` both pass, and every English string was swept for with a final grep pass, but `/home`, `/predictions`, `/leaderboard`, `/rules`, `/manager`, and all the modals (Profile, Scoring rules, News strip, Participant popup) still want a real click-through once deployed, especially for RTL layout mirroring (nav icon order, `StatCard`'s `divide-x` stat row, TopBar button side) that wasn't force-verified — it's expected to mirror correctly via the global `dir="rtl"` flip, but wasn't watched happen.

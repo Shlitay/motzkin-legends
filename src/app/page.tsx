@@ -8,31 +8,29 @@ export default function LoginPage() {
       <div className="w-full bg-brand pb-10 pt-14 text-white">
         <Logo className="text-white" />
         <p className="mt-3 text-sm text-white/75">
-          Prediction league · 7 matches, one jackpot
+          ליגת ניחושים · 7 משחקים, זוכה אחד
         </p>
       </div>
 
       <div className="flex flex-1 flex-col items-center justify-center gap-8 px-6 py-10">
-        <h1 className="text-3xl font-bold text-ink">Welcome to the Prediction League</h1>
+        <h1 className="text-3xl font-bold text-ink">ברוכים הבאים לליגת הניחושים</h1>
         <p className="max-w-sm text-muted">
-          Predict every round of the Israeli league with your friends and
-          compete for the jackpot.
+          נחשו כל מחזור בליגת העל את תוצאות המחזור ותתחרו עם החברים על לזכות בקופה.
         </p>
 
         <GoogleSignInButton
           next="/home"
           className="flex items-center gap-2 rounded-full border border-neutral-300 px-6 py-3 font-medium shadow-sm hover:bg-neutral-50"
         >
-          Continue with Google
+          המשך עם Google
         </GoogleSignInButton>
 
         <p className="text-xs text-muted">
-          Not approved yet? Send your payment via Paybox, then confirm on your
-          homepage once you&apos;re logged in.
+          עדיין לא אושרתם? שלחו את התשלום דרך Paybox, ואז אשרו בעמוד הבית לאחר ההתחברות.
         </p>
 
         <Link href="/manager/login" className="text-xs text-muted underline">
-          Manager? Sign in here
+          מנהל/ת המשחק? התחברו כאן
         </Link>
       </div>
     </main>

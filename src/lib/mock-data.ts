@@ -17,22 +17,24 @@ export type Prediction = {
 };
 
 // Mirrors the `teams` table in schema.sql — kit colors shown next to each
-// team name as two small circles.
+// team name as two small circles. Keys are Hebrew (see
+// add-hebrew-team-names.sql) since that's what matches.home_team/away_team
+// hold once that migration runs — must stay in sync with it.
 export const TEAM_COLORS: Record<string, { primary: string; secondary: string }> = {
-  "Beitar Jerusalem": { primary: "#c6c512", secondary: "#11222c" },
-  "Bnei Sakhnin": { primary: "#c73332", secondary: "#fffeff" },
-  "Hapoel Beer-Sheva": { primary: "#da2332", secondary: "#0f4772" },
-  "Hapoel Haifa": { primary: "#ec434f", secondary: "#0c0c14" },
-  "Hapoel Kiryat Shmona": { primary: "#2b2c7d", secondary: "#c5c5c5" },
-  "Hapoel Jerusalem": { primary: "#ca2e32", secondary: "#1d1010" },
-  "Hapoel Petach-Tikva": { primary: "#0566c4", secondary: "#0a0e28" },
-  "Hapoel Ramat Gan": { primary: "#ae1527", secondary: "#d2c5c0" },
-  "Hapoel Tel Aviv": { primary: "#d02038", secondary: "#cdc6df" },
-  "Ironi Tiberias": { primary: "#07227c", secondary: "#04a3d4" },
-  "Maccabi Haifa": { primary: "#03b985", secondary: "#f0f4f5" },
-  "Maccabi Petach-Tikva": { primary: "#3f80c2", secondary: "#6e9cc4" },
-  "Maccabi Netanya": { primary: "#facf17", secondary: "#000405" },
-  "Maccabi Tel-Aviv": { primary: "#eadb0d", secondary: "#335573" },
+  'בית"ר ירושלים': { primary: "#c6c512", secondary: "#11222c" },
+  "בני סכנין": { primary: "#c73332", secondary: "#fffeff" },
+  "הפועל באר שבע": { primary: "#da2332", secondary: "#0f4772" },
+  "הפועל חיפה": { primary: "#ec434f", secondary: "#0c0c14" },
+  "הפועל קריית שמונה": { primary: "#2b2c7d", secondary: "#c5c5c5" },
+  "הפועל ירושלים": { primary: "#ca2e32", secondary: "#1d1010" },
+  "הפועל פתח תקווה": { primary: "#0566c4", secondary: "#0a0e28" },
+  "הפועל רמת גן": { primary: "#ae1527", secondary: "#d2c5c0" },
+  "הפועל תל אביב": { primary: "#d02038", secondary: "#cdc6df" },
+  "עירוני טבריה": { primary: "#07227c", secondary: "#04a3d4" },
+  "מכבי חיפה": { primary: "#03b985", secondary: "#f0f4f5" },
+  "מכבי פתח תקווה": { primary: "#3f80c2", secondary: "#6e9cc4" },
+  "מכבי נתניה": { primary: "#facf17", secondary: "#000405" },
+  "מכבי תל אביב": { primary: "#eadb0d", secondary: "#335573" },
 };
 
 // Free, self-hosted "library": a curated set of fun emoji, picked once at

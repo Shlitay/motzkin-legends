@@ -13,7 +13,13 @@ const base = {
 
 export function OneXTwoIcon({ className, size }: IconProps) {
   return (
-    <svg {...base} width={size ?? base.width} height={size ?? base.height} className={className}>
+    <svg
+      {...base}
+      width={size ?? base.width}
+      height={size ?? base.height}
+      className={className}
+      style={{ direction: "ltr" }}
+    >
       <text x="0" y="17" fontSize="10" fontWeight="700" stroke="none" fill="currentColor">
         1
       </text>

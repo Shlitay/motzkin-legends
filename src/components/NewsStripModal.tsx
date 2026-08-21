@@ -43,7 +43,7 @@ export default function NewsStripModal({ onClose }: { onClose: () => void }) {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      setError("You've been signed out — please log in again.");
+      setError("התנתקתם מהמערכת — יש להתחבר מחדש.");
       setSaving(false);
       return;
     }
@@ -72,20 +72,20 @@ export default function NewsStripModal({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-6">
       <div className="w-full max-w-sm rounded-2xl bg-white p-8 text-center shadow-lg">
-        <h2 className="mb-6 text-xl font-semibold">News strip</h2>
+        <h2 className="mb-6 text-xl font-semibold">רצועת חדשות</h2>
 
         {loading ? (
-          <p className="text-sm text-muted">Loading…</p>
+          <p className="text-sm text-muted">טוען...</p>
         ) : (
           <>
             <p className="mb-4 text-xs text-muted">
-              Shown scrolling on every page. Leave a box blank to skip it.
+              מוצג כרצועה נגללת בכל עמוד. השאירו שדה ריק כדי לדלג עליו.
             </p>
 
-            <div className="mb-8 space-y-3 text-left">
-              <NewsField label="News 1" value={slot1} onChange={setSlot1} />
-              <NewsField label="News 2" value={slot2} onChange={setSlot2} />
-              <NewsField label="News 3" value={slot3} onChange={setSlot3} />
+            <div className="mb-8 space-y-3 text-start">
+              <NewsField label="אייטם 1" value={slot1} onChange={setSlot1} />
+              <NewsField label="אייטם 2" value={slot2} onChange={setSlot2} />
+              <NewsField label="אייטם 3" value={slot3} onChange={setSlot3} />
             </div>
           </>
         )}
@@ -97,14 +97,14 @@ export default function NewsStripModal({ onClose }: { onClose: () => void }) {
             onClick={onClose}
             className="rounded-full border border-neutral-300 px-6 py-2 font-medium hover:bg-neutral-50"
           >
-            Cancel
+            ביטול
           </button>
           <button
             disabled={loading || saving}
             onClick={save}
             className="rounded-full bg-brand px-6 py-2 font-medium text-white enabled:hover:bg-brand-dark disabled:cursor-not-allowed disabled:bg-neutral-300"
           >
-            {saving ? "Saving…" : "Save"}
+            {saving ? "שומר..." : "שמירה"}
           </button>
         </div>
       </div>

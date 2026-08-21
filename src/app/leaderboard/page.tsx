@@ -97,26 +97,26 @@ export default function LeaderboardPage() {
     <main className="flex min-h-screen flex-col items-center gap-8 px-6 pb-24 pt-28">
       <TopBar />
       <NewsTicker />
-      <h1 className="text-lg font-medium text-ink">League board</h1>
+      <h1 className="text-lg font-medium text-ink">טבלת הליגה</h1>
 
       {roundNumber !== null && (
         <LeaderTable
-          title={`Round ${roundNumber} points`}
+          title={`נקודות מחזור ${roundNumber}`}
           rows={currentRoundPoints}
-          countLabel="pts"
+          countLabel="נק'"
           onSelect={setSelectedUserId}
         />
       )}
       <LeaderTable
-        title="Most points (season)"
+        title="הכי הרבה נקודות (עונה)"
         rows={seasonPoints}
-        countLabel="pts"
+        countLabel="נק'"
         onSelect={setSelectedUserId}
       />
       <LeaderTable
-        title="Most played"
+        title="הכי הרבה השתתפויות"
         rows={mostPlayed}
-        countLabel="rounds"
+        countLabel="מחזורים"
         onSelect={setSelectedUserId}
       />
 

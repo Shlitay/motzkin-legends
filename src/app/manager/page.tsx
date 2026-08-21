@@ -63,7 +63,7 @@ export default function ManagerDashboard() {
         .single();
 
       if (roundError || !round) {
-        setError(roundError?.message ?? "No open round yet.");
+        setError(roundError?.message ?? "אין עדיין מחזור פתוח.");
         setLoading(false);
         return;
       }
@@ -85,7 +85,7 @@ export default function ManagerDashboard() {
 
       const toParticipant = (row: RawParticipationRow): Participant => ({
         participationId: row.id,
-        name: row.users?.nickname ?? row.users?.full_name ?? "Unknown",
+        name: row.users?.nickname ?? row.users?.full_name ?? "לא ידוע",
         avatar: row.users?.avatar ?? null,
       });
 
@@ -139,45 +139,45 @@ export default function ManagerDashboard() {
   if (loading) {
     return (
       <main className="flex min-h-screen flex-col items-center justify-center gap-4 px-6 pt-28 text-center">
-        <TopBar href="/manager" rightAction={{ label: "Back to game", href: "/home" }} />
-        <p className="text-sm text-muted">Loading…</p>
+        <TopBar href="/manager" rightAction={{ label: "חזרה למשחק", href: "/home" }} />
+        <p className="text-sm text-muted">טוען...</p>
       </main>
     );
   }
 
   return (
     <main className="flex min-h-screen flex-col items-center gap-8 px-6 pb-10 pt-28">
-      <TopBar href="/manager" rightAction={{ label: "Back to game", href: "/home" }} />
+      <TopBar href="/manager" rightAction={{ label: "חזרה למשחק", href: "/home" }} />
       <NewsTicker />
       <div>
         <span className="rounded bg-fuchsia-400 px-3 py-1 text-sm font-medium text-white">
-          Manager dashboard
+          לוח ניהול
         </span>
       </div>
 
       <h1 className="text-lg font-semibold">
-        {roundNumber ? `Round ${roundNumber} participants` : "Round participants"}
+        {roundNumber ? `משתתפי מחזור ${roundNumber}` : "משתתפי המחזור"}
       </h1>
 
       {error && <p className="text-sm text-danger">{error}</p>}
 
       {roundId && (
         <div className="grid w-full max-w-2xl grid-cols-1 gap-8 sm:grid-cols-2">
-          <NameList title="Waiting for approval" people={waiting} onAction={approve} actionLabel="Approve →" />
-          <NameList title="Approved this round" people={approved} onAction={unapprove} actionLabel="← Waiting" />
+          <NameList title="ממתינים לאישור" people={waiting} onAction={approve} actionLabel="אישור" />
+          <NameList title="אושרו למחזור" people={approved} onAction={unapprove} actionLabel="המתנה" />
         </div>
       )}
 
       <section className="w-full max-w-md overflow-hidden rounded-[28px] bg-surface shadow-[0_1px_2px_rgba(0,0,0,0.04),0_16px_32px_-18px_rgba(0,0,0,0.28)]">
         <div className="flex items-center justify-between px-5 pt-5">
           <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">
-            {leaderTitle === "played" ? "Most played users" : "Most winning users"}
+            {leaderTitle === "played" ? "המשתתפים הכי פעילים" : "המשתתפים עם הכי הרבה ניצחונות"}
           </h2>
           <button
             onClick={() => setLeaderTitle((t) => (t === "played" ? "winning" : "played"))}
             className="text-xs text-muted underline"
           >
-            Swap ⇄
+            החלפה ⇄
           </button>
         </div>
         <div className="divide-y divide-neutral-100">
@@ -192,19 +192,19 @@ export default function ManagerDashboard() {
           onClick={() => setShowScoringRules(true)}
           className="rounded-full border border-neutral-300 px-6 py-2 text-sm font-medium hover:bg-neutral-50"
         >
-          Scoring rules
+          כללי ניקוד
         </button>
         <button
           onClick={() => setShowNewsStrip(true)}
           className="rounded-full border border-neutral-300 px-6 py-2 text-sm font-medium hover:bg-neutral-50"
         >
-          News strip
+          רצועת חדשות
         </button>
         <button
           onClick={() => setConfirmingReset(true)}
           className="rounded-full border border-neutral-300 px-6 py-2 text-sm font-medium hover:bg-neutral-50"
         >
-          Reset round
+          איפוס מחזור
         </button>
       </div>
 
@@ -215,20 +215,20 @@ export default function ManagerDashboard() {
         <div className="fixed inset-0 flex items-center justify-center bg-black/40 px-6">
           <div className="w-full max-w-sm rounded-2xl bg-surface p-8 text-center shadow-lg">
             <p className="mb-6 text-xl font-semibold">
-              Are you sure you want to reset the round?
+              בטוחים שאתם רוצים לאפס את המחזור?
             </p>
             <div className="flex justify-center gap-4">
               <button
                 onClick={() => setConfirmingReset(false)}
                 className="rounded-full bg-danger px-6 py-2 font-medium text-white hover:brightness-90"
               >
-                Back
+                חזרה
               </button>
               <button
                 onClick={resetRound}
                 className="rounded-full bg-brand px-6 py-2 font-medium text-white hover:bg-brand-dark"
               >
-                Yes
+                כן
               </button>
             </div>
           </div>
@@ -253,7 +253,7 @@ function NameList({
     <div>
       <h3 className="mb-2 text-center font-semibold">{title}</h3>
       <ol className="min-h-[10rem] space-y-1 rounded-xl border border-dashed border-neutral-300 p-4 text-sm">
-        {people.length === 0 && <li className="text-muted">Empty</li>}
+        {people.length === 0 && <li className="text-muted">ריק</li>}
         {people.map((person, i) => (
           <li key={person.participationId} className="flex items-center justify-between">
             <span className="flex items-center gap-2">

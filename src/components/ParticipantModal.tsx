@@ -69,9 +69,9 @@ export default function ParticipantModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-6">
       <div className="w-full max-w-sm rounded-2xl bg-white p-8 text-center shadow-lg">
         {loading ? (
-          <p className="text-sm text-muted">Loading…</p>
+          <p className="text-sm text-muted">טוען...</p>
         ) : !season ? (
-          <p className="text-sm text-danger">Couldn&apos;t load this participant.</p>
+          <p className="text-sm text-danger">לא ניתן היה לטעון את המשתתף.</p>
         ) : (
           <div className="flex flex-col items-center gap-6">
             <div className="flex flex-col items-center gap-2">
@@ -82,16 +82,16 @@ export default function ParticipantModal({
             </div>
 
             <StatCard
-              title="Last round"
-              headline={`Place: ${lastRound?.rank ?? 0}`}
+              title="מחזור אחרון"
+              headline={`מקום: ${lastRound?.rank ?? 0}`}
               towards={lastRound?.correct_result_count ?? 0}
               points={lastRound?.total_points ?? 0}
               hit={lastRound?.exact_score_count ?? 0}
             />
 
             <StatCard
-              title="All season"
-              headline={`Total participation: ${season.rounds_played}`}
+              title="כל העונה"
+              headline={`סה"כ השתתפויות: ${season.rounds_played}`}
               towards={season.season_towards}
               points={season.total_points}
               hit={season.season_hits}
@@ -103,7 +103,7 @@ export default function ParticipantModal({
           onClick={onClose}
           className="mt-6 rounded-full border border-neutral-300 px-6 py-2 font-medium hover:bg-neutral-50"
         >
-          Close
+          סגירה
         </button>
       </div>
     </div>

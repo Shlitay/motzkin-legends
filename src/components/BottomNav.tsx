@@ -7,10 +7,10 @@ import ProfileModal from "@/components/ProfileModal";
 import { BookIcon, GaugeIcon, HomeIcon, OneXTwoIcon, WinnerIcon } from "@/components/icons";
 
 const links = [
-  { href: "/home", label: "Home", Icon: HomeIcon },
-  { href: "/predictions", label: "Predictions", Icon: OneXTwoIcon },
-  { href: "/leaderboard", label: "League board", Icon: WinnerIcon },
-  { href: "/rules", label: "Rules", Icon: BookIcon },
+  { href: "/home", label: "בית", Icon: HomeIcon },
+  { href: "/predictions", label: "ניחושים", Icon: OneXTwoIcon },
+  { href: "/leaderboard", label: "טבלת הליגה", Icon: WinnerIcon },
+  { href: "/rules", label: "חוקים", Icon: BookIcon },
 ];
 
 export default function BottomNav() {
@@ -46,7 +46,7 @@ export default function BottomNav() {
               className="flex flex-col items-center gap-0.5 px-2 py-1 text-muted hover:text-ink"
             >
               <GaugeIcon />
-              Profile
+              פרופיל
             </button>
           </li>
         </ul>

@@ -67,7 +67,7 @@ export default function HomePage() {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) {
-      setError("You've been signed out — please log in again.");
+      setError("התנתקתם מהמערכת — יש להתחבר מחדש.");
       setRequesting(false);
       return;
     }
@@ -102,34 +102,34 @@ export default function HomePage() {
       {!loading && openRound && (
         <section className="w-full max-w-md rounded-2xl border border-neutral-200 bg-surface p-5 text-center">
           <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">
-            Round {openRound.round_number} approval
+            מחזור {openRound.round_number} אושר
           </p>
           {status === "approved" && (
             <p className="text-sm font-medium text-brand">
-              You&apos;re approved to play this round.
+              אושרתם לשחק במחזור הזה.
             </p>
           )}
           {status === "waiting" && (
             <p className="text-sm text-muted">
-              Approval requested — waiting on the manager to confirm your payment.
+              הבקשה נשלחה — ממתינים לאישור התשלום מהמנהל.
             </p>
           )}
           {status === "rejected" && (
             <p className="text-sm text-danger">
-              Not approved for this round. Contact the manager if that&apos;s a mistake.
+              לא אושרתם למחזור הזה. פנו למנהל אם זו טעות.
             </p>
           )}
           {status === null && (
             <>
               <p className="mb-3 text-sm text-muted">
-                Send your payment via Paybox, then tap below to let the manager know.
+                שלחו את התשלום דרך Paybox, ואז לחצו למטה כדי לעדכן את המנהל.
               </p>
               <button
                 disabled={requesting}
                 onClick={requestApproval}
                 className="rounded-full bg-brand px-6 py-2 text-sm font-medium text-white enabled:hover:bg-brand-dark disabled:cursor-not-allowed disabled:bg-neutral-300"
               >
-                {requesting ? "Sending…" : "I've sent payment via Paybox"}
+                {requesting ? "שולח..." : "שלחתי תשלום דרך Paybox"}
               </button>
             </>
           )}
@@ -138,16 +138,16 @@ export default function HomePage() {
       )}
 
       <StatCard
-        title="Last round"
-        headline={`Place: ${lastRoundStats.place}`}
+        title="מחזור אחרון"
+        headline={`מקום: ${lastRoundStats.place}`}
         towards={lastRoundStats.towards}
         points={lastRoundStats.points}
         hit={lastRoundStats.hit}
       />
 
       <StatCard
-        title="All season"
-        headline={`Total participation: ${seasonStats.totalParticipation}`}
+        title="כל העונה"
+        headline={`סה"כ השתתפויות: ${seasonStats.totalParticipation}`}
         towards={seasonStats.towards}
         points={seasonStats.points}
         hit={seasonStats.hit}

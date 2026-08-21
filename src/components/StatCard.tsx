@@ -23,9 +23,9 @@ export default function StatCard({ title, headline, towards, points, hit }: Stat
           </span>
 
           <div className="flex w-full divide-x divide-neutral-100">
-            <Stat label="towards" value={towards} />
-            <Stat label="Points" value={points} />
-            <Stat label="hit" value={hit} />
+            <Stat label="כיוון" value={towards} />
+            <Stat label="נקודות" value={points} />
+            <Stat label="פגיעה" value={hit} />
           </div>
         </div>
       </div>

@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { oswald, workSans } from "@/lib/fonts";
+import { heebo, oswald } from "@/lib/fonts";
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Motzkin Legends",
-  description: "Private prediction game for friends",
+  description: "משחק ניחושים פרטי לחברים",
 };
 
 export default function RootLayout({
@@ -13,7 +13,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${oswald.variable} ${workSans.variable}`}>
+    <html lang="he" dir="rtl" className={`${oswald.variable} ${heebo.variable}`}>
       <body>{children}</body>
     </html>
   );

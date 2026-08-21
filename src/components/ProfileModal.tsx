@@ -23,7 +23,7 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
       } = await supabase.auth.getUser();
 
       if (!user) {
-        setError("You've been signed out — please log in again.");
+        setError("התנתקתם מהמערכת — יש להתחבר מחדש.");
         setLoading(false);
         return;
       }
@@ -94,15 +94,15 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-6">
       <div className="w-full max-w-sm rounded-2xl bg-white p-8 text-center shadow-lg">
-        <h2 className="mb-6 text-xl font-semibold">Profile</h2>
+        <h2 className="mb-6 text-xl font-semibold">פרופיל</h2>
 
         {loading ? (
-          <p className="text-sm text-muted">Loading…</p>
+          <p className="text-sm text-muted">טוען...</p>
         ) : (
           <>
-            <p className="mb-1 text-sm font-medium text-ink">Nickname</p>
+            <p className="mb-1 text-sm font-medium text-ink">כינוי</p>
             <p className="mb-3 text-xs text-muted">
-              Shown instead of your Google name. Leave blank to use &quot;{fullName}&quot;.
+              יוצג במקום השם מ-Google. השאירו ריק כדי להשתמש ב&quot;{fullName}&quot;.
             </p>
             <input
               value={nickname}
@@ -112,7 +112,7 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
               className="mb-7 w-full rounded-lg border border-neutral-300 px-3 py-2 text-center text-sm"
             />
 
-            <p className="mb-3 text-sm font-medium text-ink">Avatar</p>
+            <p className="mb-3 text-sm font-medium text-ink">אווטאר</p>
             <div className="mb-7 grid grid-cols-6 gap-2">
               {AVATAR_LIBRARY.map((emoji) => {
                 const selected = avatar === emoji;
@@ -121,7 +121,7 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
                     key={emoji}
                     onClick={() => setAvatar(emoji)}
                     aria-pressed={selected}
-                    aria-label={`Pick avatar ${emoji}`}
+                    aria-label={`בחירת אווטאר ${emoji}`}
                     className={
                       "flex h-10 w-10 items-center justify-center rounded-full text-lg transition " +
                       (selected
@@ -135,15 +135,15 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
               })}
             </div>
 
-            <p className="mb-1 text-sm font-medium text-ink">Default score</p>
+            <p className="mb-1 text-sm font-medium text-ink">ניחוש ברירת מחדל</p>
             <p className="mb-4 text-xs text-muted">
-              Used automatically if you miss a round&apos;s deadline.
+              ישמש אוטומטית אם תפספסו את המועד האחרון של מחזור.
             </p>
 
             <div className="mb-8 flex items-center justify-center gap-3">
-              <ScoreInput label="Home" value={home} onChange={(v) => setScore(setHome, v)} />
+              <ScoreInput label="בית" value={home} onChange={(v) => setScore(setHome, v)} />
               <span className="text-lg font-semibold text-muted">–</span>
-              <ScoreInput label="Away" value={away} onChange={(v) => setScore(setAway, v)} />
+              <ScoreInput label="חוץ" value={away} onChange={(v) => setScore(setAway, v)} />
             </div>
           </>
         )}
@@ -155,14 +155,14 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
             onClick={onClose}
             className="rounded-full border border-neutral-300 px-6 py-2 font-medium hover:bg-neutral-50"
           >
-            Cancel
+            ביטול
           </button>
           <button
             disabled={loading || !filled || saving}
             onClick={save}
             className="rounded-full bg-brand px-6 py-2 font-medium text-white enabled:hover:bg-brand-dark disabled:cursor-not-allowed disabled:bg-neutral-300"
           >
-            {saving ? "Saving…" : "Save"}
+            {saving ? "שומר..." : "שמירה"}
           </button>
         </div>
       </div>

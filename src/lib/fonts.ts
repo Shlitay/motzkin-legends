@@ -1,4 +1,4 @@
-import { Caveat, Oswald, Work_Sans } from "next/font/google";
+import { Caveat, Heebo, Oswald } from "next/font/google";
 
 export const caveat = Caveat({
   subsets: ["latin"],
@@ -12,8 +12,11 @@ export const oswald = Oswald({
   variable: "--font-oswald",
 });
 
-export const workSans = Work_Sans({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  variable: "--font-work-sans",
+// Hebrew + Latin body/heading face — Work Sans (Latin-only) can't render
+// Hebrew at all, so the whole UI would silently fall back to a mismatched
+// system font without this.
+export const heebo = Heebo({
+  subsets: ["latin", "hebrew"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-heebo",
 });

@@ -145,7 +145,7 @@ export default function PredictionsPage() {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      setError("You've been signed out — please log in again.");
+      setError("התנתקתם מהמערכת — יש להתחבר מחדש.");
       setSaving(false);
       return;
     }
@@ -175,7 +175,7 @@ export default function PredictionsPage() {
     return (
       <main className="flex min-h-screen flex-col items-center justify-center gap-4 px-6 pt-28 text-center">
         <TopBar />
-        <p className="text-sm text-muted">Loading…</p>
+        <p className="text-sm text-muted">טוען...</p>
       </main>
     );
   }
@@ -184,15 +184,15 @@ export default function PredictionsPage() {
     return (
       <main className="flex min-h-screen flex-col items-center justify-center gap-4 px-6 pt-28 text-center">
         <TopBar />
-        <p className="text-sm text-muted">No round is open for predictions yet.</p>
+        <p className="text-sm text-muted">אין עדיין מחזור פתוח.</p>
         <BottomNav />
       </main>
     );
   }
 
   const heading = !isOpenRound || submitted
-    ? "Check your history predictions"
-    : "Set your round matches prediction";
+    ? "צפייה בניחושים שהגשתם"
+    : "הזינו את הניחושים למחזור";
 
   return (
     <main className="flex min-h-screen flex-col items-center gap-6 px-6 pb-24 pt-28">
@@ -201,7 +201,7 @@ export default function PredictionsPage() {
       <div className="text-center">
         <h1 className="text-lg font-medium">{heading}</h1>
         <p className="mt-1 text-sm text-muted">
-          Round {selectedRound.round_number} · predictions {isOpenRound ? "close" : "closed"}{" "}
+          מחזור {selectedRound.round_number} · ההגשה {isOpenRound ? "נסגרת" : "נסגרה"}{" "}
           {formatDeadline(selectedRound.deadline_at)}
         </p>
       </div>
@@ -239,7 +239,7 @@ export default function PredictionsPage() {
             onClick={() => setSubmitted(false)}
             className="rounded-full bg-draw px-8 py-2 font-medium text-white hover:brightness-95"
           >
-            Update prediction
+            עדכון ניחוש
           </button>
         ) : (
           <button
@@ -247,7 +247,7 @@ export default function PredictionsPage() {
             onClick={sendPrediction}
             className="rounded-full bg-brand px-8 py-2 font-medium text-white enabled:hover:bg-brand-dark disabled:cursor-not-allowed disabled:bg-neutral-300"
           >
-            {saving ? "Saving…" : allFilled ? "Send prediction" : "Fill predictions"}
+            {saving ? "שומר..." : allFilled ? "שליחת ניחוש" : "השלימו את הניחושים"}
           </button>
         ))}
 
@@ -275,7 +275,7 @@ function RoundPicker({
     >
       {rounds.map((r) => (
         <option key={r.id} value={r.id}>
-          Round {r.round_number}
+          מחזור {r.round_number}
         </option>
       ))}
     </select>
@@ -321,7 +321,7 @@ function MatchRow({
       </div>
       <ScoreBox value={home} onChange={onChangeHome} readOnly={readOnly} />
       <ScoreBox value={away} onChange={onChangeAway} readOnly={readOnly} />
-      <div className={`flex flex-1 items-center justify-end gap-2 rounded-lg border px-3 py-3 text-right text-sm ${teamClass(awayWins)}`}>
+      <div className={`flex flex-1 items-center justify-end gap-2 rounded-lg border px-3 py-3 text-end text-sm ${teamClass(awayWins)}`}>
         <span>{awayTeam}</span>
         <TeamDots team={awayTeam} />
       </div>
@@ -339,7 +339,7 @@ function TeamDots({ team }: { team: string }) {
         style={{ background: colors.primary }}
       />
       <span
-        className="-ml-1 h-2.5 w-2.5 rounded-full border border-black/10"
+        className="-ms-1 h-2.5 w-2.5 rounded-full border border-black/10"
         style={{ background: colors.secondary }}
       />
     </span>

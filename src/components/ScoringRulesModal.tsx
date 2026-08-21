@@ -52,7 +52,7 @@ export default function ScoringRulesModal({ onClose }: { onClose: () => void }) 
     } = await supabase.auth.getUser();
 
     if (!user) {
-      setError("You've been signed out — please log in again.");
+      setError("התנתקתם מהמערכת — יש להתחבר מחדש.");
       setSaving(false);
       return;
     }
@@ -76,24 +76,24 @@ export default function ScoringRulesModal({ onClose }: { onClose: () => void }) 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-6">
       <div className="w-full max-w-sm rounded-2xl bg-white p-8 text-center shadow-lg">
-        <h2 className="mb-6 text-xl font-semibold">Scoring rules</h2>
+        <h2 className="mb-6 text-xl font-semibold">כללי ניקוד</h2>
 
         {loading ? (
-          <p className="text-sm text-muted">Loading…</p>
+          <p className="text-sm text-muted">טוען...</p>
         ) : (
           <>
             <p className="mb-4 text-xs text-muted">
-              Applies to future rounds only — past rounds keep the points they were scored with.
+              חל רק על המחזורים הבאים — מחזורים שעברו שומרים על הניקוד המקורי שלהם.
             </p>
 
             <div className="mb-8 flex items-center justify-center gap-6">
               <PointsInput
-                label="Exact score"
+                label="תוצאה מדויקת"
                 value={exactScore}
                 onChange={(v) => setPoints(setExactScore, v)}
               />
               <PointsInput
-                label="Towards (correct result)"
+                label="כיוון (תוצאה נכונה)"
                 value={correctResult}
                 onChange={(v) => setPoints(setCorrectResult, v)}
               />
@@ -108,14 +108,14 @@ export default function ScoringRulesModal({ onClose }: { onClose: () => void }) 
             onClick={onClose}
             className="rounded-full border border-neutral-300 px-6 py-2 font-medium hover:bg-neutral-50"
           >
-            Cancel
+            ביטול
           </button>
           <button
             disabled={loading || !filled || saving}
             onClick={save}
             className="rounded-full bg-brand px-6 py-2 font-medium text-white enabled:hover:bg-brand-dark disabled:cursor-not-allowed disabled:bg-neutral-300"
           >
-            {saving ? "Saving…" : "Save"}
+            {saving ? "שומר..." : "שמירה"}
           </button>
         </div>
       </div>

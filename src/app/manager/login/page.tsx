@@ -11,13 +11,12 @@ export default function ManagerLoginPage() {
 
       <div className="flex flex-1 flex-col items-center justify-center gap-8 px-6 py-10">
         <span className="rounded bg-fuchsia-400 px-3 py-1 text-sm font-medium text-white">
-          Manager login
+          כניסת מנהל
         </span>
 
-        <h1 className="text-3xl font-bold text-ink">Welcome back</h1>
+        <h1 className="text-3xl font-bold text-ink">ברוך שובך</h1>
         <p className="max-w-sm text-muted">
-          Sign in with the manager Google account to approve participants and
-          run the round.
+          התחברו עם חשבון ה-Google של המנהל כדי לאשר משתתפים ולנהל את המחזור.
         </p>
 
         {/* Middleware checks role = 'manager' on the resulting session and
@@ -26,11 +25,11 @@ export default function ManagerLoginPage() {
           next="/manager"
           className="flex items-center gap-2 rounded-full border border-neutral-300 px-6 py-3 font-medium shadow-sm hover:bg-neutral-50"
         >
-          Continue with Google
+          המשך עם Google
         </GoogleSignInButton>
 
         <Link href="/" className="text-xs text-muted underline">
-          Back to participant login
+          חזרה להתחברות
         </Link>
       </div>
     </main>
