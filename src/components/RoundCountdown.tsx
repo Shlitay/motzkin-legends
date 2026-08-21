@@ -55,7 +55,10 @@ export default function RoundCountdown() {
         ההגשה למחזור {round.round_number} נסגרת בעוד
       </p>
 
-      <div className="flex items-center justify-center gap-3">
+      {/* Countdown digits read left-to-right (DD-HH-MM-SS) by convention,
+          same as a stopwatch — pinned to LTR regardless of the page's RTL
+          direction, same fix as the "1X2" logo mark. */}
+      <div className="flex items-center justify-center gap-3" dir="ltr">
         <TimeUnit value={remaining.days} label="ימים" />
         <TimeUnit value={remaining.hours} label="שעות" />
         <TimeUnit value={remaining.minutes} label="דקות" />
