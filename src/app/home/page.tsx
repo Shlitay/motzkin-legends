@@ -5,6 +5,7 @@ import BottomNav from "@/components/BottomNav";
 import NewsTicker from "@/components/NewsTicker";
 import RoundApprovalStatus from "@/components/RoundApprovalStatus";
 import RoundComments from "@/components/RoundComments";
+import RoundCountdown from "@/components/RoundCountdown";
 import StatCard from "@/components/StatCard";
 import TopBar from "@/components/TopBar";
 import { createClient } from "@/lib/supabase/client";
@@ -58,6 +59,7 @@ export default function HomePage() {
       </div>
 
       <RoundApprovalStatus />
+      <RoundCountdown />
 
       <StatCard
         title="מחזור אחרון"

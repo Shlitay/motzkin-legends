@@ -4,8 +4,10 @@ import { useEffect, useState } from "react";
 import BottomNav from "@/components/BottomNav";
 import NewsTicker from "@/components/NewsTicker";
 import RoundApprovalStatus from "@/components/RoundApprovalStatus";
+import RoundCountdown from "@/components/RoundCountdown";
 import TopBar from "@/components/TopBar";
 import { createClient } from "@/lib/supabase/client";
+import { formatIsraelDeadline } from "@/lib/israelTime";
 import { lockExpiredRounds } from "@/lib/lockExpiredRounds";
 import { TEAM_COLORS } from "@/lib/mock-data";
 
@@ -24,15 +26,6 @@ type DbRound = {
   deadline_at: string;
   status: string;
 };
-
-function formatDeadline(iso: string) {
-  const d = new Date(iso);
-  const day = d.getDate();
-  const month = d.getMonth() + 1;
-  const hh = String(d.getHours()).padStart(2, "0");
-  const mm = String(d.getMinutes()).padStart(2, "0");
-  return `${day}.${month} · ${hh}:${mm}`;
-}
 
 export default function PredictionsPage() {
   const [supabase] = useState(() => createClient());
@@ -200,11 +193,12 @@ export default function PredictionsPage() {
       <TopBar />
       <NewsTicker />
       <RoundApprovalStatus />
+      <RoundCountdown />
       <div className="text-center">
         <h1 className="text-lg font-medium">{heading}</h1>
         <p className="mt-1 text-sm text-muted">
           מחזור {selectedRound.round_number} · ההגשה {isOpenRound ? "נסגרת" : "נסגרה"}{" "}
-          {formatDeadline(selectedRound.deadline_at)}
+          {formatIsraelDeadline(selectedRound.deadline_at)}
         </p>
       </div>
 

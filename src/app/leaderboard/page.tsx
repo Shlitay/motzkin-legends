@@ -6,6 +6,7 @@ import LeaderRow from "@/components/LeaderRow";
 import NewsTicker from "@/components/NewsTicker";
 import ParticipantModal from "@/components/ParticipantModal";
 import RoundApprovalStatus from "@/components/RoundApprovalStatus";
+import RoundCountdown from "@/components/RoundCountdown";
 import TopBar from "@/components/TopBar";
 import { createClient } from "@/lib/supabase/client";
 import { lockExpiredRounds } from "@/lib/lockExpiredRounds";
@@ -99,6 +100,7 @@ export default function LeaderboardPage() {
       <TopBar />
       <NewsTicker />
       <RoundApprovalStatus />
+      <RoundCountdown />
       <h1 className="text-lg font-medium text-ink">טבלת הליגה</h1>
 
       {roundNumber !== null && (

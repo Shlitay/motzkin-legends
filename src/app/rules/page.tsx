@@ -5,6 +5,7 @@ import BottomNav from "@/components/BottomNav";
 import NewsTicker from "@/components/NewsTicker";
 import ProfileModal from "@/components/ProfileModal";
 import RoundApprovalStatus from "@/components/RoundApprovalStatus";
+import RoundCountdown from "@/components/RoundCountdown";
 import TopBar from "@/components/TopBar";
 
 export default function RulesPage() {
@@ -15,6 +16,7 @@ export default function RulesPage() {
       <TopBar />
       <NewsTicker />
       <RoundApprovalStatus />
+      <RoundCountdown />
       <h1 className="text-lg font-medium text-ink">חוקים</h1>
 
       <ul className="w-full max-w-md space-y-3 text-sm text-ink">
