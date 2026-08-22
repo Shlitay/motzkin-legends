@@ -10,11 +10,13 @@ type DbMatch = {
   away_team: string;
   home_score: number | null;
   away_score: number | null;
+  is_final: boolean;
 };
 
 type RowState = {
   home: string;
   away: string;
+  final: boolean;
   saving: boolean;
   saved: boolean;
   error: string | null;
@@ -42,7 +44,7 @@ export default function MatchResultsModal({ onClose }: { onClose: () => void }) 
 
       const { data: matchRows, error: matchesError } = await supabase
         .from("matches")
-        .select("id, home_team, away_team, home_score, away_score")
+        .select("id, home_team, away_team, home_score, away_score, is_final")
         .eq("round_id", round.id)
         .order("kickoff_at");
 
@@ -61,6 +63,7 @@ export default function MatchResultsModal({ onClose }: { onClose: () => void }) 
             {
               home: m.home_score === null ? "" : String(m.home_score),
               away: m.away_score === null ? "" : String(m.away_score),
+              final: m.is_final,
               saving: false,
               saved: false,
               error: null,
@@ -80,6 +83,10 @@ export default function MatchResultsModal({ onClose }: { onClose: () => void }) 
     }));
   }
 
+  function setFinal(matchId: string, final: boolean) {
+    setRows((prev) => ({ ...prev, [matchId]: { ...prev[matchId], final, saved: false } }));
+  }
+
   async function saveRow(matchId: string) {
     const row = rows[matchId];
     if (!row || row.home === "" || row.away === "") return;
@@ -90,6 +97,7 @@ export default function MatchResultsModal({ onClose }: { onClose: () => void }) 
       p_match_id: matchId,
       p_home_score: Number(row.home),
       p_away_score: Number(row.away),
+      p_is_final: row.final,
     });
 
     setRows((prev) => ({
@@ -117,34 +125,44 @@ export default function MatchResultsModal({ onClose }: { onClose: () => void }) 
             {matches.map((m) => {
               const row = rows[m.id];
               return (
-                <div
-                  key={m.id}
-                  className="flex items-center gap-2 rounded-xl border border-neutral-200 px-3 py-2.5"
-                >
-                  <span className="flex-1 truncate text-sm">{m.home_team}</span>
-                  <input
-                    value={row?.home ?? ""}
-                    onChange={(e) => setScore(m.id, "home", e.target.value)}
-                    inputMode="numeric"
-                    maxLength={1}
-                    className="h-9 w-9 shrink-0 rounded border border-neutral-300 text-center text-sm"
-                  />
-                  <span className="shrink-0 text-muted">-</span>
-                  <input
-                    value={row?.away ?? ""}
-                    onChange={(e) => setScore(m.id, "away", e.target.value)}
-                    inputMode="numeric"
-                    maxLength={1}
-                    className="h-9 w-9 shrink-0 rounded border border-neutral-300 text-center text-sm"
-                  />
-                  <span className="flex-1 truncate text-end text-sm">{m.away_team}</span>
-                  <button
-                    onClick={() => saveRow(m.id)}
-                    disabled={!row || row.home === "" || row.away === "" || row.saving}
-                    className="shrink-0 rounded-full bg-brand px-3 py-1.5 text-xs font-medium text-white enabled:hover:bg-brand-dark disabled:cursor-not-allowed disabled:bg-neutral-300"
-                  >
-                    {row?.saving ? "שומר..." : row?.saved ? "נשמר ✓" : "שמירה"}
-                  </button>
+                <div key={m.id} className="rounded-xl border border-neutral-200 px-3 py-2.5">
+                  <div className="flex items-center gap-2">
+                    <span className="flex-1 truncate text-sm">{m.home_team}</span>
+                    <input
+                      value={row?.home ?? ""}
+                      onChange={(e) => setScore(m.id, "home", e.target.value)}
+                      inputMode="numeric"
+                      maxLength={1}
+                      className="h-9 w-9 shrink-0 rounded border border-neutral-300 text-center text-sm"
+                    />
+                    <span className="shrink-0 text-muted">-</span>
+                    <input
+                      value={row?.away ?? ""}
+                      onChange={(e) => setScore(m.id, "away", e.target.value)}
+                      inputMode="numeric"
+                      maxLength={1}
+                      className="h-9 w-9 shrink-0 rounded border border-neutral-300 text-center text-sm"
+                    />
+                    <span className="flex-1 truncate text-end text-sm">{m.away_team}</span>
+                  </div>
+                  <div className="mt-2 flex items-center justify-between">
+                    <label className="flex items-center gap-1.5 text-xs text-muted">
+                      <input
+                        type="checkbox"
+                        checked={row?.final ?? false}
+                        onChange={(e) => setFinal(m.id, e.target.checked)}
+                        className="h-4 w-4 rounded border-neutral-300"
+                      />
+                      המשחק הסתיים
+                    </label>
+                    <button
+                      onClick={() => saveRow(m.id)}
+                      disabled={!row || row.home === "" || row.away === "" || row.saving}
+                      className="shrink-0 rounded-full bg-brand px-3 py-1.5 text-xs font-medium text-white enabled:hover:bg-brand-dark disabled:cursor-not-allowed disabled:bg-neutral-300"
+                    >
+                      {row?.saving ? "שומר..." : row?.saved ? "נשמר ✓" : "שמירה"}
+                    </button>
+                  </div>
                 </div>
               );
             })}

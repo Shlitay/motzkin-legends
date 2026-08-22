@@ -20,6 +20,7 @@ type DbMatch = {
   kickoff_at: string;
   home_score: number | null;
   away_score: number | null;
+  is_final: boolean;
 };
 
 type DbRound = {
@@ -78,7 +79,7 @@ export default function PredictionsPage() {
     (async () => {
       const { data: matchRows, error: matchesError } = await supabase
         .from("matches")
-        .select("id, home_team, away_team, kickoff_at, home_score, away_score")
+        .select("id, home_team, away_team, kickoff_at, home_score, away_score, is_final")
         .eq("round_id", selectedRoundId)
         .order("kickoff_at");
 
@@ -228,6 +229,7 @@ export default function PredictionsPage() {
               onChangeAway={readOnly ? undefined : (v) => setScore(m.id, "away", v)}
               finalHomeScore={m.home_score}
               finalAwayScore={m.away_score}
+              isFinal={m.is_final}
             />
           );
         })}
@@ -292,6 +294,7 @@ function MatchRow({
   readOnly = false,
   finalHomeScore = null,
   finalAwayScore = null,
+  isFinal = false,
 }: {
   homeTeam: string;
   awayTeam: string;
@@ -302,6 +305,7 @@ function MatchRow({
   readOnly?: boolean;
   finalHomeScore?: number | null;
   finalAwayScore?: number | null;
+  isFinal?: boolean;
 }) {
   const homeNum = home === "" ? null : Number(home);
   const awayNum = away === "" ? null : Number(away);
@@ -343,7 +347,7 @@ function MatchRow({
         // box on the right) — not source/home-first, which would silently
         // mismatch the row's actual left-right layout.
         <p className="mt-1 text-center text-xs text-muted">
-          תוצאה סופית: {finalAwayScore}-{finalHomeScore}
+          {isFinal ? "תוצאה סופית" : "תוצאה נוכחית"}: {finalAwayScore}-{finalHomeScore}
         </p>
       )}
     </div>
