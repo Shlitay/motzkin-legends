@@ -44,7 +44,17 @@ export default function NewsTicker() {
   if (!text) return null;
 
   return (
-    <div className="w-full overflow-hidden border-y border-neutral-200 bg-legend/15 py-1.5">
+    // dir="ltr" is required, not stylistic: under the page's global RTL, a
+    // flex row's "natural" resting position anchors its *right* edge to the
+    // container and only extends leftward — translating it further left
+    // (the standard duplicate-content marquee trick) then just shrinks the
+    // visible content into a growing blank gap instead of revealing new
+    // content, since there's nothing further right to slide into view.
+    // Forcing LTR here restores the normal anchor-left/extend-right
+    // geometry the translateX(-50%) loop assumes, without affecting how
+    // the Hebrew text itself renders (RTL character runs still shape
+    // correctly regardless of the container's base direction).
+    <div className="w-full overflow-hidden border-y border-neutral-200 bg-legend/15 py-1.5" dir="ltr">
       <div className="animate-marquee flex w-max whitespace-nowrap text-sm font-medium text-legend-contrast">
         <span>{text}</span>
         <span>{text}</span>

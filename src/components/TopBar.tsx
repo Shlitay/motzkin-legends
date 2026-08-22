@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { caveat } from "@/lib/fonts";
 import { OneXTwoIcon } from "@/components/icons";
+import JackpotBadge from "@/components/JackpotBadge";
 import { createClient } from "@/lib/supabase/client";
 
 type RightAction = { label: string; href: string };
@@ -60,7 +61,7 @@ export default function TopBar({
   );
 
   return (
-    <header className="fixed inset-x-0 top-0 z-40 flex items-start justify-between px-4 pt-3">
+    <header className="fixed inset-x-0 top-0 z-40 flex items-center justify-between px-4 pt-3">
       {href ? (
         <Link href={href} className="flex flex-col items-center gap-1 text-ink">
           {mark}
@@ -68,6 +69,8 @@ export default function TopBar({
       ) : (
         <span className="flex flex-col items-center gap-1 text-ink">{mark}</span>
       )}
+
+      <JackpotBadge />
 
       {resolvedAction && isManager && (
         <Link
