@@ -70,6 +70,8 @@ integration — no manual deploy step needed.
 
 **Favicon** (`src/app/icon.svg`) — Next.js's static-file convention (auto-detected, no `layout.tsx` metadata needed): the "1X2" mark, white on a turf-green rounded square.
 
+**Analytics** — Google Analytics 4 (Measurement ID `G-GX7JT1JLL4`), wired in via the `<GoogleAnalytics>` component from `@next/third-parties/google` in `src/app/layout.tsx`. That's the Next.js-recommended way to add GA4 under the App Router — it handles script loading and automatic pageview tracking across client-side route changes (between `/home`, `/predictions`, `/leaderboard`, etc.) without needing per-page code.
+
 **Profile** (`ProfileModal.tsx`) — real avatar picker, real default-score editor, and a **nickname** field (shown instead of the Google name everywhere a name displays; falls back to the Google name when unset).
 
 **Design system — "Home Pitch" kit** (turf green + trophy gold):
