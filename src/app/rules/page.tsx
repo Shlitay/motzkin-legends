@@ -12,7 +12,7 @@ export default function RulesPage() {
   const [showProfile, setShowProfile] = useState(false);
 
   return (
-    <main className="flex min-h-screen flex-col items-center gap-6 px-6 pb-24 pt-28">
+    <main className="flex min-h-screen flex-col items-center gap-6 px-6 pb-24 pt-20">
       <TopBar />
       <NewsTicker />
       <RoundApprovalStatus />

@@ -46,7 +46,7 @@ export default function HomePage() {
   }, [supabase]);
 
   return (
-    <main className="flex min-h-screen flex-col items-center gap-7 px-6 pb-24 pt-28">
+    <main className="flex min-h-screen flex-col items-center gap-4 px-6 pb-24 pt-20">
       <TopBar />
       <NewsTicker />
       <div className="flex flex-col items-center gap-1">

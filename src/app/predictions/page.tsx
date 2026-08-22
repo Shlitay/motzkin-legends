@@ -169,7 +169,7 @@ export default function PredictionsPage() {
 
   if (loading) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center gap-4 px-6 pt-28 text-center">
+      <main className="flex min-h-screen flex-col items-center justify-center gap-4 px-6 pt-20 text-center">
         <TopBar />
         <p className="text-sm text-muted">טוען...</p>
       </main>
@@ -178,7 +178,7 @@ export default function PredictionsPage() {
 
   if (!selectedRound) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center gap-4 px-6 pt-28 text-center">
+      <main className="flex min-h-screen flex-col items-center justify-center gap-4 px-6 pt-20 text-center">
         <TopBar />
         <p className="text-sm text-muted">אין עדיין מחזור פתוח.</p>
         <BottomNav />
@@ -191,7 +191,7 @@ export default function PredictionsPage() {
     : "הזינו את הניחושים למחזור";
 
   return (
-    <main className="flex min-h-screen flex-col items-center gap-6 px-6 pb-24 pt-28">
+    <main className="flex min-h-screen flex-col items-center gap-6 px-6 pb-24 pt-20">
       <TopBar />
       <NewsTicker />
       <RoundApprovalStatus />

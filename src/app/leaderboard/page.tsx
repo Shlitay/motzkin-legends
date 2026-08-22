@@ -96,7 +96,7 @@ export default function LeaderboardPage() {
   }, [supabase]);
 
   return (
-    <main className="flex min-h-screen flex-col items-center gap-8 px-6 pb-24 pt-28">
+    <main className="flex min-h-screen flex-col items-center gap-8 px-6 pb-24 pt-20">
       <TopBar />
       <NewsTicker />
       <RoundApprovalStatus />
