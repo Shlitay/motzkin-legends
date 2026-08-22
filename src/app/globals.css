@@ -44,3 +44,41 @@ button:not(:disabled) {
 .animate-marquee {
   animation: marquee 18s linear infinite;
 }
+
+/* Jackpot badge shine — a diagonal glint sweeps across the badge, then
+   pauses off-screen before repeating. Needs the badge itself to have
+   position:relative + overflow:hidden so the sweep clips to its shape. */
+@keyframes shine-sweep {
+  0% {
+    left: -75%;
+  }
+  25% {
+    left: 125%;
+  }
+  100% {
+    left: 125%;
+  }
+}
+
+.shine-badge {
+  position: relative;
+  overflow: hidden;
+}
+
+.shine-badge::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -75%;
+  width: 45%;
+  height: 100%;
+  transform: skewX(-20deg);
+  background: linear-gradient(75deg, transparent 0%, rgba(255, 255, 255, 0.8) 50%, transparent 100%);
+  animation: shine-sweep 3s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shine-badge::after {
+    animation: none;
+  }
+}
