@@ -334,8 +334,16 @@ function MatchRow({
         </div>
       </div>
       {hasFinalScore && (
+        // The row above is a flex row that mirrors under the page's global
+        // RTL — home_box is DOM-first so it lands visually *rightmost*,
+        // away_box visually *leftmost*. This plain-text line doesn't
+        // participate in that flex mirroring, so its number order has to
+        // be set to match by hand: away score first (aligns under the
+        // away box on the left), home score second (aligns under the home
+        // box on the right) — not source/home-first, which would silently
+        // mismatch the row's actual left-right layout.
         <p className="mt-1 text-center text-xs text-muted">
-          תוצאה סופית: {finalHomeScore}-{finalAwayScore}
+          תוצאה סופית: {finalAwayScore}-{finalHomeScore}
         </p>
       )}
     </div>
