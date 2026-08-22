@@ -23,7 +23,10 @@ export default function NewsTicker() {
         (s): s is string => !!s && s.trim() !== ""
       );
 
-      if (items.length > 0) setText(items.join(SEPARATOR));
+      // Trailing separator too, so the wrap-around point (where the two
+      // duplicated copies meet) reads exactly like every other item
+      // boundary — otherwise the loop has a visible seam.
+      if (items.length > 0) setText(items.join(SEPARATOR) + SEPARATOR);
     })();
   }, [supabase]);
 
@@ -32,8 +35,8 @@ export default function NewsTicker() {
   return (
     <div className="w-full overflow-hidden border-y border-neutral-200 bg-legend/15 py-1.5">
       <div className="animate-marquee flex w-max whitespace-nowrap text-sm font-medium text-legend-contrast">
-        <span className="px-4">{text}</span>
-        <span className="px-4">{text}</span>
+        <span>{text}</span>
+        <span>{text}</span>
       </div>
     </div>
   );
