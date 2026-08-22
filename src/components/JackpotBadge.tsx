@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { getCurrentRound } from "@/lib/currentRound";
 
 // Entry fee per participant, in NIS. Not manager-configurable — hardcoded
 // since that's what was asked for; worth revisiting if the buy-in ever
@@ -14,12 +15,7 @@ export default function JackpotBadge() {
 
   useEffect(() => {
     (async () => {
-      const { data: round } = await supabase
-        .from("rounds")
-        .select("id")
-        .eq("status", "open")
-        .single();
-
+      const round = await getCurrentRound(supabase);
       if (!round) return;
 
       const { count } = await supabase

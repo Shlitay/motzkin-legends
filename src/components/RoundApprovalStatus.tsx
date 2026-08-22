@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { CheckCircleIcon, ClockIcon } from "@/components/icons";
+import { getCurrentRound, type CurrentRound } from "@/lib/currentRound";
 import { createClient } from "@/lib/supabase/client";
 
-type OpenRound = { id: string; round_number: number };
 type ParticipationStatus = "waiting" | "approved" | "rejected" | null;
 
 export default function RoundApprovalStatus() {
@@ -13,7 +13,7 @@ export default function RoundApprovalStatus() {
   const [requesting, setRequesting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [openRound, setOpenRound] = useState<OpenRound | null>(null);
+  const [round, setRound] = useState<CurrentRound | null>(null);
   const [status, setStatus] = useState<ParticipationStatus>(null);
 
   useEffect(() => {
@@ -26,20 +26,15 @@ export default function RoundApprovalStatus() {
         return;
       }
 
-      const { data: roundRow } = await supabase
-        .from("rounds")
-        .select("id, round_number")
-        .eq("status", "open")
-        .single();
+      const currentRound = await getCurrentRound(supabase);
+      setRound(currentRound);
 
-      setOpenRound(roundRow ?? null);
-
-      if (roundRow) {
+      if (currentRound) {
         const { data: participation } = await supabase
           .from("round_participation")
           .select("payment_status")
           .eq("user_id", user.id)
-          .eq("round_id", roundRow.id)
+          .eq("round_id", currentRound.id)
           .maybeSingle();
         setStatus(participation?.payment_status ?? null);
       }
@@ -49,7 +44,7 @@ export default function RoundApprovalStatus() {
   }, [supabase]);
 
   async function requestApproval() {
-    if (!openRound) return;
+    if (!round) return;
     setRequesting(true);
     setError(null);
 
@@ -64,7 +59,7 @@ export default function RoundApprovalStatus() {
 
     const { error: insertError } = await supabase
       .from("round_participation")
-      .insert({ user_id: user.id, round_id: openRound.id, payment_status: "waiting" });
+      .insert({ user_id: user.id, round_id: round.id, payment_status: "waiting" });
 
     if (insertError) {
       setError(insertError.message);
@@ -76,7 +71,7 @@ export default function RoundApprovalStatus() {
     setRequesting(false);
   }
 
-  if (loading || !openRound) return null;
+  if (loading || !round) return null;
 
   const cardClass =
     status === "approved"
@@ -88,7 +83,7 @@ export default function RoundApprovalStatus() {
   return (
     <section className={`w-full max-w-md rounded-2xl border p-5 text-center ${cardClass}`}>
       <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">
-        מחזור {openRound.round_number} אושר
+        מחזור {round.round_number} אושר
       </p>
 
       {status === "approved" && (

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { getCurrentRound } from "@/lib/currentRound";
 
 const SEPARATOR = "   •   ";
 
@@ -11,9 +12,9 @@ export default function NewsTicker() {
 
   useEffect(() => {
     (async () => {
-      const [{ data: strip }, { data: round }] = await Promise.all([
+      const [{ data: strip }, round] = await Promise.all([
         supabase.from("news_strip").select("slot_1, slot_2, slot_3").eq("id", 1).maybeSingle(),
-        supabase.from("rounds").select("id, round_number").eq("status", "open").single(),
+        getCurrentRound(supabase),
       ]);
 
       const items = [strip?.slot_1, strip?.slot_2, strip?.slot_3].filter(

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { getCurrentRound } from "@/lib/currentRound";
 
 type DbMatch = {
   id: string;
@@ -29,19 +30,10 @@ export default function MatchResultsModal({ onClose }: { onClose: () => void }) 
 
   useEffect(() => {
     (async () => {
-      // Deliberately the latest round overall, not status = 'open' — real
-      // results only start coming in once the round has already locked
-      // (kickoff = the round's deadline_at), by which point it's no
-      // longer 'open'.
-      const { data: round, error: roundError } = await supabase
-        .from("rounds")
-        .select("id, round_number")
-        .order("round_number", { ascending: false })
-        .limit(1)
-        .maybeSingle();
+      const round = await getCurrentRound(supabase);
 
-      if (roundError || !round) {
-        setLoadError(roundError?.message ?? "לא נמצא אף מחזור.");
+      if (!round) {
+        setLoadError("לא נמצא אף מחזור.");
         setLoading(false);
         return;
       }

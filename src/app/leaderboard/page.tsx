@@ -9,6 +9,7 @@ import RoundApprovalStatus from "@/components/RoundApprovalStatus";
 import RoundCountdown from "@/components/RoundCountdown";
 import TopBar from "@/components/TopBar";
 import { createClient } from "@/lib/supabase/client";
+import { getCurrentRound } from "@/lib/currentRound";
 import { lockExpiredRounds } from "@/lib/lockExpiredRounds";
 
 type Row = { userId: string; name: string; avatar: string; count: number };
@@ -39,11 +40,7 @@ export default function LeaderboardPage() {
     (async () => {
       await lockExpiredRounds(supabase);
 
-      const { data: round } = await supabase
-        .from("rounds")
-        .select("id, round_number")
-        .eq("status", "open")
-        .single();
+      const round = await getCurrentRound(supabase);
 
       if (round) {
         setRoundNumber(round.round_number);

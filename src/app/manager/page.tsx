@@ -8,6 +8,7 @@ import NewsTicker from "@/components/NewsTicker";
 import ScoringRulesModal from "@/components/ScoringRulesModal";
 import TopBar from "@/components/TopBar";
 import { createClient } from "@/lib/supabase/client";
+import { getCurrentRound } from "@/lib/currentRound";
 import { lockExpiredRounds } from "@/lib/lockExpiredRounds";
 
 type Participant = {
@@ -58,14 +59,10 @@ export default function ManagerDashboard() {
     (async () => {
       await lockExpiredRounds(supabase);
 
-      const { data: round, error: roundError } = await supabase
-        .from("rounds")
-        .select("id, round_number")
-        .eq("status", "open")
-        .single();
+      const round = await getCurrentRound(supabase);
 
-      if (roundError || !round) {
-        setError(roundError?.message ?? "אין עדיין מחזור פתוח.");
+      if (!round) {
+        setError("אין עדיין אף מחזור.");
         setLoading(false);
         return;
       }

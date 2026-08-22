@@ -9,18 +9,18 @@ import RoundCountdown from "@/components/RoundCountdown";
 import StatCard from "@/components/StatCard";
 import TopBar from "@/components/TopBar";
 import { createClient } from "@/lib/supabase/client";
+import { getCurrentRound, type CurrentRound } from "@/lib/currentRound";
 import { lockExpiredRounds } from "@/lib/lockExpiredRounds";
 import { currentUser, lastRoundStats, seasonStats } from "@/lib/mock-data";
 
 type ProfileRow = { full_name: string; nickname: string | null; avatar: string | null };
-type OpenRound = { id: string; round_number: number };
 
 export default function HomePage() {
   const [supabase] = useState(() => createClient());
   const [loading, setLoading] = useState(true);
 
   const [profile, setProfile] = useState<ProfileRow | null>(null);
-  const [openRound, setOpenRound] = useState<OpenRound | null>(null);
+  const [round, setRound] = useState<CurrentRound | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -34,13 +34,13 @@ export default function HomePage() {
         return;
       }
 
-      const [{ data: profileRow }, { data: roundRow }] = await Promise.all([
+      const [{ data: profileRow }, currentRound] = await Promise.all([
         supabase.from("users").select("full_name, nickname, avatar").eq("id", user.id).single(),
-        supabase.from("rounds").select("id, round_number").eq("status", "open").single(),
+        getCurrentRound(supabase),
       ]);
 
       setProfile(profileRow ?? null);
-      setOpenRound(roundRow ?? null);
+      setRound(currentRound);
       setLoading(false);
     })();
   }, [supabase]);
@@ -77,7 +77,7 @@ export default function HomePage() {
         hit={seasonStats.hit}
       />
 
-      {!loading && openRound && <RoundComments roundId={openRound.id} />}
+      {!loading && round && <RoundComments roundId={round.id} />}
 
       <BottomNav />
     </main>

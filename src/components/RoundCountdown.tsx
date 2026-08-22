@@ -1,10 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { getCurrentRound, type CurrentRound } from "@/lib/currentRound";
 import { formatIsraelDeadline } from "@/lib/israelTime";
 import { createClient } from "@/lib/supabase/client";
-
-type OpenRound = { round_number: number; deadline_at: string };
 
 function getRemaining(diffMs: number) {
   if (diffMs <= 0) return null;
@@ -20,17 +19,12 @@ function getRemaining(diffMs: number) {
 
 export default function RoundCountdown() {
   const [supabase] = useState(() => createClient());
-  const [round, setRound] = useState<OpenRound | null>(null);
+  const [round, setRound] = useState<CurrentRound | null>(null);
   const [now, setNow] = useState<number | null>(null);
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase
-        .from("rounds")
-        .select("round_number, deadline_at")
-        .eq("status", "open")
-        .single();
-      setRound(data ?? null);
+      setRound(await getCurrentRound(supabase));
     })();
   }, [supabase]);
 
