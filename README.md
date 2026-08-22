@@ -61,7 +61,7 @@ integration — no manual deploy step needed.
 - `/rules` — static
 - `/manager` — real approve/un-approve (writes `round_participation.payment_status`), real leaderboard widget, a **"Scoring rules" editor** (prefilled from the current `scoring_rules` row, saves a new versioned row — see decision below), and a **"News strip" editor** (see below). **"Reset round" is still local-only / fake** — doesn't touch the database (see Phase 0 below)
 
-**News ticker** (`NewsTicker.tsx`) — a scrolling marquee shown on `/home`, `/predictions`, `/leaderboard`, `/rules`, and `/manager`. Reads a single `news_strip` row with 3 fixed text slots (`slot_1`/`slot_2`/`slot_3`) that the manager overwrites directly from `/manager` → "News strip" (`NewsStripModal.tsx`) — not a list, just 3 boxes; a blank box just doesn't show. Requires migration 9 below.
+**News ticker** (`NewsTicker.tsx`) — a scrolling marquee shown on `/home`, `/predictions`, `/leaderboard`, `/rules`, and `/manager`. Reads a single `news_strip` row with 3 fixed text slots (`slot_1`/`slot_2`/`slot_3`) that the manager overwrites directly from `/manager` → "News strip" (`NewsStripModal.tsx`) — not a list, just 3 boxes; a blank box just doesn't show. Requires migration 9 below. A 4th item is fully automatic (not manager-editable) — the count of `round_participation` rows with `payment_status = 'approved'` for whichever round is currently `open`; skipped entirely if there's no open round.
 
 **Profile** (`ProfileModal.tsx`) — real avatar picker, real default-score editor, and a **nickname** field (shown instead of the Google name everywhere a name displays; falls back to the Google name when unset).
 
