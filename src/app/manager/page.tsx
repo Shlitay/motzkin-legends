@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import LeaderRow from "@/components/LeaderRow";
+import MatchResultsModal from "@/components/MatchResultsModal";
 import NewsStripModal from "@/components/NewsStripModal";
 import NewsTicker from "@/components/NewsTicker";
 import ScoringRulesModal from "@/components/ScoringRulesModal";
@@ -42,6 +43,7 @@ export default function ManagerDashboard() {
   const [confirmingReset, setConfirmingReset] = useState(false);
   const [showScoringRules, setShowScoringRules] = useState(false);
   const [showNewsStrip, setShowNewsStrip] = useState(false);
+  const [showMatchResults, setShowMatchResults] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -189,6 +191,12 @@ export default function ManagerDashboard() {
 
       <div className="flex flex-wrap justify-center gap-3">
         <button
+          onClick={() => setShowMatchResults(true)}
+          className="rounded-full border border-neutral-300 px-6 py-2 text-sm font-medium hover:bg-neutral-50"
+        >
+          תוצאות מחזור
+        </button>
+        <button
           onClick={() => setShowScoringRules(true)}
           className="rounded-full border border-neutral-300 px-6 py-2 text-sm font-medium hover:bg-neutral-50"
         >
@@ -210,6 +218,7 @@ export default function ManagerDashboard() {
 
       {showScoringRules && <ScoringRulesModal onClose={() => setShowScoringRules(false)} />}
       {showNewsStrip && <NewsStripModal onClose={() => setShowNewsStrip(false)} />}
+      {showMatchResults && <MatchResultsModal onClose={() => setShowMatchResults(false)} />}
 
       {confirmingReset && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/40 px-6">

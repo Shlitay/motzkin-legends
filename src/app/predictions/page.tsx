@@ -18,6 +18,8 @@ type DbMatch = {
   home_team: string;
   away_team: string;
   kickoff_at: string;
+  home_score: number | null;
+  away_score: number | null;
 };
 
 type DbRound = {
@@ -76,7 +78,7 @@ export default function PredictionsPage() {
     (async () => {
       const { data: matchRows, error: matchesError } = await supabase
         .from("matches")
-        .select("id, home_team, away_team, kickoff_at")
+        .select("id, home_team, away_team, kickoff_at, home_score, away_score")
         .eq("round_id", selectedRoundId)
         .order("kickoff_at");
 
@@ -224,6 +226,8 @@ export default function PredictionsPage() {
               readOnly={readOnly}
               onChangeHome={readOnly ? undefined : (v) => setScore(m.id, "home", v)}
               onChangeAway={readOnly ? undefined : (v) => setScore(m.id, "away", v)}
+              finalHomeScore={m.home_score}
+              finalAwayScore={m.away_score}
             />
           );
         })}
@@ -286,6 +290,8 @@ function MatchRow({
   onChangeHome,
   onChangeAway,
   readOnly = false,
+  finalHomeScore = null,
+  finalAwayScore = null,
 }: {
   homeTeam: string;
   awayTeam: string;
@@ -294,6 +300,8 @@ function MatchRow({
   onChangeHome?: (v: string) => void;
   onChangeAway?: (v: string) => void;
   readOnly?: boolean;
+  finalHomeScore?: number | null;
+  finalAwayScore?: number | null;
 }) {
   const homeNum = home === "" ? null : Number(home);
   const awayNum = away === "" ? null : Number(away);
@@ -309,18 +317,27 @@ function MatchRow({
       ? "bg-brand/15 border-brand/40"
       : "border-neutral-200";
 
+  const hasFinalScore = finalHomeScore !== null && finalAwayScore !== null;
+
   return (
-    <div className="flex items-center gap-2">
-      <div className={`flex flex-1 items-center gap-2 rounded-lg border px-3 py-3 text-sm ${teamClass(homeWins)}`}>
-        <TeamDots team={homeTeam} />
-        <span>{homeTeam}</span>
+    <div>
+      <div className="flex items-center gap-2">
+        <div className={`flex flex-1 items-center gap-2 rounded-lg border px-3 py-3 text-sm ${teamClass(homeWins)}`}>
+          <TeamDots team={homeTeam} />
+          <span>{homeTeam}</span>
+        </div>
+        <ScoreBox value={home} onChange={onChangeHome} readOnly={readOnly} />
+        <ScoreBox value={away} onChange={onChangeAway} readOnly={readOnly} />
+        <div className={`flex flex-1 items-center justify-end gap-2 rounded-lg border px-3 py-3 text-end text-sm ${teamClass(awayWins)}`}>
+          <span>{awayTeam}</span>
+          <TeamDots team={awayTeam} />
+        </div>
       </div>
-      <ScoreBox value={home} onChange={onChangeHome} readOnly={readOnly} />
-      <ScoreBox value={away} onChange={onChangeAway} readOnly={readOnly} />
-      <div className={`flex flex-1 items-center justify-end gap-2 rounded-lg border px-3 py-3 text-end text-sm ${teamClass(awayWins)}`}>
-        <span>{awayTeam}</span>
-        <TeamDots team={awayTeam} />
-      </div>
+      {hasFinalScore && (
+        <p className="mt-1 text-center text-xs text-muted">
+          תוצאה סופית: {finalHomeScore}-{finalAwayScore}
+        </p>
+      )}
     </div>
   );
 }
