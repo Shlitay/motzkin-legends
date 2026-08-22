@@ -35,7 +35,7 @@ export default function JackpotBadge() {
   if (amount === null) return null;
 
   return (
-    <span className="whitespace-nowrap rounded-full border border-legend/40 bg-legend/15 px-3 py-1.5 text-xs font-semibold text-legend-contrast">
+    <span className="whitespace-nowrap rounded-full border border-[#8a6a1a]/40 px-3 py-1.5 text-xs font-bold text-legend-contrast shadow-sm [background:linear-gradient(135deg,#f6e6ab_0%,#d9b74a_35%,#c9a227_65%,#a8811f_100%)]">
       קופה: {amount} ₪
     </span>
   );

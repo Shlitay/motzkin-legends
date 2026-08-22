@@ -92,3 +92,15 @@ export function CheckCircleIcon({ className, size }: IconProps) {
     </svg>
   );
 }
+
+export function ShareIcon({ className, size }: IconProps) {
+  return (
+    <svg {...base} width={size ?? base.width} height={size ?? base.height} className={className}>
+      <circle cx="18" cy="6" r="2.5" />
+      <circle cx="6" cy="12" r="2.5" />
+      <circle cx="18" cy="18" r="2.5" />
+      <path d="M8.2 10.8l7.6-3.6" />
+      <path d="M8.2 13.2l7.6 3.6" />
+    </svg>
+  );
+}
