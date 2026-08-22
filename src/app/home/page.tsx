@@ -46,10 +46,10 @@ export default function HomePage() {
   }, [supabase]);
 
   return (
-    <main className="flex min-h-screen flex-col items-center gap-10 px-6 pb-24 pt-28">
+    <main className="flex min-h-screen flex-col items-center gap-7 px-6 pb-24 pt-28">
       <TopBar />
       <NewsTicker />
-      <div className="flex flex-col items-center gap-2">
+      <div className="flex flex-col items-center gap-1.5">
         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-neutral-100 text-3xl">
           {profile?.avatar ?? currentUser.avatar}
         </div>
