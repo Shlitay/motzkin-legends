@@ -49,8 +49,8 @@ export default function HomePage() {
     <main className="flex min-h-screen flex-col items-center gap-7 px-6 pb-24 pt-28">
       <TopBar />
       <NewsTicker />
-      <div className="flex flex-col items-center gap-1.5">
-        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-neutral-100 text-3xl">
+      <div className="flex flex-col items-center gap-1">
+        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-neutral-100 text-2xl">
           {profile?.avatar ?? currentUser.avatar}
         </div>
         <p className="font-medium text-ink">
