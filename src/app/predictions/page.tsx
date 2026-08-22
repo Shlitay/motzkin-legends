@@ -322,15 +322,15 @@ function MatchRow({
   return (
     <div>
       <div className="flex items-center gap-2">
-        <div className={`flex flex-1 items-center gap-2 rounded-lg border px-3 py-3 text-sm ${teamClass(homeWins)}`}>
-          <TeamDots team={homeTeam} />
+        <div className={`flex flex-1 items-center gap-2.5 overflow-hidden rounded-lg border py-3 pe-3 text-sm ${teamClass(homeWins)}`}>
+          <TeamColorBar team={homeTeam} />
           <span>{homeTeam}</span>
         </div>
         <ScoreBox value={home} onChange={onChangeHome} readOnly={readOnly} />
         <ScoreBox value={away} onChange={onChangeAway} readOnly={readOnly} />
-        <div className={`flex flex-1 items-center justify-end gap-2 rounded-lg border px-3 py-3 text-end text-sm ${teamClass(awayWins)}`}>
+        <div className={`flex flex-1 items-center justify-end gap-2.5 overflow-hidden rounded-lg border py-3 ps-3 text-end text-sm ${teamClass(awayWins)}`}>
           <span>{awayTeam}</span>
-          <TeamDots team={awayTeam} />
+          <TeamColorBar team={awayTeam} />
         </div>
       </div>
       {hasFinalScore && (
@@ -342,20 +342,15 @@ function MatchRow({
   );
 }
 
-function TeamDots({ team }: { team: string }) {
+function TeamColorBar({ team }: { team: string }) {
   const colors = TEAM_COLORS[team];
   if (!colors) return null;
   return (
-    <span className="flex shrink-0" aria-hidden>
-      <span
-        className="h-2.5 w-2.5 rounded-full border border-black/10"
-        style={{ background: colors.primary }}
-      />
-      <span
-        className="-ms-1 h-2.5 w-2.5 rounded-full border border-black/10"
-        style={{ background: colors.secondary }}
-      />
-    </span>
+    <span
+      aria-hidden
+      className="-my-3 w-3 shrink-0 self-stretch"
+      style={{ background: `linear-gradient(to bottom, ${colors.primary} 50%, ${colors.secondary} 50%)` }}
+    />
   );
 }
 
