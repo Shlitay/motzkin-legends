@@ -325,15 +325,15 @@ function matchStatus(kickoffAt: string, isFinal: boolean, now: Date): MatchStatu
 }
 
 function MatchStatusBadge({ status }: { status: MatchStatus }) {
-  const config: Record<MatchStatus, { label: string; dot: string; bg: string; text: string }> = {
-    "not-started": { label: "טרם החל", dot: "bg-neutral-400", bg: "bg-neutral-100", text: "text-neutral-500" },
-    live: { label: "בשידור חי", dot: "bg-brand animate-pulse", bg: "bg-brand/10", text: "text-brand" },
-    ended: { label: "הסתיים", dot: "bg-draw", bg: "bg-white/80", text: "text-draw" },
+  const config: Record<MatchStatus, { label: string; dot: string; bg: string; text: string; border: string }> = {
+    "not-started": { label: "טרם החל", dot: "bg-neutral-400", bg: "bg-neutral-100", text: "text-neutral-500", border: "" },
+    live: { label: "בשידור חי", dot: "bg-brand animate-pulse", bg: "bg-brand/10", text: "text-brand", border: "border border-black" },
+    ended: { label: "הסתיים", dot: "bg-draw", bg: "bg-white/80", text: "text-draw", border: "" },
   };
   const c = config[status];
 
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${c.bg} ${c.text}`}>
+    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${c.bg} ${c.text} ${c.border}`}>
       <span className={`h-1.5 w-1.5 rounded-full ${c.dot}`} />
       {c.label}
     </span>
@@ -406,7 +406,7 @@ function MatchRow({
 
   return (
     <div className={`rounded-xl border p-3 ${isFinal ? resultTierClass(pointsEarned) : "border-neutral-200 bg-surface"}`}>
-      <div className="mb-2 flex justify-start">
+      <div className={`mb-2 flex ${status === "live" ? "justify-center" : "justify-start"}`}>
         <MatchStatusBadge status={status} />
       </div>
       <div className="flex items-center gap-2">
