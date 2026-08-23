@@ -11,7 +11,7 @@ import { formatIsraelDeadline } from "@/lib/israelTime";
 import { lockExpiredRounds } from "@/lib/lockExpiredRounds";
 import { TEAM_COLORS } from "@/lib/mock-data";
 
-type ScoreEntry = { home: string; away: string };
+type ScoreEntry = { home: string; away: string; pointsEarned: number | null };
 
 type DbMatch = {
   id: string;
@@ -102,11 +102,16 @@ export default function PredictionsPage() {
         data: { user },
       } = await supabase.auth.getUser();
 
-      let predictionRows: { match_id: string; pred_home_score: number; pred_away_score: number }[] = [];
+      let predictionRows: {
+        match_id: string;
+        pred_home_score: number;
+        pred_away_score: number;
+        points_earned: number | null;
+      }[] = [];
       if (user && matchList.length > 0) {
         const { data } = await supabase
           .from("predictions")
-          .select("match_id, pred_home_score, pred_away_score")
+          .select("match_id, pred_home_score, pred_away_score, points_earned")
           .eq("user_id", user.id)
           .in("match_id", matchList.map((m) => m.id));
         predictionRows = data ?? [];
@@ -117,8 +122,12 @@ export default function PredictionsPage() {
       matchList.forEach((m) => {
         const existing = byMatch.get(m.id);
         nextEntries[m.id] = existing
-          ? { home: String(existing.pred_home_score), away: String(existing.pred_away_score) }
-          : { home: "", away: "" };
+          ? {
+              home: String(existing.pred_home_score),
+              away: String(existing.pred_away_score),
+              pointsEarned: existing.points_earned,
+            }
+          : { home: "", away: "", pointsEarned: null };
       });
 
       setMatches(matchList);
@@ -248,6 +257,7 @@ export default function PredictionsPage() {
               finalAwayScore={m.away_score}
               isFinal={m.is_final}
               status={matchStatus(m.kickoff_at, m.is_final, now)}
+              pointsEarned={e.pointsEarned}
             />
           );
         })}
@@ -318,7 +328,7 @@ function MatchStatusBadge({ status }: { status: MatchStatus }) {
   const config: Record<MatchStatus, { label: string; dot: string; bg: string; text: string }> = {
     "not-started": { label: "טרם החל", dot: "bg-neutral-400", bg: "bg-neutral-100", text: "text-neutral-500" },
     live: { label: "בשידור חי", dot: "bg-brand animate-pulse", bg: "bg-brand/10", text: "text-brand" },
-    ended: { label: "הסתיים", dot: "bg-draw", bg: "bg-draw/10", text: "text-draw" },
+    ended: { label: "הסתיים", dot: "bg-draw", bg: "bg-white/80", text: "text-draw" },
   };
   const c = config[status];
 
@@ -328,6 +338,21 @@ function MatchStatusBadge({ status }: { status: MatchStatus }) {
       {c.label}
     </span>
   );
+}
+
+// Once a match is final, the card itself is colored by how the prediction
+// scored — gold for an exact hit, silver for a correct-direction "towards",
+// gray for a miss — so the per-team win/draw/loss highlight below would be
+// redundant (and clash with the tier background), and is dropped instead.
+function resultTierClass(pointsEarned: number | null): string {
+  if (pointsEarned === null) return "border-neutral-200 bg-surface";
+  if (pointsEarned >= 10) {
+    return "shine-badge border-[#8a6a1a]/40 text-[#3a2d08] [background:linear-gradient(135deg,#f6e6ab_0%,#d9b74a_35%,#c9a227_65%,#a8811f_100%)]";
+  }
+  if (pointsEarned > 0) {
+    return "border-neutral-400/50 [background:linear-gradient(135deg,#f7f7f7_0%,#dcdcdc_35%,#b0b0b0_65%,#8f8f8f_100%)]";
+  }
+  return "border-neutral-300 bg-neutral-200";
 }
 
 function MatchRow({
@@ -342,6 +367,7 @@ function MatchRow({
   finalAwayScore = null,
   isFinal = false,
   status,
+  pointsEarned = null,
 }: {
   homeTeam: string;
   awayTeam: string;
@@ -354,6 +380,7 @@ function MatchRow({
   finalAwayScore?: number | null;
   isFinal?: boolean;
   status: MatchStatus;
+  pointsEarned?: number | null;
 }) {
   const homeNum = home === "" ? null : Number(home);
   const awayNum = away === "" ? null : Number(away);
@@ -362,17 +389,19 @@ function MatchRow({
   const homeWins = hasBoth && homeNum! > awayNum!;
   const awayWins = hasBoth && awayNum! > homeNum!;
 
-  const teamClass = (winning: boolean) =>
-    isDraw
+  const teamClass = (winning: boolean) => {
+    if (isFinal) return "border-black/10 bg-white/60";
+    return isDraw
       ? "bg-draw/15 border-draw/45"
       : winning
       ? "bg-brand/15 border-brand/40"
       : "border-neutral-200";
+  };
 
   const hasFinalScore = finalHomeScore !== null && finalAwayScore !== null;
 
   return (
-    <div className="rounded-xl border border-neutral-200 bg-surface p-3">
+    <div className={`rounded-xl border p-3 ${isFinal ? resultTierClass(pointsEarned) : "border-neutral-200 bg-surface"}`}>
       <div className="mb-2 flex justify-start">
         <MatchStatusBadge status={status} />
       </div>
@@ -388,7 +417,7 @@ function MatchRow({
           <TeamColorBar team={awayTeam} />
         </div>
       </div>
-      {hasFinalScore && (
+      {hasFinalScore &&
         // The row above is a flex row that mirrors under the page's global
         // RTL — home_box is DOM-first so it lands visually *rightmost*,
         // away_box visually *leftmost*. This plain-text line doesn't
@@ -397,10 +426,15 @@ function MatchRow({
         // away box on the left), home score second (aligns under the home
         // box on the right) — not source/home-first, which would silently
         // mismatch the row's actual left-right layout.
-        <p className="mt-1 text-center text-xs text-muted">
-          {isFinal ? "תוצאה סופית" : "תוצאה נוכחית"}: {finalAwayScore}-{finalHomeScore}
-        </p>
-      )}
+        (isFinal ? (
+          <p className="mt-2 rounded-md bg-black py-1.5 text-center text-xs font-semibold text-white">
+            תוצאה סופית: {finalAwayScore}-{finalHomeScore}
+          </p>
+        ) : (
+          <p className="mt-1 text-center text-xs text-muted">
+            תוצאה נוכחית: {finalAwayScore}-{finalHomeScore}
+          </p>
+        ))}
     </div>
   );
 }
