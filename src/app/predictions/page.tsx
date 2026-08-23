@@ -406,12 +406,25 @@ function MatchRow({
 
   return (
     <div className={`rounded-xl border p-3 ${isFinal ? resultTierClass(pointsEarned) : "border-neutral-200 bg-surface"}`}>
-      <div className={`mb-2 flex items-center gap-2 ${status === "not-started" ? "justify-start" : "justify-center"}`}>
-        <MatchStatusBadge status={status} />
-        {isFinal && pointsEarned !== null && (
-          <span className="text-lg font-extrabold text-ink">{pointsEarned} נק&apos;</span>
-        )}
-      </div>
+      {isFinal ? (
+        // Three-column grid so the badge can sit flush at the box's top
+        // right (first column — the rightmost one under this page's
+        // global RTL) while the points stay truly centered on the whole
+        // row, not just centered in the space left over after the badge.
+        <div className="mb-2 grid grid-cols-[1fr_auto_1fr] items-center">
+          <div className="justify-self-start">
+            <MatchStatusBadge status={status} />
+          </div>
+          <span className="justify-self-center text-lg font-extrabold text-ink">
+            {pointsEarned !== null ? `${pointsEarned} נק'` : ""}
+          </span>
+          <span />
+        </div>
+      ) : (
+        <div className={`mb-2 flex ${status === "live" ? "justify-center" : "justify-start"}`}>
+          <MatchStatusBadge status={status} />
+        </div>
+      )}
       <div className="flex items-center gap-2">
         <div className={`flex flex-1 items-center gap-2.5 overflow-hidden rounded-lg border py-3 pe-3 text-sm ${teamClass(homeWins)}`}>
           <TeamColorBar team={homeTeam} />
