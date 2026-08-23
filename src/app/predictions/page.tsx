@@ -9,7 +9,7 @@ import TopBar from "@/components/TopBar";
 import { createClient } from "@/lib/supabase/client";
 import { formatIsraelDeadline } from "@/lib/israelTime";
 import { lockExpiredRounds } from "@/lib/lockExpiredRounds";
-import { TEAM_COLORS } from "@/lib/mock-data";
+import { TEAM_COLORS, shortTeamName } from "@/lib/mock-data";
 
 type ScoreEntry = { home: string; away: string; pointsEarned: number | null };
 
@@ -415,12 +415,12 @@ function MatchRow({
       <div className="flex items-center gap-2">
         <div className={`flex flex-1 items-center gap-2.5 overflow-hidden rounded-lg border py-3 pe-3 text-sm ${teamClass(homeWins)}`}>
           <TeamColorBar team={homeTeam} />
-          <span>{homeTeam}</span>
+          <span>{shortTeamName(homeTeam)}</span>
         </div>
         <ScoreBox value={home} onChange={onChangeHome} readOnly={readOnly} />
         <ScoreBox value={away} onChange={onChangeAway} readOnly={readOnly} />
         <div className={`flex flex-1 items-center justify-end gap-2.5 overflow-hidden rounded-lg border py-3 ps-3 text-end text-sm ${teamClass(awayWins)}`}>
-          <span>{awayTeam}</span>
+          <span>{shortTeamName(awayTeam)}</span>
           <TeamColorBar team={awayTeam} />
         </div>
       </div>

@@ -37,6 +37,22 @@ export const TEAM_COLORS: Record<string, { primary: string; secondary: string }>
   "מכבי תל אביב": { primary: "#eadb0d", secondary: "#335573" },
 };
 
+// Shortened display forms for full team names that wrap to two lines in
+// the small match-row boxes on /predictions. Only for display — matches
+// still key off the full name from home_team/away_team everywhere else
+// (TEAM_COLORS lookup, comparisons, etc).
+export const TEAM_SHORT_NAMES: Record<string, string> = {
+  "הפועל באר שבע": 'הפועל ב"ש',
+  "הפועל תל אביב": 'הפועל ת"א',
+  "הפועל קריית שמונה": 'הפועל ק"ש',
+  "מכבי פתח תקווה": 'מכבי פ"ת',
+  "הפועל פתח תקווה": 'הפועל פ"ת',
+};
+
+export function shortTeamName(team: string): string {
+  return TEAM_SHORT_NAMES[team] ?? team;
+}
+
 // Free, self-hosted "library": a curated set of fun emoji, picked once at
 // onboarding and shown next to the participant's name everywhere.
 export const AVATAR_LIBRARY = [
