@@ -406,12 +406,12 @@ function MatchRow({
 
   return (
     <div className={`rounded-xl border p-3 ${isFinal ? resultTierClass(pointsEarned) : "border-neutral-200 bg-surface"}`}>
-      {isFinal && pointsEarned !== null && (
-        <p className="mb-2 text-center text-lg font-extrabold text-ink">{pointsEarned} נק&apos;</p>
-      )}
       <div className={`mb-2 flex ${status === "live" ? "justify-center" : "justify-start"}`}>
         <MatchStatusBadge status={status} />
       </div>
+      {isFinal && pointsEarned !== null && (
+        <p className="mb-2 text-center text-lg font-extrabold text-ink">{pointsEarned} נק&apos;</p>
+      )}
       <div className="flex items-center gap-2">
         <div className={`flex flex-1 items-center gap-2.5 overflow-hidden rounded-lg border py-3 pe-3 text-sm ${teamClass(homeWins)}`}>
           <TeamColorBar team={homeTeam} />
