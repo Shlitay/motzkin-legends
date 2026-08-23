@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import LeaderRow from "@/components/LeaderRow";
 import MatchResultsModal from "@/components/MatchResultsModal";
 import NewsStripModal from "@/components/NewsStripModal";
 import NewsTicker from "@/components/NewsTicker";
@@ -23,14 +22,6 @@ type RawParticipationRow = {
   users: { full_name: string; nickname: string | null; avatar: string | null } | null;
 };
 
-type SeasonStatsRow = {
-  user_id: string;
-  display_name: string;
-  avatar: string | null;
-  rounds_played: number;
-  rounds_won: number;
-};
-
 export default function ManagerDashboard() {
   const [supabase] = useState(() => createClient());
   const [loading, setLoading] = useState(true);
@@ -39,21 +30,10 @@ export default function ManagerDashboard() {
   const [roundNumber, setRoundNumber] = useState<number | null>(null);
   const [waiting, setWaiting] = useState<Participant[]>([]);
   const [approved, setApproved] = useState<Participant[]>([]);
-  const [seasonStats, setSeasonStats] = useState<SeasonStatsRow[]>([]);
-  const [leaderTitle, setLeaderTitle] = useState<"played" | "winning">("played");
   const [confirmingReset, setConfirmingReset] = useState(false);
   const [showScoringRules, setShowScoringRules] = useState(false);
   const [showNewsStrip, setShowNewsStrip] = useState(false);
   const [showMatchResults, setShowMatchResults] = useState(false);
-
-  useEffect(() => {
-    (async () => {
-      const { data: stats } = await supabase
-        .from("season_stats")
-        .select("user_id, display_name, avatar, rounds_played, rounds_won");
-      setSeasonStats(stats ?? []);
-    })();
-  }, [supabase]);
 
   useEffect(() => {
     (async () => {
@@ -125,16 +105,6 @@ export default function ManagerDashboard() {
     setConfirmingReset(false);
   }
 
-  const leaderRows = [...seasonStats]
-    .sort((a, b) =>
-      leaderTitle === "played" ? b.rounds_played - a.rounds_played : b.rounds_won - a.rounds_won
-    )
-    .map((s) => ({
-      name: s.display_name,
-      avatar: s.avatar ?? "🙂",
-      count: leaderTitle === "played" ? s.rounds_played : s.rounds_won,
-    }));
-
   if (loading) {
     return (
       <main className="flex min-h-screen flex-col items-center justify-center gap-4 px-6 pt-20 text-center">
@@ -167,50 +137,11 @@ export default function ManagerDashboard() {
         </div>
       )}
 
-      <section className="w-full max-w-md overflow-hidden rounded-[28px] bg-surface shadow-[0_1px_2px_rgba(0,0,0,0.04),0_16px_32px_-18px_rgba(0,0,0,0.28)]">
-        <div className="flex items-center justify-between px-5 pt-5">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">
-            {leaderTitle === "played" ? "המשתתפים הכי פעילים" : "המשתתפים עם הכי הרבה ניצחונות"}
-          </h2>
-          <button
-            onClick={() => setLeaderTitle((t) => (t === "played" ? "winning" : "played"))}
-            className="text-xs text-muted underline"
-          >
-            החלפה ⇄
-          </button>
-        </div>
-        <div className="divide-y divide-neutral-100">
-          {leaderRows.map((r, i) => (
-            <LeaderRow key={r.name} rank={i + 1} avatar={r.avatar} name={r.name} count={r.count} />
-          ))}
-        </div>
-      </section>
-
-      <div className="flex flex-wrap justify-center gap-3">
-        <button
-          onClick={() => setShowMatchResults(true)}
-          className="rounded-full border border-neutral-300 px-6 py-2 text-sm font-medium hover:bg-neutral-50"
-        >
-          תוצאות מחזור
-        </button>
-        <button
-          onClick={() => setShowScoringRules(true)}
-          className="rounded-full border border-neutral-300 px-6 py-2 text-sm font-medium hover:bg-neutral-50"
-        >
-          כללי ניקוד
-        </button>
-        <button
-          onClick={() => setShowNewsStrip(true)}
-          className="rounded-full border border-neutral-300 px-6 py-2 text-sm font-medium hover:bg-neutral-50"
-        >
-          רצועת חדשות
-        </button>
-        <button
-          onClick={() => setConfirmingReset(true)}
-          className="rounded-full border border-neutral-300 px-6 py-2 text-sm font-medium hover:bg-neutral-50"
-        >
-          איפוס מחזור
-        </button>
+      <div className="grid w-full max-w-md grid-cols-2 gap-4">
+        <ManagerActionButton onClick={() => setShowMatchResults(true)}>תוצאות מחזור</ManagerActionButton>
+        <ManagerActionButton onClick={() => setShowScoringRules(true)}>כללי ניקוד</ManagerActionButton>
+        <ManagerActionButton onClick={() => setShowNewsStrip(true)}>רצועת חדשות</ManagerActionButton>
+        <ManagerActionButton onClick={() => setConfirmingReset(true)}>איפוס מחזור</ManagerActionButton>
       </div>
 
       {showScoringRules && <ScoringRulesModal onClose={() => setShowScoringRules(false)} />}
@@ -279,5 +210,22 @@ function NameList({
         ))}
       </ol>
     </div>
+  );
+}
+
+function ManagerActionButton({
+  onClick,
+  children,
+}: {
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className="flex aspect-square flex-col items-center justify-center rounded-2xl border border-neutral-300 bg-surface p-4 text-center text-base font-semibold shadow-sm hover:bg-neutral-50"
+    >
+      {children}
+    </button>
   );
 }
