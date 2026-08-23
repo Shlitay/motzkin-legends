@@ -42,6 +42,14 @@ export default function PredictionsPage() {
   const [matches, setMatches] = useState<DbMatch[]>([]);
   const [entries, setEntries] = useState<Record<string, ScoreEntry>>({});
   const [submitted, setSubmitted] = useState(false);
+  const [now, setNow] = useState(() => new Date());
+
+  // Drives the not-started -> live transition for whichever match's kickoff
+  // just passed while this page is sitting open.
+  useEffect(() => {
+    const t = setInterval(() => setNow(new Date()), 30_000);
+    return () => clearInterval(t);
+  }, []);
 
   // Load every round once; default to whichever one is 'open'.
   useEffect(() => {
@@ -230,6 +238,7 @@ export default function PredictionsPage() {
               finalHomeScore={m.home_score}
               finalAwayScore={m.away_score}
               isFinal={m.is_final}
+              status={matchStatus(m.kickoff_at, m.is_final, now)}
             />
           );
         })}
@@ -284,6 +293,32 @@ function RoundPicker({
   );
 }
 
+type MatchStatus = "not-started" | "live" | "ended";
+
+// A match's own is_final flag takes precedence over the clock — a manager
+// can mark a match final immediately at the whistle, before kickoff_at's
+// nominal 90+ minutes would otherwise have elapsed.
+function matchStatus(kickoffAt: string, isFinal: boolean, now: Date): MatchStatus {
+  if (isFinal) return "ended";
+  return now >= new Date(kickoffAt) ? "live" : "not-started";
+}
+
+function MatchStatusBadge({ status }: { status: MatchStatus }) {
+  const config: Record<MatchStatus, { label: string; dot: string; bg: string; text: string }> = {
+    "not-started": { label: "טרם החל", dot: "bg-neutral-400", bg: "bg-neutral-100", text: "text-neutral-500" },
+    live: { label: "בשידור חי", dot: "bg-brand animate-pulse", bg: "bg-brand/10", text: "text-brand" },
+    ended: { label: "הסתיים", dot: "bg-draw", bg: "bg-draw/10", text: "text-draw" },
+  };
+  const c = config[status];
+
+  return (
+    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${c.bg} ${c.text}`}>
+      <span className={`h-1.5 w-1.5 rounded-full ${c.dot}`} />
+      {c.label}
+    </span>
+  );
+}
+
 function MatchRow({
   homeTeam,
   awayTeam,
@@ -295,6 +330,7 @@ function MatchRow({
   finalHomeScore = null,
   finalAwayScore = null,
   isFinal = false,
+  status,
 }: {
   homeTeam: string;
   awayTeam: string;
@@ -306,6 +342,7 @@ function MatchRow({
   finalHomeScore?: number | null;
   finalAwayScore?: number | null;
   isFinal?: boolean;
+  status: MatchStatus;
 }) {
   const homeNum = home === "" ? null : Number(home);
   const awayNum = away === "" ? null : Number(away);
@@ -324,7 +361,10 @@ function MatchRow({
   const hasFinalScore = finalHomeScore !== null && finalAwayScore !== null;
 
   return (
-    <div>
+    <div className="rounded-xl border border-neutral-200 bg-surface p-3">
+      <div className="mb-2 flex justify-start">
+        <MatchStatusBadge status={status} />
+      </div>
       <div className="flex items-center gap-2">
         <div className={`flex flex-1 items-center gap-2.5 overflow-hidden rounded-lg border py-3 pe-3 text-sm ${teamClass(homeWins)}`}>
           <TeamColorBar team={homeTeam} />
