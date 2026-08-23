@@ -13,6 +13,7 @@ export default function LoginPage() {
       </div>
 
       <div className="flex flex-1 flex-col items-center justify-center gap-8 px-6 py-10">
+        <img src="/haimzuri.png" alt="חיים צורי" className="h-32 w-auto" />
         <h1 className="text-3xl font-bold text-ink">ברוכים הבאים לליגת הניחושים</h1>
         <p className="max-w-sm text-muted">
           נחשו כל מחזור בליגת העל את תוצאות המחזור ותתחרו עם החברים על לזכות בקופה.
