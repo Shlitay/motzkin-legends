@@ -406,6 +406,9 @@ function MatchRow({
 
   return (
     <div className={`rounded-xl border p-3 ${isFinal ? resultTierClass(pointsEarned) : "border-neutral-200 bg-surface"}`}>
+      {isFinal && pointsEarned !== null && (
+        <p className="mb-2 text-center text-lg font-extrabold text-ink">{pointsEarned} נק&apos;</p>
+      )}
       <div className={`mb-2 flex ${status === "live" ? "justify-center" : "justify-start"}`}>
         <MatchStatusBadge status={status} />
       </div>
