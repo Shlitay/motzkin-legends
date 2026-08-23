@@ -8,7 +8,7 @@ import RoundApprovalStatus from "@/components/RoundApprovalStatus";
 import RoundCountdown from "@/components/RoundCountdown";
 import TopBar from "@/components/TopBar";
 import { createClient } from "@/lib/supabase/client";
-import { formatIsraelDeadline } from "@/lib/israelTime";
+import { formatIsraelDeadline, formatMatchKickoff } from "@/lib/israelTime";
 import { lockExpiredRounds } from "@/lib/lockExpiredRounds";
 import { TEAM_COLORS, shortTeamName } from "@/lib/mock-data";
 import { matchStatus, type MatchStatus } from "@/lib/matchStatus";
@@ -278,6 +278,7 @@ export default function PredictionsPage() {
               finalAwayScore={m.away_score}
               isFinal={m.is_final}
               status={matchStatus(m.kickoff_at, m.is_final, now)}
+              kickoffAt={m.kickoff_at}
               pointsEarned={e.pointsEarned}
             />
           );
@@ -354,6 +355,7 @@ function MatchRow({
   finalAwayScore = null,
   isFinal = false,
   status,
+  kickoffAt,
   pointsEarned = null,
 }: {
   homeTeam: string;
@@ -367,6 +369,7 @@ function MatchRow({
   finalAwayScore?: number | null;
   isFinal?: boolean;
   status: MatchStatus;
+  kickoffAt: string;
   pointsEarned?: number | null;
 }) {
   const homeNum = home === "" ? null : Number(home);
@@ -407,8 +410,20 @@ function MatchRow({
           </span>
           <span />
         </div>
+      ) : status === "not-started" ? (
+        // justify-between with the badge first in DOM puts it at the box's
+        // top right (RTL start) and the kickoff time at top left (RTL
+        // end) — same left/right split as the isFinal grid above, just
+        // via two flex children instead of three grid columns since
+        // there's no third, centered element here.
+        <div className="mb-2 flex items-center justify-between">
+          <MatchStatusBadge status={status} />
+          <span className="text-xs text-muted" dir="ltr">
+            {formatMatchKickoff(kickoffAt)}
+          </span>
+        </div>
       ) : (
-        <div className={`mb-2 flex ${status === "live" ? "justify-center" : "justify-start"}`}>
+        <div className="mb-2 flex justify-center">
           <MatchStatusBadge status={status} />
         </div>
       )}

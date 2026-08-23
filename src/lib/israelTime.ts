@@ -20,3 +20,22 @@ export function formatIsraelDeadline(iso: string) {
   const month = get("month").replace(/^0/, "");
   return `${day}.${month} · ${get("hour")}:${get("minute")}`;
 }
+
+// dd/mm/yy hh:mm, Israel-local — shown on a not-started match's card so
+// participants know exactly when kickoff is, in a denser format than
+// formatIsraelDeadline's (no year, dot-separated) since this sits inside
+// a small per-match box rather than a page-level deadline caption.
+export function formatMatchKickoff(iso: string) {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: ISRAEL_TZ,
+    day: "2-digit",
+    month: "2-digit",
+    year: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(new Date(iso));
+
+  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? "";
+  return `${get("day")}/${get("month")}/${get("year")} ${get("hour")}:${get("minute")}`;
+}
