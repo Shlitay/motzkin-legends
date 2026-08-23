@@ -136,6 +136,15 @@ export default function PredictionsPage() {
     matches.length > 0 &&
     matches.every((m) => entries[m.id]?.home !== "" && entries[m.id]?.away !== "");
 
+  // Live matches first, then upcoming, then ended — kickoff_at order (the
+  // DB query's own sort) is preserved within each group since Array#sort
+  // is stable.
+  const sortedMatches = [...matches].sort(
+    (a, b) =>
+      STATUS_ORDER[matchStatus(a.kickoff_at, a.is_final, now)] -
+      STATUS_ORDER[matchStatus(b.kickoff_at, b.is_final, now)]
+  );
+
   function setScore(matchId: string, side: "home" | "away", value: string) {
     if (value !== "" && !/^\d$/.test(value)) return;
     setEntries((prev) => ({ ...prev, [matchId]: { ...prev[matchId], [side]: value } }));
@@ -222,7 +231,7 @@ export default function PredictionsPage() {
       )}
 
       <div className="w-full max-w-md space-y-4">
-        {matches.map((m) => {
+        {sortedMatches.map((m) => {
           const e = entries[m.id];
           const readOnly = !isOpenRound || submitted;
           return (
@@ -294,6 +303,8 @@ function RoundPicker({
 }
 
 type MatchStatus = "not-started" | "live" | "ended";
+
+const STATUS_ORDER: Record<MatchStatus, number> = { live: 0, "not-started": 1, ended: 2 };
 
 // A match's own is_final flag takes precedence over the clock — a manager
 // can mark a match final immediately at the whistle, before kickoff_at's
