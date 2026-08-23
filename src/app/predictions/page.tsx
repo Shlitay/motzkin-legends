@@ -398,7 +398,11 @@ function MatchRow({
       : "border-neutral-200";
   };
 
-  const hasFinalScore = finalHomeScore !== null && finalAwayScore !== null;
+  // A match that genuinely hasn't started yet has no real result to show,
+  // even if its score happens to be sitting at 0-0 in the DB (the pre-fix
+  // 0-0 seeding wasn't kickoff-gated, so this also guards against stale
+  // production data until that migration is run).
+  const hasFinalScore = status !== "not-started" && finalHomeScore !== null && finalAwayScore !== null;
 
   return (
     <div className={`rounded-xl border p-3 ${isFinal ? resultTierClass(pointsEarned) : "border-neutral-200 bg-surface"}`}>
