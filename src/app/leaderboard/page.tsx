@@ -9,10 +9,13 @@ import RoundApprovalStatus from "@/components/RoundApprovalStatus";
 import RoundCountdown from "@/components/RoundCountdown";
 import TopBar from "@/components/TopBar";
 import { createClient } from "@/lib/supabase/client";
-import { getCurrentRound } from "@/lib/currentRound";
+import { getCurrentRound, type CurrentRound } from "@/lib/currentRound";
 import { lockExpiredRounds } from "@/lib/lockExpiredRounds";
+import { matchStatus, type MatchStatus } from "@/lib/matchStatus";
 
 type Row = { userId: string; name: string; avatar: string; count: number };
+
+type RoundMatch = { id: string; kickoff_at: string; is_final: boolean };
 
 type RawRoundParticipationRow = {
   user_id: string;
@@ -30,25 +33,39 @@ type SeasonStatsRow = {
 
 export default function LeaderboardPage() {
   const [supabase] = useState(() => createClient());
-  const [roundNumber, setRoundNumber] = useState<number | null>(null);
+  const [round, setRound] = useState<CurrentRound | null>(null);
+  const [roundMatches, setRoundMatches] = useState<RoundMatch[]>([]);
+  const [now, setNow] = useState(() => new Date());
   const [currentRoundPoints, setCurrentRoundPoints] = useState<Row[]>([]);
   const [seasonPoints, setSeasonPoints] = useState<Row[]>([]);
   const [mostPlayed, setMostPlayed] = useState<Row[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
+  // Drives the not-started -> live transition in the round match-status
+  // summary if this page is left open across a match's kickoff.
+  useEffect(() => {
+    const t = setInterval(() => setNow(new Date()), 30_000);
+    return () => clearInterval(t);
+  }, []);
+
   useEffect(() => {
     (async () => {
       await lockExpiredRounds(supabase);
 
-      const round = await getCurrentRound(supabase);
+      const currentRound = await getCurrentRound(supabase);
+      setRound(currentRound);
 
-      if (round) {
-        setRoundNumber(round.round_number);
+      if (currentRound) {
+        const { data: matchRows } = await supabase
+          .from("matches")
+          .select("id, kickoff_at, is_final")
+          .eq("round_id", currentRound.id);
+        setRoundMatches(matchRows ?? []);
 
         const { data: rows } = await supabase
           .from("round_participation")
           .select("user_id, total_points, users(full_name, nickname, avatar)")
-          .eq("round_id", round.id)
+          .eq("round_id", currentRound.id)
           .overrideTypes<RawRoundParticipationRow[], { merge: false }>();
 
         setCurrentRoundPoints(
@@ -100,9 +117,13 @@ export default function LeaderboardPage() {
       <RoundCountdown />
       <h1 className="text-lg font-medium text-ink">טבלת הליגה</h1>
 
-      {roundNumber !== null && (
+      {round && round.status !== "open" && (
+        <RoundMatchSummary matches={roundMatches} now={now} />
+      )}
+
+      {round && (
         <LeaderTable
-          title={`נקודות מחזור ${roundNumber}`}
+          title={`נקודות מחזור ${round.round_number}`}
           rows={currentRoundPoints}
           countLabel="נק'"
           onSelect={setSelectedUserId}
@@ -127,6 +148,33 @@ export default function LeaderboardPage() {
 
       <BottomNav />
     </main>
+  );
+}
+
+function RoundMatchSummary({ matches, now }: { matches: RoundMatch[]; now: Date }) {
+  const counts: Record<MatchStatus, number> = { "not-started": 0, live: 0, ended: 0 };
+  matches.forEach((m) => {
+    counts[matchStatus(m.kickoff_at, m.is_final, now)]++;
+  });
+
+  const items: { status: MatchStatus; label: string; dot: string; bg: string; text: string }[] = [
+    { status: "ended", label: "הסתיימו", dot: "bg-draw", bg: "bg-draw/10", text: "text-draw" },
+    { status: "live", label: "בשידור חי", dot: "bg-brand animate-pulse", bg: "bg-brand/10", text: "text-brand" },
+    { status: "not-started", label: "טרם החלו", dot: "bg-neutral-400", bg: "bg-neutral-100", text: "text-neutral-500" },
+  ];
+
+  return (
+    <div className="flex w-full max-w-md flex-wrap items-center justify-center gap-2">
+      {items.map((it) => (
+        <span
+          key={it.status}
+          className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${it.bg} ${it.text}`}
+        >
+          <span className={`h-1.5 w-1.5 rounded-full ${it.dot}`} />
+          {counts[it.status]} {it.label}
+        </span>
+      ))}
+    </div>
   );
 }
 

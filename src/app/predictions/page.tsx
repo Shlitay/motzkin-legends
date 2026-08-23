@@ -10,6 +10,7 @@ import { createClient } from "@/lib/supabase/client";
 import { formatIsraelDeadline } from "@/lib/israelTime";
 import { lockExpiredRounds } from "@/lib/lockExpiredRounds";
 import { TEAM_COLORS, shortTeamName } from "@/lib/mock-data";
+import { matchStatus, type MatchStatus } from "@/lib/matchStatus";
 
 type ScoreEntry = { home: string; away: string; pointsEarned: number | null };
 
@@ -312,17 +313,7 @@ function RoundPicker({
   );
 }
 
-type MatchStatus = "not-started" | "live" | "ended";
-
 const STATUS_ORDER: Record<MatchStatus, number> = { live: 0, "not-started": 1, ended: 2 };
-
-// A match's own is_final flag takes precedence over the clock — a manager
-// can mark a match final immediately at the whistle, before kickoff_at's
-// nominal 90+ minutes would otherwise have elapsed.
-function matchStatus(kickoffAt: string, isFinal: boolean, now: Date): MatchStatus {
-  if (isFinal) return "ended";
-  return now >= new Date(kickoffAt) ? "live" : "not-started";
-}
 
 function MatchStatusBadge({ status }: { status: MatchStatus }) {
   const config: Record<MatchStatus, { label: string; dot: string; bg: string; text: string; border: string }> = {
