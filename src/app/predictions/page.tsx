@@ -427,7 +427,7 @@ function MatchRow({
         // box on the right) — not source/home-first, which would silently
         // mismatch the row's actual left-right layout.
         (isFinal ? (
-          <p className="mt-2 rounded-md bg-black py-1.5 text-center text-xs font-semibold text-white">
+          <p className="mt-2 rounded-md bg-black py-2 text-center text-base font-bold text-white">
             תוצאה סופית: {finalAwayScore}-{finalHomeScore}
           </p>
         ) : (
@@ -462,7 +462,7 @@ function ScoreBox({
 }) {
   if (readOnly) {
     return (
-      <div className="font-display flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-ink text-sm font-semibold text-white">
+      <div className="font-display flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-ink text-xs font-semibold text-white">
         {value}
       </div>
     );
@@ -473,7 +473,7 @@ function ScoreBox({
       onChange={(e) => onChange?.(e.target.value)}
       inputMode="numeric"
       maxLength={1}
-      className="h-9 w-9 shrink-0 rounded border border-neutral-300 text-center text-sm"
+      className="h-7 w-7 shrink-0 rounded border border-neutral-300 text-center text-xs"
     />
   );
 }
