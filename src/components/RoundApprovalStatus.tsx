@@ -71,7 +71,9 @@ export default function RoundApprovalStatus() {
     setRequesting(false);
   }
 
-  if (loading || !round) return null;
+  // Approval is only meaningful before the round starts — once it's
+  // locked/finished, whether someone got approved in time is moot.
+  if (loading || !round || round.status !== "open") return null;
 
   const cardClass =
     status === "approved"
