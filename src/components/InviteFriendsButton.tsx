@@ -6,9 +6,13 @@ import { createClient } from "@/lib/supabase/client";
 
 // "The name from Google" means full_name specifically (populated from the
 // Google account on first login, see schema.sql's handle_new_user) — not
-// nickname, which is a custom in-app override.
-function slugify(fullName: string) {
-  return fullName.toLowerCase().replace(/[^a-z0-9]/g, "");
+// nickname, which is a custom in-app override. utm_source/utm_medium (not
+// a bespoke ?ref= param) so GA4 parses this natively into its own
+// Acquisition reports (Session source/medium) with no extra event
+// wiring — utm_medium is who shared it, utm_source is always "shareBtn"
+// since this is the only share entry point today.
+function inviteUtmParams(fullName: string) {
+  return new URLSearchParams({ utm_source: "shareBtn", utm_medium: fullName.toLowerCase() });
 }
 
 export default function InviteFriendsButton() {
@@ -30,7 +34,7 @@ export default function InviteFriendsButton() {
         .single();
 
       if (!profile) return;
-      setLink(`${window.location.origin}?ref=${slugify(profile.full_name)}`);
+      setLink(`${window.location.origin}?${inviteUtmParams(profile.full_name)}`);
     })();
   }, [supabase]);
 
