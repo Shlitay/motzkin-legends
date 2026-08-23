@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import BottomNav from "@/components/BottomNav";
+import { ChevronIcon } from "@/components/icons";
 import NewsTicker from "@/components/NewsTicker";
 import RoundApprovalStatus from "@/components/RoundApprovalStatus";
 import RoundCountdown from "@/components/RoundCountdown";
@@ -142,6 +143,15 @@ export default function PredictionsPage() {
   const selectedRound = rounds.find((r) => r.id === selectedRoundId) ?? null;
   const isOpenRound = selectedRound?.status === "open";
 
+  // rounds is already ordered by round_number ascending (the fetch query's
+  // own sort), so adjacent array entries are adjacent rounds.
+  const selectedRoundIndex = rounds.findIndex((r) => r.id === selectedRoundId);
+  const previousRound = selectedRoundIndex > 0 ? rounds[selectedRoundIndex - 1] : null;
+  const nextRound =
+    selectedRoundIndex >= 0 && selectedRoundIndex < rounds.length - 1
+      ? rounds[selectedRoundIndex + 1]
+      : null;
+
   const allFilled =
     matches.length > 0 &&
     matches.every((m) => entries[m.id]?.home !== "" && entries[m.id]?.away !== "");
@@ -226,19 +236,29 @@ export default function PredictionsPage() {
       <RoundCountdown />
       <div className="text-center">
         <h1 className="text-lg font-medium">{heading}</h1>
-        <p className="mt-1 text-sm text-muted">
-          מחזור {selectedRound.round_number} · ההגשה {isOpenRound ? "נסגרת" : "נסגרה"}{" "}
-          {formatIsraelDeadline(selectedRound.deadline_at)}
-        </p>
+        <div className="mt-1 flex items-center justify-center gap-3">
+          <button
+            onClick={() => previousRound && setSelectedRoundId(previousRound.id)}
+            disabled={!previousRound}
+            aria-label="מחזור קודם"
+            className="text-muted enabled:hover:text-ink disabled:cursor-not-allowed disabled:opacity-30"
+          >
+            <ChevronIcon size={16} className="rotate-180" />
+          </button>
+          <p className="text-sm text-muted">
+            מחזור {selectedRound.round_number} · ההגשה {isOpenRound ? "נסגרת" : "נסגרה"}{" "}
+            {formatIsraelDeadline(selectedRound.deadline_at)}
+          </p>
+          <button
+            onClick={() => nextRound && setSelectedRoundId(nextRound.id)}
+            disabled={!nextRound}
+            aria-label="מחזור הבא"
+            className="text-muted enabled:hover:text-ink disabled:cursor-not-allowed disabled:opacity-30"
+          >
+            <ChevronIcon size={16} />
+          </button>
+        </div>
       </div>
-
-      {rounds.length > 1 && (
-        <RoundPicker
-          rounds={rounds}
-          selectedRoundId={selectedRoundId!}
-          onChange={setSelectedRoundId}
-        />
-      )}
 
       <div className="w-full max-w-md space-y-4">
         {sortedMatches.map((m) => {
@@ -286,30 +306,6 @@ export default function PredictionsPage() {
 
       <BottomNav />
     </main>
-  );
-}
-
-function RoundPicker({
-  rounds,
-  selectedRoundId,
-  onChange,
-}: {
-  rounds: DbRound[];
-  selectedRoundId: string;
-  onChange: (id: string) => void;
-}) {
-  return (
-    <select
-      value={selectedRoundId}
-      onChange={(e) => onChange(e.target.value)}
-      className="rounded-lg border border-neutral-300 px-4 py-2 text-sm"
-    >
-      {rounds.map((r) => (
-        <option key={r.id} value={r.id}>
-          מחזור {r.round_number}
-        </option>
-      ))}
-    </select>
   );
 }
 

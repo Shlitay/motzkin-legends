@@ -104,3 +104,13 @@ export function ShareIcon({ className, size }: IconProps) {
     </svg>
   );
 }
+
+// Points left ("‹") by default — pass className="rotate-180" for the
+// mirrored ("›") direction rather than adding a second component.
+export function ChevronIcon({ className, size }: IconProps) {
+  return (
+    <svg {...base} width={size ?? base.width} height={size ?? base.height} className={className}>
+      <path d="M15 5.5 8.5 12l6.5 6.5" />
+    </svg>
+  );
+}
