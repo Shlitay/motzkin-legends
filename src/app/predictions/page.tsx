@@ -341,7 +341,7 @@ function resultTierClass(pointsEarned: number | null): string {
     return "shine-badge border-[#8a6a1a]/40 text-[#3a2d08] [background:linear-gradient(135deg,#f6e6ab_0%,#d9b74a_35%,#c9a227_65%,#a8811f_100%)]";
   }
   if (pointsEarned > 0) {
-    return "border-neutral-400/50 [background:linear-gradient(135deg,#f7f7f7_0%,#dcdcdc_35%,#b0b0b0_65%,#8f8f8f_100%)]";
+    return "shine-badge border-[#a8adb5]/50 [background:linear-gradient(135deg,#fbfbfc_0%,#e6e8eb_22%,#c9ccd2_45%,#f2f3f5_65%,#d3d6da_85%,#e9ebed_100%)]";
   }
   return "border-neutral-300 bg-neutral-200";
 }
