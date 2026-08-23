@@ -12,7 +12,8 @@ import { createClient } from "@/lib/supabase/client";
 // wiring — utm_medium is who shared it, utm_source is always "shareBtn"
 // since this is the only share entry point today.
 function inviteUtmParams(fullName: string) {
-  return new URLSearchParams({ utm_source: "shareBtn", utm_medium: fullName.toLowerCase() });
+  const utm_medium = fullName.trim().toLowerCase().replace(/\s+/g, "_");
+  return new URLSearchParams({ utm_source: "shareBtn", utm_medium });
 }
 
 export default function InviteFriendsButton() {
