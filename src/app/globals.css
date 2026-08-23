@@ -42,7 +42,7 @@ button:not(:disabled) {
 }
 
 .animate-marquee {
-  animation: marquee 18s linear infinite;
+  animation: marquee 45s linear infinite;
 }
 
 /* Jackpot badge shine — a diagonal glint sweeps across the badge, then
