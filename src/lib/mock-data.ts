@@ -16,31 +16,33 @@ export type Prediction = {
   predAway: number | null;
 };
 
-// Mirrors the `teams` table in schema.sql — kit colors shown next to each
-// team name as two small circles. Keys are Hebrew (see
-// add-hebrew-team-names.sql) since that's what matches.home_team/away_team
-// hold once that migration runs — must stay in sync with it.
-export const TEAM_COLORS: Record<string, { primary: string; secondary: string }> = {
-  'בית"ר ירושלים': { primary: "#c6c512", secondary: "#11222c" },
-  "בני סכנין": { primary: "#c73332", secondary: "#fffeff" },
-  "הפועל באר שבע": { primary: "#da2332", secondary: "#0f4772" },
-  "הפועל חיפה": { primary: "#ec434f", secondary: "#0c0c14" },
-  "הפועל קריית שמונה": { primary: "#2b2c7d", secondary: "#c5c5c5" },
-  "הפועל ירושלים": { primary: "#ca2e32", secondary: "#1d1010" },
-  "הפועל פתח תקווה": { primary: "#0566c4", secondary: "#0a0e28" },
-  "הפועל רמת גן": { primary: "#ae1527", secondary: "#d2c5c0" },
-  "הפועל תל אביב": { primary: "#d02038", secondary: "#cdc6df" },
-  "עירוני טבריה": { primary: "#07227c", secondary: "#04a3d4" },
-  "מכבי חיפה": { primary: "#03b985", secondary: "#f0f4f5" },
-  "מכבי פתח תקווה": { primary: "#3f80c2", secondary: "#6e9cc4" },
-  "מכבי נתניה": { primary: "#facf17", secondary: "#000405" },
-  "מכבי תל אביב": { primary: "#eadb0d", secondary: "#335573" },
+// Mirrors the `teams` table in schema.sql — club crest shown next to each
+// team name. Keys are Hebrew (see add-hebrew-team-names.sql) since that's
+// what matches.home_team/away_team hold once that migration runs — must
+// stay in sync with it. Files self-hosted in public/team-logos/ (fetched
+// from football-logos.cc, 256x256 PNGs) rather than hotlinked, so the app
+// doesn't depend on that site's CDN staying up.
+export const TEAM_LOGOS: Record<string, string> = {
+  'בית"ר ירושלים': "/team-logos/beitar-jerusalem.png",
+  "בני סכנין": "/team-logos/bnei-sakhnin.png",
+  "הפועל באר שבע": "/team-logos/hapoel-beer-sheva.png",
+  "הפועל חיפה": "/team-logos/hapoel-haifa.png",
+  "הפועל קריית שמונה": "/team-logos/hapoel-kiryat-shmona.png",
+  "הפועל ירושלים": "/team-logos/hapoel-jerusalem.png",
+  "הפועל פתח תקווה": "/team-logos/hapoel-petah-tikva.png",
+  "הפועל רמת גן": "/team-logos/hapoel-ramat-gan.png",
+  "הפועל תל אביב": "/team-logos/hapoel-tel-aviv.png",
+  "עירוני טבריה": "/team-logos/ironi-tiberias.png",
+  "מכבי חיפה": "/team-logos/maccabi-haifa.png",
+  "מכבי פתח תקווה": "/team-logos/maccabi-petah-tikva.png",
+  "מכבי נתניה": "/team-logos/maccabi-netanya.png",
+  "מכבי תל אביב": "/team-logos/maccabi-tel-aviv.png",
 };
 
 // Shortened display forms for full team names that wrap to two lines in
 // the small match-row boxes on /predictions. Only for display — matches
 // still key off the full name from home_team/away_team everywhere else
-// (TEAM_COLORS lookup, comparisons, etc).
+// (TEAM_LOGOS lookup, comparisons, etc).
 export const TEAM_SHORT_NAMES: Record<string, string> = {
   "הפועל באר שבע": 'הפועל ב"ש',
   "הפועל תל אביב": 'הפועל ת"א',

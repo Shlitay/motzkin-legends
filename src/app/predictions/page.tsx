@@ -10,7 +10,7 @@ import TopBar from "@/components/TopBar";
 import { createClient } from "@/lib/supabase/client";
 import { formatIsraelDeadline, formatMatchKickoff } from "@/lib/israelTime";
 import { lockExpiredRounds } from "@/lib/lockExpiredRounds";
-import { TEAM_COLORS, shortTeamName } from "@/lib/mock-data";
+import { TEAM_LOGOS, shortTeamName } from "@/lib/mock-data";
 import { matchStatus, type MatchStatus } from "@/lib/matchStatus";
 
 type ScoreEntry = { home: string; away: string; pointsEarned: number | null };
@@ -444,14 +444,14 @@ function MatchRow({
       )}
       <div className="flex items-center gap-2">
         <div className={`flex flex-1 items-center gap-2.5 overflow-hidden rounded-lg border py-3 pe-3 text-sm ${teamClass(homeWins)}`}>
-          <TeamColorBar team={homeTeam} />
+          <TeamLogo team={homeTeam} />
           <span>{shortTeamName(homeTeam)}</span>
         </div>
         <ScoreBox value={home} onChange={onChangeHome} readOnly={readOnly} />
         <ScoreBox value={away} onChange={onChangeAway} readOnly={readOnly} />
         <div className={`flex flex-1 items-center justify-end gap-2.5 overflow-hidden rounded-lg border py-3 ps-3 text-end text-sm ${teamClass(awayWins)}`}>
           <span>{shortTeamName(awayTeam)}</span>
-          <TeamColorBar team={awayTeam} />
+          <TeamLogo team={awayTeam} />
         </div>
       </div>
       {hasFinalScore &&
@@ -476,16 +476,10 @@ function MatchRow({
   );
 }
 
-function TeamColorBar({ team }: { team: string }) {
-  const colors = TEAM_COLORS[team];
-  if (!colors) return null;
-  return (
-    <span
-      aria-hidden
-      className="-my-3 w-3 shrink-0 self-stretch"
-      style={{ background: `linear-gradient(to bottom, ${colors.primary} 50%, ${colors.secondary} 50%)` }}
-    />
-  );
+function TeamLogo({ team }: { team: string }) {
+  const src = TEAM_LOGOS[team];
+  if (!src) return null;
+  return <img src={src} alt="" className="h-7 w-7 shrink-0 object-contain" />;
 }
 
 function ScoreBox({
