@@ -544,17 +544,29 @@ function EndedMatchCard({
             <span className="whitespace-nowrap text-[13px] font-bold text-ink">{shortTeamName(homeTeam)}</span>
           </div>
           <div className="flex flex-col items-center gap-0.5">
+            {/* Home renders visually *right* (RTL mirroring, same as every
+                other row in this app), but a dir="ltr" span always reads
+                left-to-right regardless — so "home : away" would put
+                home's digit on the *left*, right next to the away team
+                box instead of its own. Away-first is what actually lines
+                each digit up with its own team, matching the same fix
+                this codebase already needed once before (see MatchRow's
+                current-result line). The design handoff's own literal
+                markup had this the "obvious" home-first way, which is
+                exactly the kind of RTL bug that only shows up with real,
+                lopsided scores rather than the handoff's own near-even
+                sample data (2:1, 1:1). */}
             <span
               className="font-display text-[34px] font-black leading-none tracking-[0.02em] tabular-nums text-ink"
               dir="ltr"
               style={{ unicodeBidi: "isolate" }}
             >
-              {actualHome} : {actualAway}
+              {actualAway} : {actualHome}
             </span>
             <span className={`text-xs font-semibold tabular-nums text-[#a3a39b] ${outcome === "miss" ? "line-through" : ""}`}>
               ניחשת{" "}
               <span dir="ltr" style={{ unicodeBidi: "isolate" }}>
-                {predHome} : {predAway}
+                {predAway} : {predHome}
               </span>
             </span>
           </div>
