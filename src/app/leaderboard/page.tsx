@@ -20,6 +20,7 @@ type RoundMatch = { id: string; kickoff_at: string; is_final: boolean };
 type RawRoundParticipationRow = {
   user_id: string;
   total_points: number | null;
+  rank: number | null;
   users: { full_name: string; nickname: string | null; avatar: string | null } | null;
 };
 
@@ -64,19 +65,24 @@ export default function LeaderboardPage() {
 
         const { data: rows } = await supabase
           .from("round_participation")
-          .select("user_id, total_points, users(full_name, nickname, avatar)")
+          .select("user_id, total_points, rank, users(full_name, nickname, avatar)")
           .eq("round_id", currentRound.id)
           .overrideTypes<RawRoundParticipationRow[], { merge: false }>();
 
         setCurrentRoundPoints(
-          (rows ?? [])
+          [...(rows ?? [])]
+            // Sorting by the DB's own rank (not raw points) is what
+            // actually applies the tiebreak chain (points -> exact hits
+            // -> who predicted first) — recompute_round_standings()
+            // already computed it server-side; sorting by points alone
+            // here would silently undo that for anyone tied on points.
+            .sort((a, b) => (a.rank ?? Number.MAX_SAFE_INTEGER) - (b.rank ?? Number.MAX_SAFE_INTEGER))
             .map((r) => ({
               userId: r.user_id,
               name: r.users?.nickname ?? r.users?.full_name ?? "Unknown",
               avatar: r.users?.avatar ?? "🙂",
               count: r.total_points ?? 0,
             }))
-            .sort((a, b) => b.count - a.count)
         );
       }
 
