@@ -597,11 +597,7 @@ function TeamCrest({ team }: { team: string }) {
   const src = TEAM_LOGOS[team];
   return (
     <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full">
-      {/* 22.4px = 28px (was already reduced once, see git history) minus
-          20% — still not the circle's full inner space, which keeps the
-          full-bleed circular crests (Ironi Tiberias, Hapoel Ramat Gan)
-          from looking heavier than the padded shield crests. */}
-      {src && <img src={src} alt="" className="h-[22px] w-[22px] object-contain" />}
+      {src && <img src={src} alt="" className="h-8 w-8 object-contain" />}
     </div>
   );
 }
@@ -609,7 +605,7 @@ function TeamCrest({ team }: { team: string }) {
 function TeamLogo({ team }: { team: string }) {
   const src = TEAM_LOGOS[team];
   if (!src) return null;
-  return <img src={src} alt="" className="h-[22px] w-[22px] shrink-0 object-contain" />;
+  return <img src={src} alt="" className="h-8 w-8 shrink-0 object-contain" />;
 }
 
 function ScoreBox({
