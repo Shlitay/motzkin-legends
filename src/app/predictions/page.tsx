@@ -519,7 +519,12 @@ function EndedMatchCard({
 
   return (
     <div className="flex overflow-hidden rounded-[18px] border border-[#e6e6e1] bg-white shadow-[0_1px_2px_rgba(17,17,17,.04)]">
-      <div className={`w-[5px] shrink-0 ${s.rail}`} />
+      {/* Explicit corner rounding on the rail/points column too, not just
+          relying on the parent's overflow-hidden clip — belt-and-braces
+          so their own colored backgrounds definitely get the card's
+          curve on their outer edge (rail = right side, points = left
+          side, since the row visually mirrors under RTL). */}
+      <div className={`w-[5px] shrink-0 rounded-r-[18px] ${s.rail}`} />
       <div className="flex-1 px-4 py-3.5">
         <div className="mb-2.5 flex items-center justify-between">
           {/* First DOM child renders at the box's RTL start (right) — this
@@ -560,7 +565,7 @@ function EndedMatchCard({
         </div>
       </div>
       <div
-        className={`flex w-[86px] shrink-0 flex-col items-center justify-center gap-0.5 ${s.pointsBg}`}
+        className={`flex w-[86px] shrink-0 flex-col items-center justify-center gap-0.5 rounded-l-[18px] ${s.pointsBg}`}
         style={{ borderInlineStart: `1px solid ${s.pointsBorder}` }}
       >
         <span
