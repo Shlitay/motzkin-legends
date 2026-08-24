@@ -11,9 +11,23 @@ import TopBar from "@/components/TopBar";
 import { createClient } from "@/lib/supabase/client";
 import { getCurrentRound, type CurrentRound } from "@/lib/currentRound";
 import { lockExpiredRounds } from "@/lib/lockExpiredRounds";
-import { currentUser, lastRoundStats, seasonStats } from "@/lib/mock-data";
+import { currentUser } from "@/lib/mock-data";
 
 type ProfileRow = { full_name: string; nickname: string | null; avatar: string | null };
+
+type SeasonRow = {
+  rounds_played: number;
+  total_points: number;
+  season_hits: number;
+  season_towards: number;
+};
+
+type LastRoundRow = {
+  rank: number | null;
+  total_points: number | null;
+  exact_score_count: number | null;
+  correct_result_count: number | null;
+};
 
 export default function HomePage() {
   const [supabase] = useState(() => createClient());
@@ -21,6 +35,8 @@ export default function HomePage() {
 
   const [profile, setProfile] = useState<ProfileRow | null>(null);
   const [round, setRound] = useState<CurrentRound | null>(null);
+  const [season, setSeason] = useState<SeasonRow | null>(null);
+  const [lastRound, setLastRound] = useState<LastRoundRow | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -34,13 +50,32 @@ export default function HomePage() {
         return;
       }
 
-      const [{ data: profileRow }, currentRound] = await Promise.all([
+      const [{ data: profileRow }, currentRound, { data: seasonRow }] = await Promise.all([
         supabase.from("users").select("full_name, nickname, avatar").eq("id", user.id).single(),
         getCurrentRound(supabase),
+        supabase
+          .from("season_stats")
+          .select("rounds_played, total_points, season_hits, season_towards")
+          .eq("user_id", user.id)
+          .single(),
       ]);
 
       setProfile(profileRow ?? null);
       setRound(currentRound);
+      setSeason(seasonRow ?? null);
+
+      // "Last round" = the most recent round that exists — same
+      // convention as ParticipantModal.
+      if (currentRound) {
+        const { data: participation } = await supabase
+          .from("round_participation")
+          .select("rank, total_points, exact_score_count, correct_result_count")
+          .eq("user_id", user.id)
+          .eq("round_id", currentRound.id)
+          .maybeSingle();
+        setLastRound(participation ?? null);
+      }
+
       setLoading(false);
     })();
   }, [supabase]);
@@ -63,18 +98,18 @@ export default function HomePage() {
 
       <StatCard
         title="מחזור אחרון"
-        headline={`מקום: ${lastRoundStats.place}`}
-        towards={lastRoundStats.towards}
-        points={lastRoundStats.points}
-        hit={lastRoundStats.hit}
+        headline={`מקום: ${lastRound?.rank ?? 0}`}
+        towards={lastRound?.correct_result_count ?? 0}
+        points={lastRound?.total_points ?? 0}
+        hit={lastRound?.exact_score_count ?? 0}
       />
 
       <StatCard
         title="כל העונה"
-        headline={`סה"כ השתתפויות: ${seasonStats.totalParticipation}`}
-        towards={seasonStats.towards}
-        points={seasonStats.points}
-        hit={seasonStats.hit}
+        headline={`סה"כ השתתפויות: ${season?.rounds_played ?? 0}`}
+        towards={season?.season_towards ?? 0}
+        points={season?.total_points ?? 0}
+        hit={season?.season_hits ?? 0}
       />
 
       {!loading && round && <RoundComments roundId={round.id} />}
