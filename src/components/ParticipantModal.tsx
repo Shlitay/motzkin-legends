@@ -41,25 +41,18 @@ export default function ParticipantModal({
         .single();
       setSeason(seasonRow ?? null);
 
-      // "Last round" = the most recent round that exists (only round 1 so
-      // far). Once there's round history this should mean the most
-      // recently *finished* one, not necessarily the latest.
-      const { data: latestRound } = await supabase
-        .from("rounds")
-        .select("id")
-        .order("round_number", { ascending: false })
+      // "Last round" = the round this user most recently actually
+      // participated in — not the newest round overall, which may be
+      // one they haven't played yet. Round status never transitions to
+      // 'finished' in the SQL, so status can't be used to find it either.
+      const { data: participation } = await supabase
+        .from("round_participation")
+        .select("rank, total_points, exact_score_count, correct_result_count, rounds(round_number)")
+        .eq("user_id", userId)
+        .order("round_number", { foreignTable: "rounds", ascending: false })
         .limit(1)
         .maybeSingle();
-
-      if (latestRound) {
-        const { data: participation } = await supabase
-          .from("round_participation")
-          .select("rank, total_points, exact_score_count, correct_result_count")
-          .eq("user_id", userId)
-          .eq("round_id", latestRound.id)
-          .maybeSingle();
-        setLastRound(participation ?? null);
-      }
+      setLastRound(participation ?? null);
 
       setLoading(false);
     })();
