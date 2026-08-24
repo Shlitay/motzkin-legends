@@ -114,3 +114,13 @@ export function ChevronIcon({ className, size }: IconProps) {
     </svg>
   );
 }
+
+export function TargetIcon({ className, size }: IconProps) {
+  return (
+    <svg {...base} width={size ?? base.width} height={size ?? base.height} className={className}>
+      <circle cx="12" cy="12" r="8.5" />
+      <circle cx="12" cy="12" r="4.5" />
+      <circle cx="12" cy="12" r="0.75" fill="currentColor" />
+    </svg>
+  );
+}
