@@ -8,7 +8,7 @@ import RoundApprovalStatus from "@/components/RoundApprovalStatus";
 import RoundCountdown from "@/components/RoundCountdown";
 import TopBar from "@/components/TopBar";
 import { createClient } from "@/lib/supabase/client";
-import { formatIsraelDeadline, formatIsraelTime, formatMatchKickoff } from "@/lib/israelTime";
+import { formatIsraelDeadline, formatMatchKickoff } from "@/lib/israelTime";
 import { lockExpiredRounds } from "@/lib/lockExpiredRounds";
 import { TEAM_LOGOS, shortTeamName } from "@/lib/mock-data";
 import { matchStatus, type MatchStatus } from "@/lib/matchStatus";
@@ -296,7 +296,6 @@ export default function PredictionsPage() {
                     actualHome={m.home_score}
                     actualAway={m.away_score}
                     points={e.pointsEarned}
-                    kickoffAt={m.kickoff_at}
                   />
                 )
               )}
@@ -502,7 +501,6 @@ function EndedMatchCard({
   actualHome,
   actualAway,
   points,
-  kickoffAt,
 }: {
   homeTeam: string;
   awayTeam: string;
@@ -511,7 +509,6 @@ function EndedMatchCard({
   actualHome: number;
   actualAway: number;
   points: number | null;
-  kickoffAt: string;
 }) {
   const outcome = deriveOutcome(predHome, predAway, actualHome, actualAway);
   const s = OUTCOME_STYLES[outcome];
@@ -534,7 +531,7 @@ function EndedMatchCard({
               rendered screenshot, not assumed from the README prose alone,
               since an earlier version of this file swapped these. */}
           <span className="text-[11px] font-extrabold tracking-[.08em] text-[#a3a39b]">
-            הסתיים · {formatIsraelTime(kickoffAt)}
+            הסתיים
           </span>
           <span className={`text-[11px] font-extrabold tracking-[.08em] ${s.pointsText}`}>{s.label}</span>
         </div>
