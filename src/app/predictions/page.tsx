@@ -164,6 +164,9 @@ export default function PredictionsPage() {
       STATUS_ORDER[matchStatus(a.kickoff_at, a.is_final, now)] -
       STATUS_ORDER[matchStatus(b.kickoff_at, b.is_final, now)]
   );
+  const firstEndedIndex = sortedMatches.findIndex(
+    (m) => matchStatus(m.kickoff_at, m.is_final, now) === "ended"
+  );
 
   function setScore(matchId: string, side: "home" | "away", value: string) {
     if (value !== "" && !/^\d$/.test(value)) return;
@@ -261,26 +264,28 @@ export default function PredictionsPage() {
       </div>
 
       <div className="w-full max-w-md space-y-4">
-        {sortedMatches.map((m) => {
+        {sortedMatches.map((m, i) => {
           const e = entries[m.id];
           const readOnly = !isOpenRound || submitted;
           return (
-            <MatchRow
-              key={m.id}
-              homeTeam={m.home_team}
-              awayTeam={m.away_team}
-              home={e.home}
-              away={e.away}
-              readOnly={readOnly}
-              onChangeHome={readOnly ? undefined : (v) => setScore(m.id, "home", v)}
-              onChangeAway={readOnly ? undefined : (v) => setScore(m.id, "away", v)}
-              finalHomeScore={m.home_score}
-              finalAwayScore={m.away_score}
-              isFinal={m.is_final}
-              status={matchStatus(m.kickoff_at, m.is_final, now)}
-              kickoffAt={m.kickoff_at}
-              pointsEarned={e.pointsEarned}
-            />
+            <div key={m.id}>
+              {i === firstEndedIndex && <SectionDivider label="משחקים שהסתיימו" />}
+              <MatchRow
+                homeTeam={m.home_team}
+                awayTeam={m.away_team}
+                home={e.home}
+                away={e.away}
+                readOnly={readOnly}
+                onChangeHome={readOnly ? undefined : (v) => setScore(m.id, "home", v)}
+                onChangeAway={readOnly ? undefined : (v) => setScore(m.id, "away", v)}
+                finalHomeScore={m.home_score}
+                finalAwayScore={m.away_score}
+                isFinal={m.is_final}
+                status={matchStatus(m.kickoff_at, m.is_final, now)}
+                kickoffAt={m.kickoff_at}
+                pointsEarned={e.pointsEarned}
+              />
+            </div>
           );
         })}
       </div>
@@ -341,6 +346,16 @@ function resultTierClass(pointsEarned: number | null): string {
     return "glow-border-silver border-[#a8adb5]/50 [background:linear-gradient(135deg,#fbfbfc_0%,#e6e8eb_22%,#c9ccd2_45%,#f2f3f5_65%,#d3d6da_85%,#e9ebed_100%)]";
   }
   return "border-neutral-300 bg-neutral-200";
+}
+
+function SectionDivider({ label }: { label: string }) {
+  return (
+    <div className="mb-3 flex items-center gap-3">
+      <div className="h-px flex-1 bg-neutral-200" />
+      <span className="text-xs font-medium uppercase tracking-wide text-muted">{label}</span>
+      <div className="h-px flex-1 bg-neutral-200" />
+    </div>
+  );
 }
 
 function MatchRow({
