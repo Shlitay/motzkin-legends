@@ -596,15 +596,12 @@ function EndedMatchCard({
 function TeamCrest({ team }: { team: string }) {
   const src = TEAM_LOGOS[team];
   return (
-    <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#eceae4]">
-      {/* 28px, not the circle's full 32px inner space — some crests
-          (e.g. Ironi Tiberias, Hapoel Ramat Gan) are full-bleed circular
-          badges with no transparent margin baked into the source PNG,
-          unlike the padded shield crests, so they rendered visibly
-          "heavier"/more crowded at 32px even though nothing was actually
-          overflowing the circle (confirmed against the real compiled
-          CSS). The extra margin evens that out across every crest. */}
-      {src && <img src={src} alt="" className="h-7 w-7 object-contain" />}
+    <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full">
+      {/* 22.4px = 28px (was already reduced once, see git history) minus
+          20% — still not the circle's full inner space, which keeps the
+          full-bleed circular crests (Ironi Tiberias, Hapoel Ramat Gan)
+          from looking heavier than the padded shield crests. */}
+      {src && <img src={src} alt="" className="h-[22px] w-[22px] object-contain" />}
     </div>
   );
 }
@@ -612,7 +609,7 @@ function TeamCrest({ team }: { team: string }) {
 function TeamLogo({ team }: { team: string }) {
   const src = TEAM_LOGOS[team];
   if (!src) return null;
-  return <img src={src} alt="" className="h-7 w-7 shrink-0 object-contain" />;
+  return <img src={src} alt="" className="h-[22px] w-[22px] shrink-0 object-contain" />;
 }
 
 function ScoreBox({
