@@ -585,7 +585,14 @@ function TeamCrest({ team }: { team: string }) {
   const src = TEAM_LOGOS[team];
   return (
     <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#eceae4]">
-      {src && <img src={src} alt="" className="h-8 w-8 object-contain" />}
+      {/* 28px, not the circle's full 32px inner space — some crests
+          (e.g. Ironi Tiberias, Hapoel Ramat Gan) are full-bleed circular
+          badges with no transparent margin baked into the source PNG,
+          unlike the padded shield crests, so they rendered visibly
+          "heavier"/more crowded at 32px even though nothing was actually
+          overflowing the circle (confirmed against the real compiled
+          CSS). The extra margin evens that out across every crest. */}
+      {src && <img src={src} alt="" className="h-7 w-7 object-contain" />}
     </div>
   );
 }
