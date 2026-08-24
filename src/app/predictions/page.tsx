@@ -541,7 +541,7 @@ function EndedMatchCard({
         <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3.5">
           <div className="flex flex-col items-center gap-[7px]">
             <TeamCrest team={homeTeam} />
-            <span className="text-[13px] font-bold text-ink">{shortTeamName(homeTeam)}</span>
+            <span className="whitespace-nowrap text-[13px] font-bold text-ink">{shortTeamName(homeTeam)}</span>
           </div>
           <div className="flex flex-col items-center gap-0.5">
             <span
@@ -560,12 +560,12 @@ function EndedMatchCard({
           </div>
           <div className="flex flex-col items-center gap-[7px]">
             <TeamCrest team={awayTeam} />
-            <span className="text-[13px] font-bold text-ink">{shortTeamName(awayTeam)}</span>
+            <span className="whitespace-nowrap text-[13px] font-bold text-ink">{shortTeamName(awayTeam)}</span>
           </div>
         </div>
       </div>
       <div
-        className={`flex w-[86px] shrink-0 flex-col items-center justify-center gap-0.5 rounded-l-[18px] ${s.pointsBg}`}
+        className={`flex w-16 shrink-0 flex-col items-center justify-center gap-0.5 rounded-l-[18px] ${s.pointsBg}`}
         style={{ borderInlineStart: `1px solid ${s.pointsBorder}` }}
       >
         <span
