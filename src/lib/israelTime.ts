@@ -39,3 +39,15 @@ export function formatMatchKickoff(iso: string) {
   const get = (type: string) => parts.find((p) => p.type === type)?.value ?? "";
   return `${get("day")}/${get("month")}/${get("year")} ${get("hour")}:${get("minute")}`;
 }
+
+// hh:mm only, Israel-local — the ended-match card shows just the kickoff
+// time next to "הסתיים" (the date is implied by which round/section the
+// card sits in), unlike formatMatchKickoff's full dd/mm/yy stamp.
+export function formatIsraelTime(iso: string) {
+  return new Intl.DateTimeFormat("en-GB", {
+    timeZone: ISRAEL_TZ,
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(new Date(iso));
+}

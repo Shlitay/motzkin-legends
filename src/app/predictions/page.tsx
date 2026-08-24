@@ -8,7 +8,7 @@ import RoundApprovalStatus from "@/components/RoundApprovalStatus";
 import RoundCountdown from "@/components/RoundCountdown";
 import TopBar from "@/components/TopBar";
 import { createClient } from "@/lib/supabase/client";
-import { formatIsraelDeadline, formatMatchKickoff } from "@/lib/israelTime";
+import { formatIsraelDeadline, formatIsraelTime, formatMatchKickoff } from "@/lib/israelTime";
 import { lockExpiredRounds } from "@/lib/lockExpiredRounds";
 import { TEAM_LOGOS, shortTeamName } from "@/lib/mock-data";
 import { matchStatus, type MatchStatus } from "@/lib/matchStatus";
@@ -267,24 +267,39 @@ export default function PredictionsPage() {
         {sortedMatches.map((m, i) => {
           const e = entries[m.id];
           const readOnly = !isOpenRound || submitted;
+          const status = matchStatus(m.kickoff_at, m.is_final, now);
           return (
             <div key={m.id}>
               {i === firstEndedIndex && <SectionDivider label="משחקים שהסתיימו" />}
-              <MatchRow
-                homeTeam={m.home_team}
-                awayTeam={m.away_team}
-                home={e.home}
-                away={e.away}
-                readOnly={readOnly}
-                onChangeHome={readOnly ? undefined : (v) => setScore(m.id, "home", v)}
-                onChangeAway={readOnly ? undefined : (v) => setScore(m.id, "away", v)}
-                finalHomeScore={m.home_score}
-                finalAwayScore={m.away_score}
-                isFinal={m.is_final}
-                status={matchStatus(m.kickoff_at, m.is_final, now)}
-                kickoffAt={m.kickoff_at}
-                pointsEarned={e.pointsEarned}
-              />
+              {status !== "ended" ? (
+                <MatchRow
+                  homeTeam={m.home_team}
+                  awayTeam={m.away_team}
+                  home={e.home}
+                  away={e.away}
+                  readOnly={readOnly}
+                  onChangeHome={readOnly ? undefined : (v) => setScore(m.id, "home", v)}
+                  onChangeAway={readOnly ? undefined : (v) => setScore(m.id, "away", v)}
+                  finalHomeScore={m.home_score}
+                  finalAwayScore={m.away_score}
+                  status={status}
+                  kickoffAt={m.kickoff_at}
+                />
+              ) : (
+                m.home_score !== null &&
+                m.away_score !== null && (
+                  <EndedMatchCard
+                    homeTeam={m.home_team}
+                    awayTeam={m.away_team}
+                    predHome={Number(e.home)}
+                    predAway={Number(e.away)}
+                    actualHome={m.home_score}
+                    actualAway={m.away_score}
+                    points={e.pointsEarned}
+                    kickoffAt={m.kickoff_at}
+                  />
+                )
+              )}
             </div>
           );
         })}
@@ -317,11 +332,12 @@ export default function PredictionsPage() {
 
 const STATUS_ORDER: Record<MatchStatus, number> = { live: 0, "not-started": 1, ended: 2 };
 
-function MatchStatusBadge({ status }: { status: MatchStatus }) {
-  const config: Record<MatchStatus, { label: string; dot: string; bg: string; text: string; border: string }> = {
+// Ended matches use EndedMatchCard's own outcome label instead of this
+// badge, so it only ever renders for the other two statuses.
+function MatchStatusBadge({ status }: { status: Exclude<MatchStatus, "ended"> }) {
+  const config: Record<Exclude<MatchStatus, "ended">, { label: string; dot: string; bg: string; text: string; border: string }> = {
     "not-started": { label: "טרם החל", dot: "bg-neutral-400", bg: "bg-neutral-100", text: "text-neutral-500", border: "" },
     live: { label: "בשידור חי", dot: "bg-brand animate-pulse", bg: "bg-brand/10", text: "text-brand", border: "border border-black" },
-    ended: { label: "הסתיים", dot: "bg-draw", bg: "bg-white/80", text: "text-draw", border: "" },
   };
   const c = config[status];
 
@@ -331,21 +347,6 @@ function MatchStatusBadge({ status }: { status: MatchStatus }) {
       {c.label}
     </span>
   );
-}
-
-// Once a match is final, the card itself is colored by how the prediction
-// scored — gold for an exact hit, silver for a correct-direction "towards",
-// gray for a miss — so the per-team win/draw/loss highlight below would be
-// redundant (and clash with the tier background), and is dropped instead.
-function resultTierClass(pointsEarned: number | null): string {
-  if (pointsEarned === null) return "border-neutral-200 bg-surface";
-  if (pointsEarned >= 10) {
-    return "glow-border-gold border-[#8a6a1a]/40 text-[#3a2d08] [background:linear-gradient(135deg,#f6e6ab_0%,#d9b74a_35%,#c9a227_65%,#a8811f_100%)]";
-  }
-  if (pointsEarned > 0) {
-    return "glow-border-silver border-[#a8adb5]/50 [background:linear-gradient(135deg,#fbfbfc_0%,#e6e8eb_22%,#c9ccd2_45%,#f2f3f5_65%,#d3d6da_85%,#e9ebed_100%)]";
-  }
-  return "border-neutral-300 bg-neutral-200";
 }
 
 function SectionDivider({ label }: { label: string }) {
@@ -358,6 +359,8 @@ function SectionDivider({ label }: { label: string }) {
   );
 }
 
+// Live and not-started matches only — ended matches render via
+// EndedMatchCard instead (see its own component below).
 function MatchRow({
   homeTeam,
   awayTeam,
@@ -368,10 +371,8 @@ function MatchRow({
   readOnly = false,
   finalHomeScore = null,
   finalAwayScore = null,
-  isFinal = false,
   status,
   kickoffAt,
-  pointsEarned = null,
 }: {
   homeTeam: string;
   awayTeam: string;
@@ -382,10 +383,8 @@ function MatchRow({
   readOnly?: boolean;
   finalHomeScore?: number | null;
   finalAwayScore?: number | null;
-  isFinal?: boolean;
-  status: MatchStatus;
+  status: Exclude<MatchStatus, "ended">;
   kickoffAt: string;
-  pointsEarned?: number | null;
 }) {
   const homeNum = home === "" ? null : Number(home);
   const awayNum = away === "" ? null : Number(away);
@@ -394,14 +393,8 @@ function MatchRow({
   const homeWins = hasBoth && homeNum! > awayNum!;
   const awayWins = hasBoth && awayNum! > homeNum!;
 
-  const teamClass = (winning: boolean) => {
-    if (isFinal) return "border-black/10 bg-white/60";
-    return isDraw
-      ? "bg-draw/15 border-draw/45"
-      : winning
-      ? "bg-brand/15 border-brand/40"
-      : "border-neutral-200";
-  };
+  const teamClass = (winning: boolean) =>
+    isDraw ? "bg-draw/15 border-draw/45" : winning ? "bg-brand/15 border-brand/40" : "border-neutral-200";
 
   // A match that genuinely hasn't started yet has no real result to show,
   // even if its score happens to be sitting at 0-0 in the DB (the pre-fix
@@ -410,27 +403,10 @@ function MatchRow({
   const hasFinalScore = status !== "not-started" && finalHomeScore !== null && finalAwayScore !== null;
 
   return (
-    <div className={`rounded-xl border p-3 ${isFinal ? resultTierClass(pointsEarned) : "border-neutral-200 bg-surface"}`}>
-      {isFinal ? (
-        // Three-column grid so the badge can sit flush at the box's top
-        // right (first column — the rightmost one under this page's
-        // global RTL) while the points stay truly centered on the whole
-        // row, not just centered in the space left over after the badge.
-        <div className="mb-2 grid grid-cols-[1fr_auto_1fr] items-center">
-          <div className="justify-self-start">
-            <MatchStatusBadge status={status} />
-          </div>
-          <span className="justify-self-center text-lg font-extrabold text-ink">
-            {pointsEarned !== null ? `${pointsEarned} נק'` : ""}
-          </span>
-          <span />
-        </div>
-      ) : status === "not-started" ? (
+    <div className="rounded-xl border border-neutral-200 bg-surface p-3">
+      {status === "not-started" ? (
         // justify-between with the badge first in DOM puts it at the box's
-        // top right (RTL start) and the kickoff time at top left (RTL
-        // end) — same left/right split as the isFinal grid above, just
-        // via two flex children instead of three grid columns since
-        // there's no third, centered element here.
+        // top right (RTL start) and the kickoff time at top left (RTL end).
         <div className="mb-2 flex items-center justify-between">
           <MatchStatusBadge status={status} />
           <span className="text-xs text-muted" dir="ltr">
@@ -454,7 +430,7 @@ function MatchRow({
           <TeamLogo team={awayTeam} />
         </div>
       </div>
-      {hasFinalScore &&
+      {hasFinalScore && (
         // The row above is a flex row that mirrors under the page's global
         // RTL — home_box is DOM-first so it lands visually *rightmost*,
         // away_box visually *leftmost*. This plain-text line doesn't
@@ -463,15 +439,148 @@ function MatchRow({
         // away box on the left), home score second (aligns under the home
         // box on the right) — not source/home-first, which would silently
         // mismatch the row's actual left-right layout.
-        (isFinal ? (
-          <p className="mt-2 rounded-md bg-black py-2 text-center text-base font-bold text-white">
-            תוצאה סופית: {finalAwayScore}-{finalHomeScore}
-          </p>
-        ) : (
-          <p className="mt-1 text-center text-xs text-muted">
-            תוצאה נוכחית: {finalAwayScore}-{finalHomeScore}
-          </p>
-        ))}
+        <p className="mt-1 text-center text-xs text-muted">
+          תוצאה נוכחית: {finalAwayScore}-{finalHomeScore}
+        </p>
+      )}
+    </div>
+  );
+}
+
+type Outcome = "exact" | "direction" | "miss";
+
+// Mirrors the exact/direction/miss comparison in submit_match_result() and
+// lock_expired_rounds() (see fix-round1-kickoff-times.sql's sibling
+// migrations) — derived from the raw scores rather than from the points
+// value itself, since scoring_rules' point amounts are manager-configurable
+// and shouldn't be hardcoded into which color tier a card gets.
+function deriveOutcome(predHome: number, predAway: number, actualHome: number, actualAway: number): Outcome {
+  if (predHome === actualHome && predAway === actualAway) return "exact";
+  if (Math.sign(predHome - predAway) === Math.sign(actualHome - actualAway)) return "direction";
+  return "miss";
+}
+
+const OUTCOME_STYLES: Record<
+  Outcome,
+  { rail: string; pointsBg: string; pointsBorder: string; pointsText: string; caption: string; label: string }
+> = {
+  exact: {
+    rail: "bg-[oklch(0.62_0.14_150)]",
+    pointsBg: "bg-[oklch(0.96_0.035_150)]",
+    pointsBorder: "oklch(0.92 0.05 150)",
+    pointsText: "text-[oklch(0.42_0.11_150)]",
+    caption: "text-[oklch(0.55_0.08_150)]",
+    label: "ניחוש מדויק",
+  },
+  direction: {
+    rail: "bg-[oklch(0.75_0.14_80)]",
+    pointsBg: "bg-[oklch(0.97_0.04_85)]",
+    pointsBorder: "oklch(0.93 0.06 85)",
+    pointsText: "text-[oklch(0.5_0.11_80)]",
+    caption: "text-[oklch(0.6_0.08_80)]",
+    label: "כיוון נכון",
+  },
+  miss: {
+    rail: "bg-[#d6d5cf]",
+    pointsBg: "bg-[#faf9f7]",
+    pointsBorder: "#ecebe6",
+    pointsText: "text-[#b5b5ad]",
+    caption: "text-[#c4c4bc]",
+    label: "פספוס",
+  },
+};
+
+// Design handoff: "Prediction Result Card" (variant 1B), 2026-08-24 —
+// status rail + body + points column, recreated pixel-for-pixel from the
+// exported .dc.html spec rather than the earlier gold/silver/gray tier
+// card it replaces.
+function EndedMatchCard({
+  homeTeam,
+  awayTeam,
+  predHome,
+  predAway,
+  actualHome,
+  actualAway,
+  points,
+  kickoffAt,
+}: {
+  homeTeam: string;
+  awayTeam: string;
+  predHome: number;
+  predAway: number;
+  actualHome: number;
+  actualAway: number;
+  points: number | null;
+  kickoffAt: string;
+}) {
+  const outcome = deriveOutcome(predHome, predAway, actualHome, actualAway);
+  const s = OUTCOME_STYLES[outcome];
+  const pointsLabel = points === null ? "" : points > 0 ? `+${points}` : "0";
+
+  return (
+    <div className="flex overflow-hidden rounded-[18px] border border-[#e6e6e1] bg-white shadow-[0_1px_2px_rgba(17,17,17,.04)]">
+      <div className={`w-[5px] shrink-0 ${s.rail}`} />
+      <div className="flex-1 px-4 py-3.5">
+        <div className="mb-2.5 flex items-center justify-between">
+          {/* First DOM child renders at the box's RTL start (right) — this
+              must be the meta text, not the outcome label, matching the
+              design source's own child order (metaText, then
+              outcomeLabel). Confirmed against the .dc.html source and a
+              rendered screenshot, not assumed from the README prose alone,
+              since an earlier version of this file swapped these. */}
+          <span className="text-[11px] font-extrabold tracking-[.08em] text-[#a3a39b]">
+            הסתיים · {formatIsraelTime(kickoffAt)}
+          </span>
+          <span className={`text-[11px] font-extrabold tracking-[.08em] ${s.pointsText}`}>{s.label}</span>
+        </div>
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3.5">
+          <div className="flex flex-col items-center gap-[7px]">
+            <TeamCrest team={homeTeam} />
+            <span className="text-[13px] font-bold text-ink">{shortTeamName(homeTeam)}</span>
+          </div>
+          <div className="flex flex-col items-center gap-0.5">
+            <span
+              className="font-display text-[34px] font-black leading-none tracking-[0.02em] tabular-nums text-ink"
+              dir="ltr"
+              style={{ unicodeBidi: "isolate" }}
+            >
+              {actualHome} : {actualAway}
+            </span>
+            <span className={`text-xs font-semibold tabular-nums text-[#a3a39b] ${outcome === "miss" ? "line-through" : ""}`}>
+              ניחשת{" "}
+              <span dir="ltr" style={{ unicodeBidi: "isolate" }}>
+                {predHome} : {predAway}
+              </span>
+            </span>
+          </div>
+          <div className="flex flex-col items-center gap-[7px]">
+            <TeamCrest team={awayTeam} />
+            <span className="text-[13px] font-bold text-ink">{shortTeamName(awayTeam)}</span>
+          </div>
+        </div>
+      </div>
+      <div
+        className={`flex w-[86px] shrink-0 flex-col items-center justify-center gap-0.5 ${s.pointsBg}`}
+        style={{ borderInlineStart: `1px solid ${s.pointsBorder}` }}
+      >
+        <span
+          className={`text-[28px] font-black leading-none ${s.pointsText}`}
+          dir="ltr"
+          style={{ unicodeBidi: "isolate" }}
+        >
+          {pointsLabel}
+        </span>
+        <span className={`text-[11px] font-bold ${s.caption}`}>נקודות</span>
+      </div>
+    </div>
+  );
+}
+
+function TeamCrest({ team }: { team: string }) {
+  const src = TEAM_LOGOS[team];
+  return (
+    <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#eceae4]">
+      {src && <img src={src} alt="" className="h-8 w-8 object-contain" />}
     </div>
   );
 }
