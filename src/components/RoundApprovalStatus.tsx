@@ -125,13 +125,23 @@ export default function RoundApprovalStatus() {
             </a>{" "}
             כדי להשתתף
           </p>
-          <button
-            disabled={requesting}
-            onClick={requestApproval}
-            className="rounded-full bg-brand px-6 py-2 text-sm font-medium text-white enabled:hover:bg-brand-dark disabled:cursor-not-allowed disabled:bg-neutral-300"
-          >
-            {requesting ? "שולח..." : "תאשר אותי שלחתי כסף"}
-          </button>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <a
+              href={PAYBOX_GROUP_LINK}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-full bg-[#8a6a1a] px-6 py-2 text-sm font-medium text-white hover:brightness-110"
+            >
+              לקבוצת פייבוקס
+            </a>
+            <button
+              disabled={requesting}
+              onClick={requestApproval}
+              className="rounded-full bg-brand px-6 py-2 text-sm font-medium text-white enabled:hover:bg-brand-dark disabled:cursor-not-allowed disabled:bg-neutral-300"
+            >
+              {requesting ? "שולח..." : "תאשר אותי שלחתי כסף"}
+            </button>
+          </div>
         </>
       )}
 
