@@ -73,9 +73,8 @@ export default function RulesPage() {
             אם עדיין שוויון — מי שהגיש את הניחושים ראשון (זמן ההגשה הראשונה, עדכון ניחוש מאוחר יותר לא משנה את הזמן הזה)
           </TiebreakStep>
         </ol>
-        <p className="mt-4 flex items-center justify-between gap-3 rounded-2xl bg-brand/10 px-4 py-3 text-sm font-medium text-ink">
-          <span>המקום השני מקבל בחזרה את דמי ההשתתפות שלו ({ENTRY_FEE_ILS} ₪).</span>
-          <span className="shrink-0 rounded-full bg-brand px-2.5 py-0.5 text-[11px] font-bold text-white">חדש</span>
+        <p className="mt-4 rounded-2xl bg-brand/10 px-4 py-3 text-sm font-medium text-ink">
+          המקום השני מקבל בחזרה את דמי ההשתתפות שלו ({ENTRY_FEE_ILS} ₪).
         </p>
       </section>
 
