@@ -2,8 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { CheckCircleIcon, ClockIcon } from "@/components/icons";
+import { ENTRY_FEE_ILS } from "@/components/JackpotBadge";
 import { getCurrentRound, type CurrentRound } from "@/lib/currentRound";
 import { createClient } from "@/lib/supabase/client";
+
+const PAYBOX_GROUP_LINK = "https://links.payboxapp.com/cnSpIALUP3b";
 
 type ParticipationStatus = "waiting" | "approved" | "rejected" | null;
 
@@ -111,7 +114,16 @@ export default function RoundApprovalStatus() {
       {status === null && (
         <>
           <p className="mb-3 text-sm text-muted">
-            שלחו את התשלום דרך Paybox, ואז לחצו למטה כדי לעדכן את המנהל.
+            שלחו {ENTRY_FEE_ILS} ₪ בקבוצת{" "}
+            <a
+              href={PAYBOX_GROUP_LINK}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-brand underline"
+            >
+              Paybox
+            </a>{" "}
+            כדי לקבל אישור למחזור, ואז לחצו למטה כדי לעדכן את המנהל.
           </p>
           <button
             disabled={requesting}
