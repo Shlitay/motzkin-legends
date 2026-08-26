@@ -114,23 +114,23 @@ export default function RoundApprovalStatus() {
       {status === null && (
         <>
           <p className="mb-3 text-sm text-muted">
-            שלחו {ENTRY_FEE_ILS} ₪ ל
+            שלחו {ENTRY_FEE_ILS}₪ ל
             <a
               href={PAYBOX_GROUP_LINK}
               target="_blank"
               rel="noopener noreferrer"
               className="text-brand underline"
             >
-              קבוצת Paybox
+              פייבוקס
             </a>{" "}
-            כדי לקבל אישור למחזור, ואז לחצו למטה כדי לעדכן את המנהל.
+            כדי להשתתף
           </p>
           <button
             disabled={requesting}
             onClick={requestApproval}
             className="rounded-full bg-brand px-6 py-2 text-sm font-medium text-white enabled:hover:bg-brand-dark disabled:cursor-not-allowed disabled:bg-neutral-300"
           >
-            {requesting ? "שולח..." : "הכסף נשלח"}
+            {requesting ? "שולח..." : "תאשר אותי שלחתי כסף"}
           </button>
         </>
       )}
