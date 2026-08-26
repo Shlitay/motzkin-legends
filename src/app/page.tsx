@@ -26,7 +26,12 @@ export default function LoginPage() {
         </GoogleSignInButton>
 
         <p className="text-xs text-muted">
-          התחברות ← ניחוש המחזור הקרוב ← שליחת {ENTRY_FEE_ILS} ₪ ← אתם בפנים!
+          {/* Trailing RLM after the digit — without it, the space between
+              a number and the following Hebrew word collapses visually
+              (same bidi class as the NewsTicker fix). */}
+          התחבר למשחק ← נחש את תוצאות המחזור ← שלח {ENTRY_FEE_ILS}‏ ש&quot;ח
+          <br />
+          ואתה בפנים!
         </p>
 
         <Link href="/manager/login" className="text-xs text-muted underline">
