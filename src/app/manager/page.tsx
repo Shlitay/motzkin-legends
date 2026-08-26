@@ -30,7 +30,6 @@ export default function ManagerDashboard() {
   const [roundNumber, setRoundNumber] = useState<number | null>(null);
   const [waiting, setWaiting] = useState<Participant[]>([]);
   const [approved, setApproved] = useState<Participant[]>([]);
-  const [confirmingReset, setConfirmingReset] = useState(false);
   const [showScoringRules, setShowScoringRules] = useState(false);
   const [showNewsStrip, setShowNewsStrip] = useState(false);
   const [showMatchResults, setShowMatchResults] = useState(false);
@@ -113,15 +112,6 @@ export default function ManagerDashboard() {
     setWaiting((w) => w.filter((p) => p.participationId !== person.participationId));
   }
 
-  function resetRound() {
-    // Real reset (a fresh round + new fixtures) needs the manager
-    // fixture-entry screen, which is still Phase 0 / on hold — so this
-    // only clears the local view for now, it doesn't touch the database.
-    setWaiting([]);
-    setApproved([]);
-    setConfirmingReset(false);
-  }
-
   if (loading) {
     return (
       <main className="flex min-h-screen flex-col items-center justify-center gap-4 px-6 pt-20 text-center">
@@ -165,36 +155,11 @@ export default function ManagerDashboard() {
         <ManagerActionButton onClick={() => setShowMatchResults(true)}>תוצאות מחזור</ManagerActionButton>
         <ManagerActionButton onClick={() => setShowScoringRules(true)}>כללי ניקוד</ManagerActionButton>
         <ManagerActionButton onClick={() => setShowNewsStrip(true)}>רצועת חדשות</ManagerActionButton>
-        <ManagerActionButton onClick={() => setConfirmingReset(true)}>איפוס מחזור</ManagerActionButton>
       </div>
 
       {showScoringRules && <ScoringRulesModal onClose={() => setShowScoringRules(false)} />}
       {showNewsStrip && <NewsStripModal onClose={() => setShowNewsStrip(false)} />}
       {showMatchResults && <MatchResultsModal onClose={() => setShowMatchResults(false)} />}
-
-      {confirmingReset && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/40 px-6">
-          <div className="w-full max-w-sm rounded-2xl bg-surface p-8 text-center shadow-lg">
-            <p className="mb-6 text-xl font-semibold">
-              בטוחים שאתם רוצים לאפס את המחזור?
-            </p>
-            <div className="flex justify-center gap-4">
-              <button
-                onClick={() => setConfirmingReset(false)}
-                className="rounded-full bg-danger px-6 py-2 font-medium text-white hover:brightness-90"
-              >
-                חזרה
-              </button>
-              <button
-                onClick={resetRound}
-                className="rounded-full bg-brand px-6 py-2 font-medium text-white hover:bg-brand-dark"
-              >
-                כן
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </main>
   );
 }
