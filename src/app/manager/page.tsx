@@ -96,6 +96,23 @@ export default function ManagerDashboard() {
     setWaiting((w) => [...w, person]);
   }
 
+  // Deletes the round_participation row entirely (rather than setting
+  // payment_status to 'rejected'), so the participant lands back on the
+  // "send money to Paybox" screen instead of the "you weren't approved"
+  // one — for the case where they clicked "money sent" without actually
+  // paying, and should just start over.
+  async function removeFromWaiting(person: Participant) {
+    const { error: deleteError } = await supabase
+      .from("round_participation")
+      .delete()
+      .eq("id", person.participationId);
+    if (deleteError) {
+      setError(deleteError.message);
+      return;
+    }
+    setWaiting((w) => w.filter((p) => p.participationId !== person.participationId));
+  }
+
   function resetRound() {
     // Real reset (a fresh round + new fixtures) needs the manager
     // fixture-entry screen, which is still Phase 0 / on hold — so this
@@ -132,7 +149,14 @@ export default function ManagerDashboard() {
 
       {roundId && (
         <div className="grid w-full max-w-2xl grid-cols-1 gap-8 sm:grid-cols-2">
-          <NameList title="ממתינים לאישור" people={waiting} onAction={approve} actionLabel="אישור" />
+          <NameList
+            title="ממתינים לאישור"
+            people={waiting}
+            onAction={approve}
+            actionLabel="אישור"
+            onSecondaryAction={removeFromWaiting}
+            secondaryActionLabel="הסרה"
+          />
           <NameList title="אושרו למחזור" people={approved} onAction={unapprove} actionLabel="המתנה" />
         </div>
       )}
@@ -180,11 +204,15 @@ function NameList({
   people,
   onAction,
   actionLabel,
+  onSecondaryAction,
+  secondaryActionLabel,
 }: {
   title: string;
   people: Participant[];
   onAction?: (person: Participant) => void;
   actionLabel?: string;
+  onSecondaryAction?: (person: Participant) => void;
+  secondaryActionLabel?: string;
 }) {
   return (
     <div>
@@ -198,14 +226,24 @@ function NameList({
               <span className="text-base">{person.avatar}</span>
               {person.name}
             </span>
-            {onAction && (
-              <button
-                onClick={() => onAction(person)}
-                className="text-xs text-brand underline"
-              >
-                {actionLabel}
-              </button>
-            )}
+            <span className="flex items-center gap-3">
+              {onAction && (
+                <button
+                  onClick={() => onAction(person)}
+                  className="text-xs text-brand underline"
+                >
+                  {actionLabel}
+                </button>
+              )}
+              {onSecondaryAction && (
+                <button
+                  onClick={() => onSecondaryAction(person)}
+                  className="text-xs text-danger underline"
+                >
+                  {secondaryActionLabel}
+                </button>
+              )}
+            </span>
           </li>
         ))}
       </ol>
