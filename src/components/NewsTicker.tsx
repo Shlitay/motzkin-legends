@@ -31,7 +31,13 @@ export default function NewsTicker() {
           .eq("payment_status", "approved");
 
         if (count !== null) {
-          items.push(`כרגע יש ${count} משתתפים מאושרים למחזור ${round.round_number}`);
+          // Trailing ‏ (RLM) forces the separator right after this
+          // item to resolve against RTL context. Without it, a digit
+          // (round_number, "weak LTR" in bidi terms) sitting right next
+          // to the all-neutral "   •   " separator falls back to the
+          // container's dir="ltr" for that neutral run, squishing the
+          // bullet up against the digit with no visible gap.
+          items.push(`כרגע יש ${count} משתתפים מאושרים למחזור ${round.round_number}‏`);
         }
       }
 
