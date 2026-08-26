@@ -5,18 +5,16 @@ import Logo from "@/components/Logo";
 export default function LoginPage() {
   return (
     <main className="flex min-h-screen flex-col items-center text-center">
-      <div className="w-full bg-brand pb-10 pt-14 text-white">
+      <div className="flex w-full flex-col items-center gap-3 bg-brand pb-10 pt-14 text-white">
+        <img src="/haimzuri.png" alt="חיים צורי" className="h-24 w-auto rounded-full" />
         <Logo className="text-white" />
-        <p className="mt-3 text-sm text-white/75">
-          ליגת ניחושים · 7 משחקים, זוכה אחד
-        </p>
+        <p className="text-sm text-white/75">משחק הניחושים של אורט מוצקין</p>
       </div>
 
       <div className="flex flex-1 flex-col items-center justify-center gap-8 px-6 py-10">
-        <img src="/haimzuri.png" alt="חיים צורי" className="h-32 w-auto" />
-        <h1 className="text-3xl font-bold text-ink">ברוכים הבאים לליגת הניחושים</h1>
+        <h1 className="text-3xl font-bold text-ink">ברוכים הבאים למשחק הניחושים של אורט מוצקין</h1>
         <p className="max-w-sm text-muted">
-          נחשו כל מחזור בליגת העל את תוצאות המחזור ותתחרו עם החברים על לזכות בקופה.
+          נחשו את תוצאות ליגת העל בכל מחזור וזכו בקופה.
         </p>
 
         <GoogleSignInButton
