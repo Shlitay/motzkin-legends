@@ -17,10 +17,10 @@ export default function LoginPage() {
           <span className="text-lg font-semibold uppercase tracking-[0.2em] text-muted">
             ברוכים הבאים
           </span>
-          <span className="text-4xl font-extrabold text-brand [text-shadow:4px_4px_0_var(--color-legend)] sm:text-5xl">
+          <span className="text-4xl font-extrabold text-brand [text-shadow:2px_2px_0_#999790] sm:text-5xl">
             למשחק הניחושים
           </span>
-          <span className="text-2xl font-extrabold text-legend [-webkit-text-stroke:1px_var(--color-brand-dark)] sm:text-3xl">
+          <span className="text-3xl font-extrabold text-legend [-webkit-text-stroke:1px_var(--color-brand-dark)] sm:text-4xl">
             של אגדות מוצקין
           </span>
         </h1>
