@@ -13,7 +13,17 @@ export default function LoginPage() {
       </div>
 
       <div className="flex flex-1 flex-col items-center justify-center gap-8 px-6 py-10">
-        <h1 className="text-3xl font-bold text-ink">ברוכים הבאים למשחק הניחושים של אורט מוצקין</h1>
+        <h1 className="flex flex-col items-center gap-2">
+          <span className="text-lg font-semibold uppercase tracking-[0.2em] text-muted">
+            ברוכים הבאים
+          </span>
+          <span className="text-4xl font-extrabold text-brand [text-shadow:4px_4px_0_var(--color-legend)] sm:text-5xl">
+            למשחק הניחושים
+          </span>
+          <span className="text-2xl font-extrabold text-legend [-webkit-text-stroke:1px_var(--color-brand-dark)] sm:text-3xl">
+            של אגדות מוצקין
+          </span>
+        </h1>
         <p className="max-w-sm text-muted">
           נחשו את תוצאות ליגת העל בכל מחזור וזכו בקופה.
         </p>
