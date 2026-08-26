@@ -88,7 +88,7 @@ export default function RoundApprovalStatus() {
   return (
     <section className={`w-full max-w-md rounded-2xl border p-5 text-center ${cardClass}`}>
       <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">
-        מחזור {round.round_number} אושר
+        מחזור {round.round_number}
       </p>
 
       {status === "approved" && (
@@ -114,14 +114,14 @@ export default function RoundApprovalStatus() {
       {status === null && (
         <>
           <p className="mb-3 text-sm text-muted">
-            שלחו {ENTRY_FEE_ILS} ₪ בקבוצת{" "}
+            שלחו {ENTRY_FEE_ILS} ₪ ל
             <a
               href={PAYBOX_GROUP_LINK}
               target="_blank"
               rel="noopener noreferrer"
               className="text-brand underline"
             >
-              Paybox
+              קבוצת Paybox
             </a>{" "}
             כדי לקבל אישור למחזור, ואז לחצו למטה כדי לעדכן את המנהל.
           </p>
@@ -130,7 +130,7 @@ export default function RoundApprovalStatus() {
             onClick={requestApproval}
             className="rounded-full bg-brand px-6 py-2 text-sm font-medium text-white enabled:hover:bg-brand-dark disabled:cursor-not-allowed disabled:bg-neutral-300"
           >
-            {requesting ? "שולח..." : "שלחתי תשלום דרך Paybox"}
+            {requesting ? "שולח..." : "הכסף נשלח"}
           </button>
         </>
       )}
