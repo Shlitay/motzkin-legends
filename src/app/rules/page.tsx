@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import BottomNav from "@/components/BottomNav";
 import { CheckCircleIcon, ClockIcon, TargetIcon, WinnerIcon } from "@/components/icons";
+import { ENTRY_FEE_ILS } from "@/components/JackpotBadge";
 import NewsTicker from "@/components/NewsTicker";
 import ProfileModal from "@/components/ProfileModal";
 import RoundApprovalStatus from "@/components/RoundApprovalStatus";
@@ -72,6 +73,9 @@ export default function RulesPage() {
             אם עדיין שוויון — מי שהגיש את הניחושים ראשון (זמן ההגשה הראשונה, עדכון ניחוש מאוחר יותר לא משנה את הזמן הזה)
           </TiebreakStep>
         </ol>
+        <p className="mt-4 text-sm text-ink">
+          המקום השני מקבל בחזרה את דמי ההשתתפות שלו ({ENTRY_FEE_ILS} ₪).
+        </p>
       </section>
 
       <RuleCard icon={<CheckCircleIcon size={22} />} title="פספסתם את המועד?">
