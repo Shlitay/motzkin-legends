@@ -1,5 +1,6 @@
 import Link from "next/link";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
+import { ENTRY_FEE_ILS } from "@/components/JackpotBadge";
 import Logo from "@/components/Logo";
 
 export default function LoginPage() {
@@ -25,7 +26,7 @@ export default function LoginPage() {
         </GoogleSignInButton>
 
         <p className="text-xs text-muted">
-          עדיין לא אושרתם? שלחו את התשלום דרך Paybox, ואז אשרו בעמוד הבית לאחר ההתחברות.
+          התחברות ← ניחוש המחזור הקרוב ← שליחת {ENTRY_FEE_ILS} ₪ ← אתם בפנים!
         </p>
 
         <Link href="/manager/login" className="text-xs text-muted underline">
