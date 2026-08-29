@@ -69,13 +69,30 @@ export default function HomePage() {
       // overall and may be one the user hasn't played yet (e.g. it just
       // opened for predictions). Round status never transitions to
       // 'finished' in the SQL, so status can't be used to find it either.
-      const { data: lastParticipation } = await supabase
+      //
+      // Sorted client-side, not via .order(..., { foreignTable }) — that
+      // option only reorders rows *nested inside* an embed, it does NOT
+      // reorder the outer query by a related table's column (confirmed
+      // against postgrest-js's own source/docs). The previous version of
+      // this query silently returned rows in unspecified order.
+      const { data: allParticipation } = await supabase
         .from("round_participation")
         .select("rank, total_points, exact_score_count, correct_result_count, rounds(round_number)")
         .eq("user_id", user.id)
-        .order("round_number", { foreignTable: "rounds", ascending: false })
-        .limit(1)
-        .maybeSingle();
+        .overrideTypes<
+          {
+            rank: number | null;
+            total_points: number | null;
+            exact_score_count: number | null;
+            correct_result_count: number | null;
+            rounds: { round_number: number } | null;
+          }[],
+          { merge: false }
+        >();
+
+      const lastParticipation = (allParticipation ?? []).sort(
+        (a, b) => (b.rounds?.round_number ?? -1) - (a.rounds?.round_number ?? -1)
+      )[0];
       setLastRound(lastParticipation ?? null);
 
       setLoading(false);

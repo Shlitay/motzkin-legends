@@ -12,12 +12,14 @@ import { lockExpiredRounds } from "@/lib/lockExpiredRounds";
 
 type Participant = {
   participationId: string;
+  userId: string;
   name: string;
   avatar: string | null;
 };
 
 type RawParticipationRow = {
   id: string;
+  user_id: string;
   payment_status: string;
   users: { full_name: string; nickname: string | null; avatar: string | null } | null;
 };
@@ -51,7 +53,7 @@ export default function ManagerDashboard() {
 
       const { data: rows, error: rowsError } = await supabase
         .from("round_participation")
-        .select("id, payment_status, users(full_name, nickname, avatar)")
+        .select("id, user_id, payment_status, users(full_name, nickname, avatar)")
         .eq("round_id", round.id)
         .overrideTypes<RawParticipationRow[], { merge: false }>();
 
@@ -63,6 +65,7 @@ export default function ManagerDashboard() {
 
       const toParticipant = (row: RawParticipationRow): Participant => ({
         participationId: row.id,
+        userId: row.user_id,
         name: row.users?.nickname ?? row.users?.full_name ?? "לא ידוע",
         avatar: row.users?.avatar ?? null,
       });
@@ -87,6 +90,20 @@ export default function ManagerDashboard() {
     if (!(await setPaymentStatus(person.participationId, "approved"))) return;
     setWaiting((w) => w.filter((p) => p.participationId !== person.participationId));
     setApproved((a) => [...a, person]);
+
+    // Backfills a default prediction (from the participant's own saved
+    // default score) for any match in this round whose kickoff has
+    // already passed and that they still have no prediction for, then
+    // recomputes standings — covers approving someone after the round
+    // has already locked, which the one-time lock_expired_rounds() fill
+    // never revisits. Harmless no-op for an on-time approval.
+    if (roundId) {
+      const { error: backfillError } = await supabase.rpc("backfill_late_approval", {
+        p_round_id: roundId,
+        p_user_id: person.userId,
+      });
+      if (backfillError) setError(backfillError.message);
+    }
   }
 
   async function unapprove(person: Participant) {
