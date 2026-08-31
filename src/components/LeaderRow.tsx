@@ -11,11 +11,12 @@ type LeaderRowProps = {
   avatar: string;
   name: string;
   count: number;
-  countLabel?: string;
   onClick?: () => void;
 };
 
-export default function LeaderRow({ rank, avatar, name, count, countLabel, onClick }: LeaderRowProps) {
+// The count's unit (points/rounds) is now a column header above the table
+// (see LeaderTable) rather than repeated as a label on every row.
+export default function LeaderRow({ rank, avatar, name, count, onClick }: LeaderRowProps) {
   const Wrapper = onClick ? "button" : "div";
   return (
     <Wrapper
@@ -29,10 +30,7 @@ export default function LeaderRow({ rank, avatar, name, count, countLabel, onCli
         {avatar}
       </span>
       <span className="flex-1 font-medium text-ink">{name}</span>
-      <span className="font-display text-sm font-semibold tabular-nums text-ink">
-        {count}
-        {countLabel && <span className="ms-1 font-normal text-muted">{countLabel}</span>}
-      </span>
+      <span className="font-display text-sm font-semibold tabular-nums text-ink">{count}</span>
     </Wrapper>
   );
 }

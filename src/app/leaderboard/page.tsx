@@ -204,6 +204,9 @@ function LeaderTable({
       <h2 className="px-5 pb-1 pt-5 text-sm font-semibold uppercase tracking-wide text-muted">
         {title}
       </h2>
+      <div className="flex justify-end px-5 pb-1">
+        <span className="text-xs font-medium uppercase tracking-wide text-muted">{countLabel}</span>
+      </div>
       <div className="divide-y divide-neutral-100">
         {rows.map((r, i) => (
           <LeaderRow
@@ -212,7 +215,6 @@ function LeaderTable({
             avatar={r.avatar}
             name={r.name}
             count={r.count}
-            countLabel={countLabel}
             onClick={() => onSelect(r.userId)}
           />
         ))}
