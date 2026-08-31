@@ -42,9 +42,12 @@ export default function LeaderRow({
       <span className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-lg">
         {avatar}
         {crown && (
+          // Avatar circle is 36px (h-9 w-9) — sized/positioned so roughly
+          // the crown's bottom quarter overlaps the top of the circle,
+          // rather than floating entirely above it.
           <CrownIcon
-            size={16}
-            className="absolute -top-2.5 -end-1 -rotate-[22deg] text-[#d9b74a] drop-shadow-[0_1px_1px_rgba(0,0,0,0.25)]"
+            size={24}
+            className="absolute -top-[15px] -end-[6px] -rotate-[22deg] text-[#d9b74a] drop-shadow-[0_1px_1px_rgba(0,0,0,0.25)]"
           />
         )}
       </span>
