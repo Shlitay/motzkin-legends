@@ -51,6 +51,11 @@ export default function ParticipantModal({
   const [season, setSeason] = useState<SeasonRow | null>(null);
   const [lastRound, setLastRound] = useState<LastRoundRow | null>(null);
 
+  // The stats popup and the predictions popup are two separate screens of
+  // the same modal — "predictions" fully replaces the stats content
+  // rather than showing alongside it.
+  const [view, setView] = useState<"stats" | "predictions">("stats");
+
   // Slide-through view of this participant's current-round predictions.
   // Only meaningful once the round has started (locked) — while it's
   // still 'open' nobody but the predictor themselves can read these rows
@@ -172,6 +177,25 @@ export default function ParticipantModal({
           <p className="text-sm text-muted">טוען...</p>
         ) : !season ? (
           <p className="text-sm text-danger">לא ניתן היה לטעון את המשתתף.</p>
+        ) : view === "predictions" ? (
+          <div className="flex flex-col items-center gap-4">
+            <button
+              onClick={() => setView("stats")}
+              className="flex items-center gap-1 self-start text-sm font-medium text-muted hover:text-ink"
+            >
+              <ChevronIcon size={14} className="rotate-180" />
+              חזרה
+            </button>
+            <PredictionSlides
+              name={season.display_name}
+              matches={slideMatches}
+              index={slideIndex}
+              onNext={goNext}
+              onPrevious={goPrevious}
+              onTouchStart={onTouchStart}
+              onTouchEnd={onTouchEnd}
+            />
+          </div>
         ) : (
           <div className="flex flex-col items-center gap-6">
             <div className="flex flex-col items-center gap-2">
@@ -180,6 +204,16 @@ export default function ParticipantModal({
               </div>
               <p className="font-medium text-ink">{season.display_name}</p>
             </div>
+
+            {showSlides && (
+              <button
+                onClick={() => setView("predictions")}
+                className="flex items-center gap-1 text-sm font-medium text-brand hover:underline"
+              >
+                צפייה בניחושי המשתתף
+                <ChevronIcon size={14} />
+              </button>
+            )}
 
             <StatCard
               title="מחזור אחרון"
@@ -196,17 +230,6 @@ export default function ParticipantModal({
               points={season.total_points}
               hit={season.season_hits}
             />
-
-            {showSlides && (
-              <PredictionSlides
-                matches={slideMatches}
-                index={slideIndex}
-                onNext={goNext}
-                onPrevious={goPrevious}
-                onTouchStart={onTouchStart}
-                onTouchEnd={onTouchEnd}
-              />
-            )}
           </div>
         )}
 
@@ -226,6 +249,7 @@ export default function ParticipantModal({
 // (previous = rotated chevron on screen-right, next = plain chevron on
 // screen-left), plus basic touch-swipe for an actual "slide" feel.
 function PredictionSlides({
+  name,
   matches,
   index,
   onNext,
@@ -233,6 +257,7 @@ function PredictionSlides({
   onTouchStart,
   onTouchEnd,
 }: {
+  name: string;
   matches: SlideMatch[];
   index: number;
   onNext: () => void;
@@ -246,9 +271,9 @@ function PredictionSlides({
   const hasResult = status !== "not-started" && m.home_score !== null && m.away_score !== null;
 
   return (
-    <div className="w-full border-t border-neutral-100 pt-5">
+    <div className="w-full">
       <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">
-        ניחושים למחזור הנוכחי
+        ניחושי {name} למחזור הנוכחי
       </p>
 
       <div
