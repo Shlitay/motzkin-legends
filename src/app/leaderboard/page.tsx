@@ -11,7 +11,6 @@ import RoundApprovalStatus from "@/components/RoundApprovalStatus";
 import RoundCountdown from "@/components/RoundCountdown";
 import TopBar from "@/components/TopBar";
 import { createClient } from "@/lib/supabase/client";
-import { formatIsraelDeadline } from "@/lib/israelTime";
 import { lockExpiredRounds } from "@/lib/lockExpiredRounds";
 import { matchStatus, type MatchStatus } from "@/lib/matchStatus";
 
@@ -152,7 +151,6 @@ export default function LeaderboardPage() {
   }, [supabase, selectedRoundId]);
 
   const selectedRound = rounds.find((r) => r.id === selectedRoundId) ?? null;
-  const isOpenRound = selectedRound?.status === "open";
 
   // rounds is already ordered by round_number ascending (the fetch query's
   // own sort), so adjacent array entries are adjacent rounds.
@@ -190,10 +188,7 @@ export default function LeaderboardPage() {
           >
             <ChevronIcon size={16} className="rotate-180" />
           </button>
-          <p className="text-sm text-muted">
-            מחזור {selectedRound.round_number} · ההגשה {isOpenRound ? "נסגרת" : "נסגרה"}{" "}
-            {formatIsraelDeadline(selectedRound.deadline_at)}
-          </p>
+          <p className="text-sm text-muted">מחזור {selectedRound.round_number}</p>
           <button
             onClick={() => nextRound && setSelectedRoundId(nextRound.id)}
             disabled={!nextRound}
