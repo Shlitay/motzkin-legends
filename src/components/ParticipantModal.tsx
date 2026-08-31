@@ -1,8 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import StatCard from "@/components/StatCard";
+import { ChevronIcon } from "@/components/icons";
+import { TEAM_LOGOS, shortTeamName } from "@/lib/mock-data";
+import { matchStatus } from "@/lib/matchStatus";
 
 type SeasonRow = {
   display_name: string;
@@ -20,17 +23,104 @@ type LastRoundRow = {
   correct_result_count: number | null;
 };
 
+type SlideMatch = {
+  id: string;
+  home_team: string;
+  away_team: string;
+  kickoff_at: string;
+  home_score: number | null;
+  away_score: number | null;
+  is_final: boolean;
+  predHome: number | null;
+  predAway: number | null;
+};
+
 export default function ParticipantModal({
   userId,
+  round,
   onClose,
 }: {
   userId: string;
+  // Only the round's id/status matter here — kept loose so callers can
+  // pass their own CurrentRound (or RoundMatch-shaped object) as-is.
+  round: { id: string; status: string } | null;
   onClose: () => void;
 }) {
   const [supabase] = useState(() => createClient());
   const [loading, setLoading] = useState(true);
   const [season, setSeason] = useState<SeasonRow | null>(null);
   const [lastRound, setLastRound] = useState<LastRoundRow | null>(null);
+
+  // Slide-through view of this participant's current-round predictions.
+  // Only meaningful once the round has started (locked) — while it's
+  // still 'open' nobody but the predictor themselves can read these rows
+  // anyway (rls.sql), and once the round is 'finished' this quick "follow
+  // along live" view isn't the point anymore.
+  const [slideMatches, setSlideMatches] = useState<SlideMatch[]>([]);
+  const [slideIndex, setSlideIndex] = useState(0);
+  const touchStartX = useRef<number | null>(null);
+  const showSlides = round?.status === "locked" && slideMatches.length > 0;
+
+  useEffect(() => {
+    (async () => {
+      if (!round || round.status !== "locked") {
+        setSlideMatches([]);
+        return;
+      }
+
+      const { data: matchRows } = await supabase
+        .from("matches")
+        .select("id, home_team, away_team, kickoff_at, home_score, away_score, is_final")
+        .eq("round_id", round.id)
+        .order("kickoff_at");
+
+      const list = matchRows ?? [];
+      if (list.length === 0) {
+        setSlideMatches([]);
+        return;
+      }
+
+      // Relies on predictions_select_locked_round (see
+      // fix-predictions-locked-round-approved-only.sql) — readable here
+      // only because the *viewer* is themselves an approved participant
+      // of this round, regardless of whose predictions these are.
+      const { data: predRows } = await supabase
+        .from("predictions")
+        .select("match_id, pred_home_score, pred_away_score")
+        .eq("user_id", userId)
+        .in("match_id", list.map((m) => m.id));
+
+      const byMatch = new Map((predRows ?? []).map((p) => [p.match_id, p]));
+      setSlideMatches(
+        list.map((m) => ({
+          ...m,
+          predHome: byMatch.get(m.id)?.pred_home_score ?? null,
+          predAway: byMatch.get(m.id)?.pred_away_score ?? null,
+        }))
+      );
+      setSlideIndex(0);
+    })();
+  }, [supabase, userId, round?.id, round?.status]);
+
+  function goNext() {
+    setSlideIndex((i) => Math.min(i + 1, slideMatches.length - 1));
+  }
+  function goPrevious() {
+    setSlideIndex((i) => Math.max(i - 1, 0));
+  }
+  function onTouchStart(e: React.TouchEvent) {
+    touchStartX.current = e.touches[0].clientX;
+  }
+  function onTouchEnd(e: React.TouchEvent) {
+    if (touchStartX.current === null) return;
+    const delta = e.changedTouches[0].clientX - touchStartX.current;
+    touchStartX.current = null;
+    // Mirrors the prev/next chevron layout below (previous = screen-right,
+    // next = screen-left, same as the round switcher on /predictions) —
+    // a right-to-left drag (delta negative) reads as "forward".
+    if (delta < -40) goNext();
+    else if (delta > 40) goPrevious();
+  }
 
   useEffect(() => {
     (async () => {
@@ -106,6 +196,17 @@ export default function ParticipantModal({
               points={season.total_points}
               hit={season.season_hits}
             />
+
+            {showSlides && (
+              <PredictionSlides
+                matches={slideMatches}
+                index={slideIndex}
+                onNext={goNext}
+                onPrevious={goPrevious}
+                onTouchStart={onTouchStart}
+                onTouchEnd={onTouchEnd}
+              />
+            )}
           </div>
         )}
 
@@ -118,4 +219,101 @@ export default function ParticipantModal({
       </div>
     </div>
   );
+}
+
+// Bare-bones slide-through view, one match per slide — chevrons follow the
+// same left/right convention as the round switcher on /predictions
+// (previous = rotated chevron on screen-right, next = plain chevron on
+// screen-left), plus basic touch-swipe for an actual "slide" feel.
+function PredictionSlides({
+  matches,
+  index,
+  onNext,
+  onPrevious,
+  onTouchStart,
+  onTouchEnd,
+}: {
+  matches: SlideMatch[];
+  index: number;
+  onNext: () => void;
+  onPrevious: () => void;
+  onTouchStart: (e: React.TouchEvent) => void;
+  onTouchEnd: (e: React.TouchEvent) => void;
+}) {
+  const m = matches[index];
+  const now = new Date();
+  const status = matchStatus(m.kickoff_at, m.is_final, now);
+  const hasResult = status !== "not-started" && m.home_score !== null && m.away_score !== null;
+
+  return (
+    <div className="w-full border-t border-neutral-100 pt-5">
+      <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">
+        ניחושים למחזור הנוכחי
+      </p>
+
+      <div
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+        className="rounded-xl border border-neutral-200 bg-surface p-4"
+      >
+        <div className="flex items-center justify-center gap-3">
+          <div className="flex flex-1 flex-col items-center gap-1.5">
+            <TeamLogo team={m.home_team} />
+            <span className="text-xs font-medium text-ink">{shortTeamName(m.home_team)}</span>
+          </div>
+
+          <div className="flex flex-col items-center gap-1">
+            {/* Home box is DOM-first so it renders visually *right* under
+                this row's RTL mirroring, away box visually *left* (same
+                pattern as MatchRow/EndedMatchCard elsewhere in this app) —
+                a dir="ltr" span always reads left-to-right regardless, so
+                away has to come first here to land under the away box on
+                the left, home second to land under home on the right. */}
+            <span className="font-display text-lg font-bold tabular-nums text-ink" dir="ltr">
+              {m.predAway ?? "-"} : {m.predHome ?? "-"}
+            </span>
+            <span className="text-[10px] font-medium text-muted">ניחוש</span>
+            {hasResult && (
+              <span className="mt-1 text-xs font-medium tabular-nums text-muted" dir="ltr">
+                {m.away_score} : {m.home_score}
+              </span>
+            )}
+          </div>
+
+          <div className="flex flex-1 flex-col items-center gap-1.5">
+            <TeamLogo team={m.away_team} />
+            <span className="text-xs font-medium text-ink">{shortTeamName(m.away_team)}</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-3 flex items-center justify-center gap-4">
+        <button
+          onClick={onPrevious}
+          disabled={index === 0}
+          aria-label="משחק קודם"
+          className="text-muted enabled:hover:text-ink disabled:cursor-not-allowed disabled:opacity-30"
+        >
+          <ChevronIcon size={16} className="rotate-180" />
+        </button>
+        <span className="text-xs text-muted">
+          משחק {index + 1} מתוך {matches.length}
+        </span>
+        <button
+          onClick={onNext}
+          disabled={index === matches.length - 1}
+          aria-label="משחק הבא"
+          className="text-muted enabled:hover:text-ink disabled:cursor-not-allowed disabled:opacity-30"
+        >
+          <ChevronIcon size={16} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function TeamLogo({ team }: { team: string }) {
+  const src = TEAM_LOGOS[team];
+  if (!src) return null;
+  return <img src={src} alt="" className="h-7 w-7 object-contain" />;
 }

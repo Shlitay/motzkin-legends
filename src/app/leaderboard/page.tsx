@@ -149,7 +149,11 @@ export default function LeaderboardPage() {
       />
 
       {selectedUserId && (
-        <ParticipantModal userId={selectedUserId} onClose={() => setSelectedUserId(null)} />
+        <ParticipantModal
+          userId={selectedUserId}
+          round={round}
+          onClose={() => setSelectedUserId(null)}
+        />
       )}
 
       <BottomNav />
