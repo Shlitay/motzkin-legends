@@ -229,18 +229,21 @@ function PredictionsList({ name, matches }: { name: string; matches: RoundMatchP
               <TeamLogo team={m.home_team} />
               {shortTeamName(m.home_team)}
             </span>
-            {/* A single self-contained "1-2" chip, not two digits stacked
-                under separate team boxes like elsewhere in this app — so
-                the away-first alignment trick those cases need doesn't
-                apply here. Isolated to ltr just to keep the digit-dash-digit
-                run stable next to the Hebrew team names on either side,
-                same bidi precaution as everywhere else in this codebase. */}
+            {/* Home box is DOM-first so it renders visually *right* under
+                this row's RTL mirroring, away box visually *left* (same
+                pattern as MatchRow/EndedMatchCard elsewhere in this app).
+                A dir="ltr" span always reads left-to-right regardless of
+                being one atomic chip rather than two stacked digits — a
+                reader still associates the leftmost digit with whichever
+                box sits on the left, so away has to come first here too,
+                home second, same fix already needed twice elsewhere in
+                this codebase for the identical reason. */}
             <span
               className="shrink-0 font-display font-bold tabular-nums text-ink"
               dir="ltr"
               style={{ unicodeBidi: "isolate" }}
             >
-              {m.predHome ?? "-"}-{m.predAway ?? "-"}
+              {m.predAway ?? "-"}-{m.predHome ?? "-"}
             </span>
             <span className="flex flex-1 items-center justify-end gap-1.5 text-end text-ink">
               {shortTeamName(m.away_team)}
