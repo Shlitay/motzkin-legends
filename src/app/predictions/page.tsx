@@ -15,6 +15,15 @@ import { matchStatus, type MatchStatus } from "@/lib/matchStatus";
 
 type ScoreEntry = { home: string; away: string; pointsEarned: number | null };
 
+type RawAllPredictionRow = {
+  match_id: string;
+  pred_home_score: number;
+  pred_away_score: number;
+  users: { full_name: string; nickname: string | null; avatar: string | null } | null;
+};
+
+type ParticipantPrediction = { name: string; avatar: string; home: number; away: number };
+
 type DbMatch = {
   id: string;
   home_team: string;
@@ -43,6 +52,7 @@ export default function PredictionsPage() {
   const [selectedRoundId, setSelectedRoundId] = useState<string | null>(null);
   const [matches, setMatches] = useState<DbMatch[]>([]);
   const [entries, setEntries] = useState<Record<string, ScoreEntry>>({});
+  const [allPredictions, setAllPredictions] = useState<Record<string, ParticipantPrediction[]>>({});
   const [submitted, setSubmitted] = useState(false);
   const [now, setNow] = useState(() => new Date());
 
@@ -132,13 +142,37 @@ export default function PredictionsPage() {
           : { home: "", away: "", pointsEarned: null };
       });
 
+      // Everyone's predictions only become readable (RLS-wise) once the
+      // round is no longer open — see add-predictions-visible-after-round-locked.sql.
+      const roundLocked = rounds.find((r) => r.id === selectedRoundId)?.status !== "open";
+      let nextAllPredictions: Record<string, ParticipantPrediction[]> = {};
+      if (roundLocked && matchList.length > 0) {
+        const { data: allRows } = await supabase
+          .from("predictions")
+          .select("match_id, pred_home_score, pred_away_score, users(full_name, nickname, avatar)")
+          .in("match_id", matchList.map((m) => m.id))
+          .overrideTypes<RawAllPredictionRow[], { merge: false }>();
+
+        nextAllPredictions = {};
+        (allRows ?? []).forEach((row) => {
+          const entry: ParticipantPrediction = {
+            name: row.users?.nickname ?? row.users?.full_name ?? "משתתף",
+            avatar: row.users?.avatar ?? "🙂",
+            home: row.pred_home_score,
+            away: row.pred_away_score,
+          };
+          (nextAllPredictions[row.match_id] ??= []).push(entry);
+        });
+      }
+
       setMatches(matchList);
       setEntries(nextEntries);
+      setAllPredictions(nextAllPredictions);
       setSubmitted(matchList.length > 0 && predictionRows.length === matchList.length);
       setError(null);
       setLoading(false);
     })();
-  }, [supabase, selectedRoundId]);
+  }, [supabase, selectedRoundId, rounds]);
 
   const selectedRound = rounds.find((r) => r.id === selectedRoundId) ?? null;
   const isOpenRound = selectedRound?.status === "open";
@@ -304,6 +338,8 @@ export default function PredictionsPage() {
         })}
       </div>
 
+      {!isOpenRound && <AllPredictions matches={sortedMatches} predictionsByMatch={allPredictions} />}
+
       {isOpenRound &&
         (submitted ? (
           <button
@@ -345,6 +381,57 @@ function MatchStatusBadge({ status }: { status: Exclude<MatchStatus, "ended"> })
       <span className={`h-1.5 w-1.5 rounded-full ${c.dot}`} />
       {c.label}
     </span>
+  );
+}
+
+// Bare-bones "everyone's picks" list, shown once a round is no longer open
+// (predictions_select_locked_round in add-predictions-visible-after-round-locked.sql
+// is what actually makes the underlying rows readable at the DB level).
+function AllPredictions({
+  matches,
+  predictionsByMatch,
+}: {
+  matches: DbMatch[];
+  predictionsByMatch: Record<string, ParticipantPrediction[]>;
+}) {
+  const matchesWithPicks = matches.filter((m) => (predictionsByMatch[m.id]?.length ?? 0) > 0);
+  if (matchesWithPicks.length === 0) return null;
+
+  return (
+    <section className="w-full max-w-md overflow-hidden rounded-[28px] bg-surface shadow-[0_1px_2px_rgba(0,0,0,0.04),0_16px_32px_-18px_rgba(0,0,0,0.28)]">
+      <h2 className="px-5 pb-1 pt-5 text-sm font-semibold uppercase tracking-wide text-muted">
+        ניחושי כל המשתתפים
+      </h2>
+
+      <div className="divide-y divide-neutral-100">
+        {matchesWithPicks.map((m) => (
+          <div key={m.id} className="px-5 py-3">
+            <p className="mb-2 text-sm font-bold text-ink">
+              {shortTeamName(m.home_team)} - {shortTeamName(m.away_team)}
+            </p>
+            <ul className="space-y-1.5">
+              {predictionsByMatch[m.id].map((p, idx) => (
+                <li key={idx} className="flex items-center justify-between text-sm">
+                  <span className="flex items-center gap-1.5 text-ink/90">
+                    <span>{p.avatar}</span>
+                    {p.name}
+                  </span>
+                  {/* This row has no home/away boxes to align under (unlike
+                      MatchRow/EndedMatchCard elsewhere in this file) — order
+                      just needs to match the "home - away" header above it,
+                      so home first here, not the away-first convention used
+                      where a forced-ltr score has to line up under mirrored
+                      team boxes. */}
+                  <span className="font-display tabular-nums text-muted" dir="ltr">
+                    {p.home} : {p.away}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
 
