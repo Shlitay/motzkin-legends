@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import BottomNav from "@/components/BottomNav";
+import { ENTRY_FEE_ILS } from "@/components/JackpotBadge";
 import LeaderRow from "@/components/LeaderRow";
 import NewsTicker from "@/components/NewsTicker";
 import ParticipantModal from "@/components/ParticipantModal";
@@ -38,6 +39,7 @@ export default function LeaderboardPage() {
   const [roundMatches, setRoundMatches] = useState<RoundMatch[]>([]);
   const [now, setNow] = useState(() => new Date());
   const [currentRoundPoints, setCurrentRoundPoints] = useState<Row[]>([]);
+  const [approvedCount, setApprovedCount] = useState<number | null>(null);
   const [seasonPoints, setSeasonPoints] = useState<Row[]>([]);
   const [mostPlayed, setMostPlayed] = useState<Row[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
@@ -84,6 +86,16 @@ export default function LeaderboardPage() {
               count: r.total_points ?? 0,
             }))
         );
+
+        // For the winner's payout badge once the round is finished — the
+        // pot is approved-participant-count × entry fee, same definition
+        // TopBar's JackpotBadge uses.
+        const { count } = await supabase
+          .from("round_participation")
+          .select("id", { count: "exact", head: true })
+          .eq("round_id", currentRound.id)
+          .eq("payment_status", "approved");
+        setApprovedCount(count);
       }
 
       const { data: stats } = await supabase
@@ -115,6 +127,14 @@ export default function LeaderboardPage() {
     })();
   }, [supabase]);
 
+  // The winner takes the pot minus one entry fee — second place gets their
+  // own buy-in refunded rather than it going to the winner. Only shown
+  // once every match in the round is done (round.status === "finished"),
+  // matching the crown badge itself.
+  const isRoundFinished = round?.status === "finished";
+  const winnerPayout =
+    isRoundFinished && approvedCount !== null ? approvedCount * ENTRY_FEE_ILS - ENTRY_FEE_ILS : null;
+
   return (
     <main className="flex min-h-screen flex-col items-center gap-[22.4px] px-6 pb-24 pt-20">
       <TopBar />
@@ -133,6 +153,7 @@ export default function LeaderboardPage() {
           rows={currentRoundPoints}
           countLabel="נק'"
           onSelect={setSelectedUserId}
+          winnerJackpotLabel={winnerPayout !== null ? `זכה בקופה: ${winnerPayout} ₪` : undefined}
         />
       )}
       <LeaderTable
@@ -193,11 +214,16 @@ function LeaderTable({
   rows,
   countLabel,
   onSelect,
+  winnerJackpotLabel,
 }: {
   title: string;
   rows: Row[];
   countLabel: string;
   onSelect: (userId: string) => void;
+  // Only ever passed for the current round's points table, once that
+  // round is finished — applied to rows[0], which is already the actual
+  // rank-1 winner (rows arrives pre-sorted by the DB's own tiebroken rank).
+  winnerJackpotLabel?: string;
 }) {
   return (
     <section className="w-full max-w-md overflow-hidden rounded-[28px] bg-surface shadow-[0_1px_2px_rgba(0,0,0,0.04),0_16px_32px_-18px_rgba(0,0,0,0.28)]">
@@ -216,6 +242,8 @@ function LeaderTable({
             name={r.name}
             count={r.count}
             onClick={() => onSelect(r.userId)}
+            crown={i === 0 && !!winnerJackpotLabel}
+            jackpotLabel={i === 0 ? winnerJackpotLabel : undefined}
           />
         ))}
       </div>

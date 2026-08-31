@@ -19,6 +19,15 @@ export default function JackpotBadge() {
       const round = await getCurrentRound(supabase);
       if (!round) return;
 
+      // Once every match in the round is done, the pot's already been paid
+      // out to the winner (see the crown/payout badge on /leaderboard) —
+      // keep showing the old total here would look like there's still
+      // money sitting in the pot.
+      if (round.status === "finished") {
+        setAmount(0);
+        return;
+      }
+
       const { count } = await supabase
         .from("round_participation")
         .select("id", { count: "exact", head: true })

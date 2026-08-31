@@ -56,6 +56,15 @@ export function WinnerIcon({ className }: IconProps) {
   );
 }
 
+export function CrownIcon({ className, size }: IconProps) {
+  return (
+    <svg {...base} width={size ?? base.width} height={size ?? base.height} className={className} fill="currentColor" stroke="none">
+      <path d="M4 17.5 2.5 8l4.8 3.7L12 5l4.7 6.7L21.5 8 20 17.5z" />
+      <rect x="4" y="19" width="16" height="2" rx="1" />
+    </svg>
+  );
+}
+
 export function BookIcon({ className }: IconProps) {
   return (
     <svg {...base} className={className}>
