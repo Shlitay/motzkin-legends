@@ -30,11 +30,14 @@ export default function ManagerDashboard() {
   const [error, setError] = useState<string | null>(null);
   const [roundId, setRoundId] = useState<string | null>(null);
   const [roundNumber, setRoundNumber] = useState<number | null>(null);
+  const [roundStatus, setRoundStatus] = useState<string | null>(null);
   const [waiting, setWaiting] = useState<Participant[]>([]);
   const [approved, setApproved] = useState<Participant[]>([]);
   const [showScoringRules, setShowScoringRules] = useState(false);
   const [showNewsStrip, setShowNewsStrip] = useState(false);
   const [showMatchResults, setShowMatchResults] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [resetting, setResetting] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -50,6 +53,7 @@ export default function ManagerDashboard() {
 
       setRoundId(round.id);
       setRoundNumber(round.round_number);
+      setRoundStatus(round.status);
 
       const { data: rows, error: rowsError } = await supabase
         .from("round_participation")
@@ -129,6 +133,32 @@ export default function ManagerDashboard() {
     setWaiting((w) => w.filter((p) => p.participationId !== person.participationId));
   }
 
+  // Bulk version of unapprove() — moves everyone currently approved for
+  // this round back to "waiting", for cleanup once the round is fully
+  // done. Only reachable once roundStatus === "finished" (see the button
+  // below) and behind an "are you sure" confirm.
+  async function resetAllApproved() {
+    if (!roundId) return;
+    setResetting(true);
+
+    const { error: updateError } = await supabase
+      .from("round_participation")
+      .update({ payment_status: "waiting" })
+      .eq("round_id", roundId)
+      .eq("payment_status", "approved");
+
+    if (updateError) {
+      setError(updateError.message);
+      setResetting(false);
+      return;
+    }
+
+    setWaiting((w) => [...w, ...approved]);
+    setApproved([]);
+    setResetting(false);
+    setShowResetConfirm(false);
+  }
+
   if (loading) {
     return (
       <main className="flex min-h-screen flex-col items-center justify-center gap-4 px-6 pt-20 text-center">
@@ -165,6 +195,43 @@ export default function ManagerDashboard() {
             secondaryActionLabel="הסרה"
           />
           <NameList title="אושרו למחזור" people={approved} onAction={unapprove} actionLabel="המתנה" />
+        </div>
+      )}
+
+      {roundStatus === "finished" && approved.length > 0 && (
+        <button
+          onClick={() => setShowResetConfirm(true)}
+          className="rounded-full border border-danger px-6 py-2 text-sm font-medium text-danger hover:bg-danger/10"
+        >
+          איפוס משתתפים מאושרים
+        </button>
+      )}
+
+      {showResetConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-6">
+          <div className="w-full max-w-sm rounded-2xl bg-white p-8 text-center shadow-lg">
+            <p className="mb-2 text-lg font-semibold">איפוס משתתפים מאושרים?</p>
+            <p className="mb-6 text-sm text-muted">
+              כל {approved.length} המשתתפים שאושרו למחזור {roundNumber} יעברו בחזרה למצב &quot;ממתינים
+              לאישור&quot;. לא ניתן לבטל פעולה זו.
+            </p>
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={() => setShowResetConfirm(false)}
+                disabled={resetting}
+                className="rounded-full border border-neutral-300 px-6 py-2 font-medium hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                ביטול
+              </button>
+              <button
+                onClick={resetAllApproved}
+                disabled={resetting}
+                className="rounded-full bg-danger px-6 py-2 font-medium text-white hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {resetting ? "מאפס..." : "כן, אפס"}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
