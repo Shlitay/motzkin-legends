@@ -204,7 +204,7 @@ export default function LeaderboardPage() {
         <RoundMatchSummary matches={roundMatches} now={now} />
       )}
 
-      {selectedRound && (
+      {selectedRound && selectedRound.status !== "open" && (
         <LeaderTable
           title={`נקודות מחזור ${selectedRound.round_number}`}
           rows={roundPoints}
