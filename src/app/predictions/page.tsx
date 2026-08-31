@@ -30,6 +30,7 @@ type DbRound = {
   round_number: number;
   deadline_at: string;
   status: string;
+  predictions_open_at: string | null;
 };
 
 export default function PredictionsPage() {
@@ -60,7 +61,7 @@ export default function PredictionsPage() {
 
       const { data, error: roundsError } = await supabase
         .from("rounds")
-        .select("id, round_number, deadline_at, status")
+        .select("id, round_number, deadline_at, status, predictions_open_at")
         .order("round_number", { ascending: true });
 
       if (roundsError) {
@@ -142,6 +143,13 @@ export default function PredictionsPage() {
 
   const selectedRound = rounds.find((r) => r.id === selectedRoundId) ?? null;
   const isOpenRound = selectedRound?.status === "open";
+
+  // A round can accept payment/approval before predictions can actually be
+  // submitted (house rule: predictions open Thursday 20:00 Israel time) —
+  // null means no restriction, keeping rounds seeded without this column
+  // set (or before this feature existed) working exactly as before.
+  const predictionsOpen =
+    !selectedRound?.predictions_open_at || now >= new Date(selectedRound.predictions_open_at);
 
   // rounds is already ordered by round_number ascending (the fetch query's
   // own sort), so adjacent array entries are adjacent rounds.
@@ -227,9 +235,12 @@ export default function PredictionsPage() {
     );
   }
 
-  const heading = !isOpenRound || submitted
-    ? "צפייה בניחושים שהגשתם"
-    : "הזינו את הניחושים למחזור";
+  const heading =
+    !isOpenRound || submitted
+      ? "צפייה בניחושים שהגשתם"
+      : !predictionsOpen
+      ? "הגשת ניחושים עדיין לא נפתחה"
+      : "הזינו את הניחושים למחזור";
 
   return (
     <main className="flex min-h-screen flex-col items-center gap-6 px-6 pb-24 pt-20">
@@ -263,10 +274,18 @@ export default function PredictionsPage() {
         </div>
       </div>
 
+      {isOpenRound && !predictionsOpen && selectedRound.predictions_open_at && (
+        <div className="w-full max-w-md rounded-2xl border border-draw/40 bg-draw/10 p-4 text-center text-sm font-medium text-draw">
+          הגשת ניחושים למחזור {selectedRound.round_number} תיפתח ב-
+          {formatIsraelDeadline(selectedRound.predictions_open_at)}. אפשר כבר עכשיו לשלוח תשלום
+          דרך Paybox ולהמתין לאישור.
+        </div>
+      )}
+
       <div className="w-full max-w-md space-y-4">
         {sortedMatches.map((m, i) => {
           const e = entries[m.id];
-          const readOnly = !isOpenRound || submitted;
+          const readOnly = !isOpenRound || !predictionsOpen || submitted;
           const status = matchStatus(m.kickoff_at, m.is_final, now);
           return (
             <div key={m.id}>
@@ -305,6 +324,7 @@ export default function PredictionsPage() {
       </div>
 
       {isOpenRound &&
+        predictionsOpen &&
         (submitted ? (
           <button
             onClick={() => setSubmitted(false)}
