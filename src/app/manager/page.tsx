@@ -235,7 +235,7 @@ export default function ManagerDashboard() {
         </div>
       )}
 
-      <div className="grid w-full max-w-md grid-cols-2 gap-4">
+      <div className="grid w-full max-w-lg grid-cols-3 gap-4">
         <ManagerActionButton onClick={() => setShowMatchResults(true)}>תוצאות מחזור</ManagerActionButton>
         <ManagerActionButton onClick={() => setShowScoringRules(true)}>כללי ניקוד</ManagerActionButton>
         <ManagerActionButton onClick={() => setShowNewsStrip(true)}>רצועת חדשות</ManagerActionButton>
