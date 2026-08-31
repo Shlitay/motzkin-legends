@@ -201,11 +201,11 @@ function LeaderTable({
 }) {
   return (
     <section className="w-full max-w-md overflow-hidden rounded-[28px] bg-surface shadow-[0_1px_2px_rgba(0,0,0,0.04),0_16px_32px_-18px_rgba(0,0,0,0.28)]">
-      <h2 className="px-5 pb-1 pt-5 text-sm font-semibold uppercase tracking-wide text-muted">
-        {title}
-      </h2>
-      <div className="flex justify-end px-5 pb-1">
-        <span className="text-xs font-medium uppercase tracking-wide text-muted">{countLabel}</span>
+      <div className="flex items-baseline justify-between gap-3 px-5 pb-1 pt-5">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">{title}</h2>
+        <span className="shrink-0 text-xs font-medium uppercase tracking-wide text-muted">
+          {countLabel}
+        </span>
       </div>
       <div className="divide-y divide-neutral-100">
         {rows.map((r, i) => (
