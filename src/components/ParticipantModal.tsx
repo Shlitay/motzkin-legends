@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import StatCard from "@/components/StatCard";
 import { ChevronIcon } from "@/components/icons";
 import { TEAM_LOGOS, shortTeamName } from "@/lib/mock-data";
-import { matchStatus } from "@/lib/matchStatus";
 
 type SeasonRow = {
   display_name: string;
@@ -23,14 +22,10 @@ type LastRoundRow = {
   correct_result_count: number | null;
 };
 
-type SlideMatch = {
+type RoundMatchPrediction = {
   id: string;
   home_team: string;
   away_team: string;
-  kickoff_at: string;
-  home_score: number | null;
-  away_score: number | null;
-  is_final: boolean;
   predHome: number | null;
   predAway: number | null;
 };
@@ -56,32 +51,30 @@ export default function ParticipantModal({
   // rather than showing alongside it.
   const [view, setView] = useState<"stats" | "predictions">("stats");
 
-  // Slide-through view of this participant's current-round predictions.
-  // Only meaningful once the round has started (locked) — while it's
-  // still 'open' nobody but the predictor themselves can read these rows
-  // anyway (rls.sql), and once the round is 'finished' this quick "follow
-  // along live" view isn't the point anymore.
-  const [slideMatches, setSlideMatches] = useState<SlideMatch[]>([]);
-  const [slideIndex, setSlideIndex] = useState(0);
-  const touchStartX = useRef<number | null>(null);
-  const showSlides = round?.status === "locked" && slideMatches.length > 0;
+  // This participant's picks for every match in the current round, as a
+  // plain list. Only meaningful once the round has started (locked) —
+  // while it's still 'open' nobody but the predictor themselves can read
+  // these rows anyway (rls.sql), and once the round is 'finished' this
+  // quick "follow along live" view isn't the point anymore.
+  const [roundMatches, setRoundMatches] = useState<RoundMatchPrediction[]>([]);
+  const hasPredictions = round?.status === "locked" && roundMatches.length > 0;
 
   useEffect(() => {
     (async () => {
       if (!round || round.status !== "locked") {
-        setSlideMatches([]);
+        setRoundMatches([]);
         return;
       }
 
       const { data: matchRows } = await supabase
         .from("matches")
-        .select("id, home_team, away_team, kickoff_at, home_score, away_score, is_final")
+        .select("id, home_team, away_team, kickoff_at")
         .eq("round_id", round.id)
         .order("kickoff_at");
 
       const list = matchRows ?? [];
       if (list.length === 0) {
-        setSlideMatches([]);
+        setRoundMatches([]);
         return;
       }
 
@@ -96,36 +89,17 @@ export default function ParticipantModal({
         .in("match_id", list.map((m) => m.id));
 
       const byMatch = new Map((predRows ?? []).map((p) => [p.match_id, p]));
-      setSlideMatches(
+      setRoundMatches(
         list.map((m) => ({
-          ...m,
+          id: m.id,
+          home_team: m.home_team,
+          away_team: m.away_team,
           predHome: byMatch.get(m.id)?.pred_home_score ?? null,
           predAway: byMatch.get(m.id)?.pred_away_score ?? null,
         }))
       );
-      setSlideIndex(0);
     })();
   }, [supabase, userId, round?.id, round?.status]);
-
-  function goNext() {
-    setSlideIndex((i) => Math.min(i + 1, slideMatches.length - 1));
-  }
-  function goPrevious() {
-    setSlideIndex((i) => Math.max(i - 1, 0));
-  }
-  function onTouchStart(e: React.TouchEvent) {
-    touchStartX.current = e.touches[0].clientX;
-  }
-  function onTouchEnd(e: React.TouchEvent) {
-    if (touchStartX.current === null) return;
-    const delta = e.changedTouches[0].clientX - touchStartX.current;
-    touchStartX.current = null;
-    // Mirrors the prev/next chevron layout below (previous = screen-right,
-    // next = screen-left, same as the round switcher on /predictions) —
-    // a right-to-left drag (delta negative) reads as "forward".
-    if (delta < -40) goNext();
-    else if (delta > 40) goPrevious();
-  }
 
   useEffect(() => {
     (async () => {
@@ -186,15 +160,7 @@ export default function ParticipantModal({
               <ChevronIcon size={14} className="rotate-180" />
               חזרה
             </button>
-            <PredictionSlides
-              name={season.display_name}
-              matches={slideMatches}
-              index={slideIndex}
-              onNext={goNext}
-              onPrevious={goPrevious}
-              onTouchStart={onTouchStart}
-              onTouchEnd={onTouchEnd}
-            />
+            <PredictionsList name={season.display_name} matches={roundMatches} />
           </div>
         ) : (
           <div className="flex flex-col items-center gap-6">
@@ -205,7 +171,7 @@ export default function ParticipantModal({
               <p className="font-medium text-ink">{season.display_name}</p>
             </div>
 
-            {showSlides && (
+            {hasPredictions && (
               <button
                 onClick={() => setView("predictions")}
                 className="flex items-center gap-1 text-sm font-medium text-brand hover:underline"
@@ -244,95 +210,45 @@ export default function ParticipantModal({
   );
 }
 
-// Bare-bones slide-through view, one match per slide — chevrons follow the
-// same left/right convention as the round switcher on /predictions
-// (previous = rotated chevron on screen-right, next = plain chevron on
-// screen-left), plus basic touch-swipe for an actual "slide" feel.
-function PredictionSlides({
-  name,
-  matches,
-  index,
-  onNext,
-  onPrevious,
-  onTouchStart,
-  onTouchEnd,
-}: {
-  name: string;
-  matches: SlideMatch[];
-  index: number;
-  onNext: () => void;
-  onPrevious: () => void;
-  onTouchStart: (e: React.TouchEvent) => void;
-  onTouchEnd: (e: React.TouchEvent) => void;
-}) {
-  const m = matches[index];
-  const now = new Date();
-  const status = matchStatus(m.kickoff_at, m.is_final, now);
-  const hasResult = status !== "not-started" && m.home_score !== null && m.away_score !== null;
-
+// One line per match: home team, this participant's predicted score, away
+// team — the whole current round at a glance, no per-match navigation.
+function PredictionsList({ name, matches }: { name: string; matches: RoundMatchPrediction[] }) {
   return (
     <div className="w-full">
       <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">
         ניחושי {name} למחזור הנוכחי
       </p>
 
-      <div
-        onTouchStart={onTouchStart}
-        onTouchEnd={onTouchEnd}
-        className="rounded-xl border border-neutral-200 bg-surface p-4"
-      >
-        <div className="flex items-center justify-center gap-3">
-          <div className="flex flex-1 flex-col items-center gap-1.5">
-            <TeamLogo team={m.home_team} />
-            <span className="text-xs font-medium text-ink">{shortTeamName(m.home_team)}</span>
-          </div>
-
-          <div className="flex flex-col items-center gap-1">
-            {/* Home box is DOM-first so it renders visually *right* under
-                this row's RTL mirroring, away box visually *left* (same
-                pattern as MatchRow/EndedMatchCard elsewhere in this app) —
-                a dir="ltr" span always reads left-to-right regardless, so
-                away has to come first here to land under the away box on
-                the left, home second to land under home on the right. */}
-            <span className="font-display text-lg font-bold tabular-nums text-ink" dir="ltr">
-              {m.predAway ?? "-"} : {m.predHome ?? "-"}
+      <ul className="space-y-2">
+        {matches.map((m) => (
+          <li
+            key={m.id}
+            className="flex items-center gap-2 rounded-lg border border-neutral-200 bg-surface px-3 py-2 text-sm"
+          >
+            <span className="flex flex-1 items-center gap-1.5 text-ink">
+              <TeamLogo team={m.home_team} />
+              {shortTeamName(m.home_team)}
             </span>
-            <span className="text-[10px] font-medium text-muted">ניחוש</span>
-            {hasResult && (
-              <span className="mt-1 text-xs font-medium tabular-nums text-muted" dir="ltr">
-                {m.away_score} : {m.home_score}
-              </span>
-            )}
-          </div>
-
-          <div className="flex flex-1 flex-col items-center gap-1.5">
-            <TeamLogo team={m.away_team} />
-            <span className="text-xs font-medium text-ink">{shortTeamName(m.away_team)}</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-3 flex items-center justify-center gap-4">
-        <button
-          onClick={onPrevious}
-          disabled={index === 0}
-          aria-label="משחק קודם"
-          className="text-muted enabled:hover:text-ink disabled:cursor-not-allowed disabled:opacity-30"
-        >
-          <ChevronIcon size={16} className="rotate-180" />
-        </button>
-        <span className="text-xs text-muted">
-          משחק {index + 1} מתוך {matches.length}
-        </span>
-        <button
-          onClick={onNext}
-          disabled={index === matches.length - 1}
-          aria-label="משחק הבא"
-          className="text-muted enabled:hover:text-ink disabled:cursor-not-allowed disabled:opacity-30"
-        >
-          <ChevronIcon size={16} />
-        </button>
-      </div>
+            {/* A single self-contained "1-2" chip, not two digits stacked
+                under separate team boxes like elsewhere in this app — so
+                the away-first alignment trick those cases need doesn't
+                apply here. Isolated to ltr just to keep the digit-dash-digit
+                run stable next to the Hebrew team names on either side,
+                same bidi precaution as everywhere else in this codebase. */}
+            <span
+              className="shrink-0 font-display font-bold tabular-nums text-ink"
+              dir="ltr"
+              style={{ unicodeBidi: "isolate" }}
+            >
+              {m.predHome ?? "-"}-{m.predAway ?? "-"}
+            </span>
+            <span className="flex flex-1 items-center justify-end gap-1.5 text-end text-ink">
+              {shortTeamName(m.away_team)}
+              <TeamLogo team={m.away_team} />
+            </span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
@@ -340,5 +256,5 @@ function PredictionSlides({
 function TeamLogo({ team }: { team: string }) {
   const src = TEAM_LOGOS[team];
   if (!src) return null;
-  return <img src={src} alt="" className="h-7 w-7 object-contain" />;
+  return <img src={src} alt="" className="h-6 w-6 shrink-0 object-contain" />;
 }
