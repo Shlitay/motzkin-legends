@@ -48,7 +48,7 @@ export default function LeaderboardPage() {
   const [roundMatches, setRoundMatches] = useState<RoundMatch[]>([]);
   const [now, setNow] = useState(() => new Date());
   const [roundPoints, setRoundPoints] = useState<Row[]>([]);
-  const [approvedCount, setApprovedCount] = useState<number | null>(null);
+  const [pastParticipantCount, setPastParticipantCount] = useState<number | null>(null);
   const [seasonPoints, setSeasonPoints] = useState<Row[]>([]);
   const [mostPlayed, setMostPlayed] = useState<Row[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
@@ -138,15 +138,26 @@ export default function LeaderboardPage() {
           }))
       );
 
-      // For the winner's payout badge once the round is finished — the
-      // pot is approved-participant-count × entry fee, same definition
-      // TopBar's JackpotBadge uses.
-      const { count } = await supabase
-        .from("round_participation")
-        .select("id", { count: "exact", head: true })
-        .eq("round_id", selectedRoundId)
-        .eq("payment_status", "approved");
-      setApprovedCount(count);
+      // For the winner's payout badge once the round is finished — the pot
+      // is participant-count × entry fee. Deliberately NOT a live count of
+      // payment_status = 'approved': /manager's "reset approved
+      // participants" action sets payment_status back to 'waiting' for an
+      // already-finished round to prep the next one's signups, which would
+      // silently zero out a past round's pot the same way it broke
+      // season_stats.rounds_played (see fix-season-stats-rounds-played-v2.sql).
+      // Counting distinct predictors for this round's matches instead is
+      // immune to that — nothing but sendPrediction()/backfill_late_approval()
+      // ever writes to predictions.
+      const matchIds = (matchRows ?? []).map((m) => m.id);
+      if (matchIds.length > 0) {
+        const { data: predRows } = await supabase
+          .from("predictions")
+          .select("user_id")
+          .in("match_id", matchIds);
+        setPastParticipantCount(new Set((predRows ?? []).map((p) => p.user_id)).size);
+      } else {
+        setPastParticipantCount(0);
+      }
     })();
   }, [supabase, selectedRoundId]);
 
@@ -168,7 +179,9 @@ export default function LeaderboardPage() {
   // for the current one.
   const isRoundFinished = selectedRound?.status === "finished";
   const winnerPayout =
-    isRoundFinished && approvedCount !== null ? approvedCount * ENTRY_FEE_ILS - ENTRY_FEE_ILS : null;
+    isRoundFinished && pastParticipantCount !== null
+      ? pastParticipantCount * ENTRY_FEE_ILS - ENTRY_FEE_ILS
+      : null;
 
   return (
     <main className="flex min-h-screen flex-col items-center gap-[22.4px] px-6 pb-24 pt-20">
