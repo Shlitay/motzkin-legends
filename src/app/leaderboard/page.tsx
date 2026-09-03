@@ -145,19 +145,15 @@ export default function LeaderboardPage() {
       // already-finished round to prep the next one's signups, which would
       // silently zero out a past round's pot the same way it broke
       // season_stats.rounds_played (see fix-season-stats-rounds-played-v2.sql).
-      // Counting distinct predictors for this round's matches instead is
-      // immune to that — nothing but sendPrediction()/backfill_late_approval()
-      // ever writes to predictions.
-      const matchIds = (matchRows ?? []).map((m) => m.id);
-      if (matchIds.length > 0) {
-        const { data: predRows } = await supabase
-          .from("predictions")
-          .select("user_id")
-          .in("match_id", matchIds);
-        setPastParticipantCount(new Set((predRows ?? []).map((p) => p.user_id)).size);
-      } else {
-        setPastParticipantCount(0);
-      }
+      // Uses a security-definer RPC (round_participant_count, same
+      // mechanism as is_manager()) rather than querying `predictions`
+      // directly — a direct client query is fully RLS-bound to the
+      // *viewer's own* current approval status for that round, which the
+      // reset action can just as easily have broken.
+      const { data: participantCount } = await supabase.rpc("round_participant_count", {
+        p_round_id: selectedRoundId,
+      });
+      setPastParticipantCount(participantCount ?? 0);
     })();
   }, [supabase, selectedRoundId]);
 
