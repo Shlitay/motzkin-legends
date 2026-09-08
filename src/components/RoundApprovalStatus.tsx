@@ -13,8 +13,6 @@ type ParticipationStatus = "waiting" | "approved" | "rejected" | null;
 export default function RoundApprovalStatus() {
   const [supabase] = useState(() => createClient());
   const [loading, setLoading] = useState(true);
-  const [requesting, setRequesting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const [round, setRound] = useState<CurrentRound | null>(null);
   const [status, setStatus] = useState<ParticipationStatus>(null);
@@ -45,34 +43,6 @@ export default function RoundApprovalStatus() {
       setLoading(false);
     })();
   }, [supabase]);
-
-  async function requestApproval() {
-    if (!round) return;
-    setRequesting(true);
-    setError(null);
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      setError("התנתקתם מהמערכת — יש להתחבר מחדש.");
-      setRequesting(false);
-      return;
-    }
-
-    const { error: insertError } = await supabase
-      .from("round_participation")
-      .insert({ user_id: user.id, round_id: round.id, payment_status: "waiting" });
-
-    if (insertError) {
-      setError(insertError.message);
-      setRequesting(false);
-      return;
-    }
-
-    setStatus("waiting");
-    setRequesting(false);
-  }
 
   // Approval is only meaningful before the round starts — once it's
   // locked/finished, whether someone got approved in time is moot.
@@ -112,40 +82,19 @@ export default function RoundApprovalStatus() {
       )}
 
       {status === null && (
-        <>
-          <p className="mb-3 text-sm text-muted">
-            שלחו {ENTRY_FEE_ILS}₪ ל
-            <a
-              href={PAYBOX_GROUP_LINK}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-brand underline"
-            >
-              פייבוקס
-            </a>{" "}
-            כדי להשתתף
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            <a
-              href={PAYBOX_GROUP_LINK}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-full bg-[#8a6a1a] px-6 py-2 text-sm font-medium text-white hover:brightness-110"
-            >
-              לקבוצת פייבוקס
-            </a>
-            <button
-              disabled={requesting}
-              onClick={requestApproval}
-              className="rounded-full bg-brand px-6 py-2 text-sm font-medium text-white enabled:hover:bg-brand-dark disabled:cursor-not-allowed disabled:bg-neutral-300"
-            >
-              {requesting ? "שולח..." : "תאשר אותי שלחתי כסף"}
-            </button>
-          </div>
-        </>
+        <p className="text-sm text-muted">
+          שלחו {ENTRY_FEE_ILS}₪ ל
+          <a
+            href={PAYBOX_GROUP_LINK}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-brand underline"
+          >
+            פייבוקס
+          </a>{" "}
+          כדי להשתתף
+        </p>
       )}
-
-      {error && <p className="mt-2 text-xs text-danger">{error}</p>}
     </section>
   );
 }
