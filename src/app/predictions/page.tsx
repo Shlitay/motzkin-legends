@@ -195,6 +195,25 @@ export default function PredictionsPage() {
       return;
     }
 
+    // Submitting predictions is itself proof of intent to play — register
+    // the participant on the manager's approval list the same way
+    // RoundApprovalStatus's "שלחתי כסף" button does, so that button is no
+    // longer the only path onto that list. ignoreDuplicates means this only
+    // ever creates the row; an existing waiting/approved/rejected status is
+    // never touched.
+    const { error: participationError } = await supabase
+      .from("round_participation")
+      .upsert(
+        { user_id: user.id, round_id: selectedRoundId, payment_status: "waiting" },
+        { onConflict: "user_id,round_id", ignoreDuplicates: true }
+      );
+
+    if (participationError) {
+      setError(participationError.message);
+      setSaving(false);
+      return;
+    }
+
     const rows = matches.map((m) => ({
       user_id: user.id,
       match_id: m.id,
