@@ -51,3 +51,20 @@ export function formatIsraelTime(iso: string) {
     hour12: false,
   }).format(new Date(iso));
 }
+
+// yyyy-mm-dd, Israel-local calendar date — groups matches that fall on the
+// same real-world day in Israel regardless of the viewer's own timezone.
+// Used to lock a whole day's matches together once that day's first kickoff
+// passes, since a round's matches can span several days (see /predictions'
+// per-day locking).
+export function israelDateKey(iso: string) {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: ISRAEL_TZ,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date(iso));
+
+  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? "";
+  return `${get("year")}-${get("month")}-${get("day")}`;
+}

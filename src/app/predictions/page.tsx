@@ -8,7 +8,7 @@ import RoundApprovalStatus from "@/components/RoundApprovalStatus";
 import RoundCountdown from "@/components/RoundCountdown";
 import TopBar from "@/components/TopBar";
 import { createClient } from "@/lib/supabase/client";
-import { formatIsraelDeadline, formatMatchKickoff } from "@/lib/israelTime";
+import { formatIsraelDeadline, formatMatchKickoff, israelDateKey } from "@/lib/israelTime";
 import { lockExpiredRounds } from "@/lib/lockExpiredRounds";
 import { TEAM_LOGOS, shortTeamName } from "@/lib/mock-data";
 import { matchStatus, type MatchStatus } from "@/lib/matchStatus";
@@ -44,7 +44,6 @@ export default function PredictionsPage() {
   const [selectedRoundId, setSelectedRoundId] = useState<string | null>(null);
   const [matches, setMatches] = useState<DbMatch[]>([]);
   const [entries, setEntries] = useState<Record<string, ScoreEntry>>({});
-  const [submitted, setSubmitted] = useState(false);
   const [now, setNow] = useState(() => new Date());
 
   // Drives the not-started -> live transition for whichever match's kickoff
@@ -135,7 +134,6 @@ export default function PredictionsPage() {
 
       setMatches(matchList);
       setEntries(nextEntries);
-      setSubmitted(matchList.length > 0 && predictionRows.length === matchList.length);
       setError(null);
       setLoading(false);
     })();
@@ -160,9 +158,28 @@ export default function PredictionsPage() {
       ? rounds[selectedRoundIndex + 1]
       : null;
 
+  // A round's matches can span several days (see seed-round4.sql) — instead
+  // of locking every match the moment the round's very first kickoff
+  // passes, lock a whole calendar day together once *that day's own*
+  // earliest kickoff passes, independent of the other days. A match is
+  // still editable right up until its own day's first game starts, even if
+  // an earlier day in the same round is already locked.
+  const earliestKickoffByDay = new Map<string, number>();
+  matches.forEach((m) => {
+    const day = israelDateKey(m.kickoff_at);
+    const t = new Date(m.kickoff_at).getTime();
+    const earliest = earliestKickoffByDay.get(day);
+    if (earliest === undefined || t < earliest) earliestKickoffByDay.set(day, t);
+  });
+  function isDayLocked(m: DbMatch) {
+    const earliest = earliestKickoffByDay.get(israelDateKey(m.kickoff_at));
+    return earliest !== undefined && now.getTime() >= earliest;
+  }
+
+  const editableMatches = matches.filter((m) => !isDayLocked(m));
   const allFilled =
-    matches.length > 0 &&
-    matches.every((m) => entries[m.id]?.home !== "" && entries[m.id]?.away !== "");
+    editableMatches.length > 0 &&
+    editableMatches.every((m) => entries[m.id]?.home !== "" && entries[m.id]?.away !== "");
 
   // Live matches first, then upcoming, then ended — kickoff_at order (the
   // DB query's own sort) is preserved within each group since Array#sort
@@ -214,7 +231,10 @@ export default function PredictionsPage() {
       return;
     }
 
-    const rows = matches.map((m) => ({
+    // Only the still-editable matches — never re-write a match whose day
+    // already locked, since a never-predicted one would otherwise silently
+    // get pred_home_score/pred_away_score written as 0-0 (Number("") is 0).
+    const rows = editableMatches.map((m) => ({
       user_id: user.id,
       match_id: m.id,
       pred_home_score: Number(entries[m.id].home),
@@ -231,7 +251,6 @@ export default function PredictionsPage() {
       return;
     }
 
-    setSubmitted(true);
     setSaving(false);
   }
 
@@ -255,7 +274,7 @@ export default function PredictionsPage() {
   }
 
   const heading =
-    !isOpenRound || submitted
+    !isOpenRound || editableMatches.length === 0
       ? "צפייה בניחושים שהגשתם"
       : !predictionsOpen
       ? "הגשת ניחושים עדיין לא נפתחה"
@@ -304,7 +323,7 @@ export default function PredictionsPage() {
       <div className="w-full max-w-md space-y-4">
         {sortedMatches.map((m, i) => {
           const e = entries[m.id];
-          const readOnly = !isOpenRound || !predictionsOpen || submitted;
+          const readOnly = !isOpenRound || !predictionsOpen || isDayLocked(m);
           const status = matchStatus(m.kickoff_at, m.is_final, now);
           return (
             <div key={m.id}>
@@ -342,24 +361,15 @@ export default function PredictionsPage() {
         })}
       </div>
 
-      {isOpenRound &&
-        predictionsOpen &&
-        (submitted ? (
-          <button
-            onClick={() => setSubmitted(false)}
-            className="rounded-full bg-draw px-8 py-2 font-medium text-white hover:brightness-95"
-          >
-            עדכון ניחוש
-          </button>
-        ) : (
-          <button
-            disabled={!allFilled || saving}
-            onClick={sendPrediction}
-            className="rounded-full bg-brand px-8 py-2 font-medium text-white enabled:hover:bg-brand-dark disabled:cursor-not-allowed disabled:bg-neutral-300"
-          >
-            {saving ? "שומר..." : allFilled ? "שליחת ניחוש" : "השלימו את הניחושים"}
-          </button>
-        ))}
+      {isOpenRound && predictionsOpen && editableMatches.length > 0 && (
+        <button
+          disabled={!allFilled || saving}
+          onClick={sendPrediction}
+          className="rounded-full bg-brand px-8 py-2 font-medium text-white enabled:hover:bg-brand-dark disabled:cursor-not-allowed disabled:bg-neutral-300"
+        >
+          {saving ? "שומר..." : allFilled ? "שמירת ניחושים" : "השלימו את הניחושים"}
+        </button>
+      )}
 
       {error && <p className="text-sm text-danger">{error}</p>}
 
