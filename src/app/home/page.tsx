@@ -27,6 +27,7 @@ type LastRoundRow = {
   total_points: number | null;
   exact_score_count: number | null;
   correct_result_count: number | null;
+  round_number: number | null;
 };
 
 export default function HomePage() {
@@ -93,7 +94,11 @@ export default function HomePage() {
       const lastParticipation = (allParticipation ?? []).sort(
         (a, b) => (b.rounds?.round_number ?? -1) - (a.rounds?.round_number ?? -1)
       )[0];
-      setLastRound(lastParticipation ?? null);
+      setLastRound(
+        lastParticipation
+          ? { ...lastParticipation, round_number: lastParticipation.rounds?.round_number ?? null }
+          : null
+      );
 
       setLoading(false);
     })();
@@ -116,7 +121,7 @@ export default function HomePage() {
       <RoundCountdown />
 
       <StatCard
-        title="מחזור אחרון"
+        title={lastRound?.round_number ? `מחזור אחרון (מחזור ${lastRound.round_number})` : "מחזור אחרון"}
         headline={`מקום: ${lastRound?.rank ?? 0}`}
         towards={lastRound?.correct_result_count ?? 0}
         points={lastRound?.total_points ?? 0}
