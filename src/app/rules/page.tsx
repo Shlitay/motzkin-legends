@@ -84,7 +84,7 @@ export default function RulesPage() {
           <button onClick={() => setShowProfile(true)} className="mx-1 text-brand underline">
             ברירת מחדל בפרופיל
           </button>
-          יוזן אוטומטית לכל משחק שלא ניחשתם עד סגירת המחזור.
+          יוזן אוטומטית לכל משחק שלא ניחשתם עד תחילתו.
         </>
       </RuleCard>
 
