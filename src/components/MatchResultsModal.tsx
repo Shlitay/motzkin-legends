@@ -30,6 +30,7 @@ export default function MatchResultsModal({ onClose }: { onClose: () => void }) 
   const [loadError, setLoadError] = useState<string | null>(null);
   const [roundId, setRoundId] = useState<string | null>(null);
   const [roundNumber, setRoundNumber] = useState<number | null>(null);
+  const [roundStatus, setRoundStatus] = useState<string | null>(null);
   const [matches, setMatches] = useState<DbMatch[]>([]);
   const [rows, setRows] = useState<Record<string, RowState>>({});
 
@@ -45,6 +46,7 @@ export default function MatchResultsModal({ onClose }: { onClose: () => void }) 
 
       setRoundId(round.id);
       setRoundNumber(round.round_number);
+      setRoundStatus(round.status);
 
       const { data: matchRows, error: matchesError } = await supabase
         .from("matches")
@@ -96,8 +98,11 @@ export default function MatchResultsModal({ onClose }: { onClose: () => void }) 
   // matches_one_main_event_per_round's DB constraint) — clicking the
   // already-selected match clears it, clicking a different one moves it,
   // in one atomic RPC call rather than two separate client-side writes.
+  // Locked once the round begins (mirrors set_main_event() having no such
+  // guard itself — this is a UI-only gate, same trust level as every other
+  // deadline check in this app, per rls.sql's documented limitation).
   async function toggleMainEvent(matchId: string) {
-    if (!roundId) return;
+    if (!roundId || roundStatus !== "open") return;
     const alreadySet = rows[matchId]?.mainEvent ?? false;
 
     const { error } = await supabase.rpc("set_main_event", {
@@ -188,15 +193,24 @@ export default function MatchResultsModal({ onClose }: { onClose: () => void }) 
                       />
                       המשחק הסתיים
                     </label>
-                    <button
-                      onClick={() => toggleMainEvent(m.id)}
-                      className={`flex items-center gap-1 text-xs font-medium ${
-                        row?.mainEvent ? "text-draw" : "text-muted hover:text-ink"
-                      }`}
-                      title="סמן כמשחק המרכזי של המחזור"
-                    >
-                      {row?.mainEvent ? "⭐" : "☆"} משחק מרכזי
-                    </button>
+                    {roundStatus === "open" ? (
+                      <button
+                        onClick={() => toggleMainEvent(m.id)}
+                        className={`text-lg leading-none ${
+                          row?.mainEvent ? "text-[#d4a017]" : "text-neutral-300 hover:text-neutral-400"
+                        }`}
+                        title="סמן כמשחק המרכזי של המחזור"
+                        aria-label="סמן כמשחק המרכזי של המחזור"
+                      >
+                        {row?.mainEvent ? "★" : "☆"}
+                      </button>
+                    ) : (
+                      row?.mainEvent && (
+                        <span className="text-lg leading-none text-[#d4a017]" title="המשחק המרכזי של המחזור">
+                          ★
+                        </span>
+                      )
+                    )}
                     <button
                       onClick={() => saveRow(m.id)}
                       disabled={!row || row.home === "" || row.away === "" || row.saving}
