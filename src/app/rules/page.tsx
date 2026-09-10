@@ -70,7 +70,7 @@ export default function RulesPage() {
           <TiebreakStep n={1}>הכי הרבה נקודות</TiebreakStep>
           <TiebreakStep n={2}>אם עדיין שוויון — הכי הרבה פגיעות מדויקות</TiebreakStep>
           <TiebreakStep n={3}>
-            אם עדיין שוויון — מי שהגיש את הניחושים ראשון (זמן ההגשה הראשונה, עדכון ניחוש מאוחר יותר לא משנה את הזמן הזה)
+            אם עדיין שוויון — מי שצבר יותר נקודות במשחק שסומן כ״⭐ המשחק המרכזי״ של המחזור
           </TiebreakStep>
         </ol>
         <p className="mt-4 rounded-2xl bg-brand/10 px-4 py-3 text-sm font-medium text-ink">

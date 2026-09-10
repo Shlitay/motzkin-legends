@@ -11,12 +11,14 @@ type DbMatch = {
   home_score: number | null;
   away_score: number | null;
   is_final: boolean;
+  is_main_event: boolean;
 };
 
 type RowState = {
   home: string;
   away: string;
   final: boolean;
+  mainEvent: boolean;
   saving: boolean;
   saved: boolean;
   error: string | null;
@@ -26,6 +28,7 @@ export default function MatchResultsModal({ onClose }: { onClose: () => void }) 
   const [supabase] = useState(() => createClient());
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [roundId, setRoundId] = useState<string | null>(null);
   const [roundNumber, setRoundNumber] = useState<number | null>(null);
   const [matches, setMatches] = useState<DbMatch[]>([]);
   const [rows, setRows] = useState<Record<string, RowState>>({});
@@ -40,11 +43,12 @@ export default function MatchResultsModal({ onClose }: { onClose: () => void }) 
         return;
       }
 
+      setRoundId(round.id);
       setRoundNumber(round.round_number);
 
       const { data: matchRows, error: matchesError } = await supabase
         .from("matches")
-        .select("id, home_team, away_team, home_score, away_score, is_final")
+        .select("id, home_team, away_team, home_score, away_score, is_final, is_main_event")
         .eq("round_id", round.id)
         .order("kickoff_at");
 
@@ -64,6 +68,7 @@ export default function MatchResultsModal({ onClose }: { onClose: () => void }) 
               home: m.home_score === null ? "" : String(m.home_score),
               away: m.away_score === null ? "" : String(m.away_score),
               final: m.is_final,
+              mainEvent: m.is_main_event,
               saving: false,
               saved: false,
               error: null,
@@ -85,6 +90,34 @@ export default function MatchResultsModal({ onClose }: { onClose: () => void }) 
 
   function setFinal(matchId: string, final: boolean) {
     setRows((prev) => ({ ...prev, [matchId]: { ...prev[matchId], final, saved: false } }));
+  }
+
+  // Only one match per round can be the main event (matches
+  // matches_one_main_event_per_round's DB constraint) — clicking the
+  // already-selected match clears it, clicking a different one moves it,
+  // in one atomic RPC call rather than two separate client-side writes.
+  async function toggleMainEvent(matchId: string) {
+    if (!roundId) return;
+    const alreadySet = rows[matchId]?.mainEvent ?? false;
+
+    const { error } = await supabase.rpc("set_main_event", {
+      p_round_id: roundId,
+      p_match_id: alreadySet ? null : matchId,
+    });
+
+    if (error) {
+      setRows((prev) => ({ ...prev, [matchId]: { ...prev[matchId], error: error.message } }));
+      return;
+    }
+
+    setRows((prev) =>
+      Object.fromEntries(
+        Object.entries(prev).map(([id, r]) => [
+          id,
+          { ...r, mainEvent: !alreadySet && id === matchId },
+        ])
+      )
+    );
   }
 
   async function saveRow(matchId: string) {
@@ -155,6 +188,15 @@ export default function MatchResultsModal({ onClose }: { onClose: () => void }) 
                       />
                       המשחק הסתיים
                     </label>
+                    <button
+                      onClick={() => toggleMainEvent(m.id)}
+                      className={`flex items-center gap-1 text-xs font-medium ${
+                        row?.mainEvent ? "text-draw" : "text-muted hover:text-ink"
+                      }`}
+                      title="סמן כמשחק המרכזי של המחזור"
+                    >
+                      {row?.mainEvent ? "⭐" : "☆"} משחק מרכזי
+                    </button>
                     <button
                       onClick={() => saveRow(m.id)}
                       disabled={!row || row.home === "" || row.away === "" || row.saving}

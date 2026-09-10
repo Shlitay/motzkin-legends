@@ -28,6 +28,7 @@ type RoundMatchPrediction = {
   away_team: string;
   predHome: number | null;
   predAway: number | null;
+  isMainEvent: boolean;
 };
 
 export default function ParticipantModal({
@@ -68,7 +69,7 @@ export default function ParticipantModal({
 
       const { data: matchRows } = await supabase
         .from("matches")
-        .select("id, home_team, away_team, kickoff_at")
+        .select("id, home_team, away_team, kickoff_at, is_main_event")
         .eq("round_id", round.id)
         .order("kickoff_at");
 
@@ -96,6 +97,7 @@ export default function ParticipantModal({
           away_team: m.away_team,
           predHome: byMatch.get(m.id)?.pred_home_score ?? null,
           predAway: byMatch.get(m.id)?.pred_away_score ?? null,
+          isMainEvent: m.is_main_event,
         }))
       );
     })();
@@ -223,7 +225,9 @@ function PredictionsList({ name, matches }: { name: string; matches: RoundMatchP
         {matches.map((m) => (
           <li
             key={m.id}
-            className="flex items-center gap-2 rounded-lg border border-neutral-200 bg-surface px-3 py-2 text-sm"
+            className={`flex items-center gap-2 rounded-lg border bg-surface px-3 py-2 text-sm ${
+              m.isMainEvent ? "border-[#d4a017] bg-[#d4a017]/5" : "border-neutral-200"
+            }`}
           >
             <span className="flex flex-1 items-center gap-1.5 text-ink">
               <TeamLogo team={m.home_team} />

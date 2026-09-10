@@ -23,6 +23,7 @@ type DbMatch = {
   home_score: number | null;
   away_score: number | null;
   is_final: boolean;
+  is_main_event: boolean;
 };
 
 type DbRound = {
@@ -89,7 +90,7 @@ export default function PredictionsPage() {
     (async () => {
       const { data: matchRows, error: matchesError } = await supabase
         .from("matches")
-        .select("id, home_team, away_team, kickoff_at, home_score, away_score, is_final")
+        .select("id, home_team, away_team, kickoff_at, home_score, away_score, is_final, is_main_event")
         .eq("round_id", selectedRoundId)
         .order("kickoff_at");
 
@@ -341,6 +342,7 @@ export default function PredictionsPage() {
                   finalAwayScore={m.away_score}
                   status={status}
                   kickoffAt={m.kickoff_at}
+                  isMainEvent={m.is_main_event}
                 />
               ) : (
                 m.home_score !== null &&
@@ -353,6 +355,7 @@ export default function PredictionsPage() {
                     actualHome={m.home_score}
                     actualAway={m.away_score}
                     points={e.pointsEarned}
+                    isMainEvent={m.is_main_event}
                   />
                 )
               )}
@@ -397,6 +400,19 @@ function MatchStatusBadge({ status }: { status: Exclude<MatchStatus, "ended"> })
   );
 }
 
+// Shown on whichever single match the manager flagged as the round's tiebreak
+// decider (matches.is_main_event) — see recompute_round_standings()'s new
+// tiebreak in add-match-main-event-tiebreak.sql.
+function MainEventBadge({ className = "" }: { className?: string }) {
+  return (
+    <span
+      className={`inline-flex items-center gap-1 rounded-full bg-[#d4a017]/15 px-2.5 py-0.5 text-xs font-semibold text-[#8a6a1a] ${className}`}
+    >
+      ⭐ המשחק המרכזי
+    </span>
+  );
+}
+
 function SectionDivider({ label }: { label: string }) {
   return (
     <div className="mb-3 flex items-center gap-3">
@@ -421,6 +437,7 @@ function MatchRow({
   finalAwayScore = null,
   status,
   kickoffAt,
+  isMainEvent = false,
 }: {
   homeTeam: string;
   awayTeam: string;
@@ -433,6 +450,7 @@ function MatchRow({
   finalAwayScore?: number | null;
   status: Exclude<MatchStatus, "ended">;
   kickoffAt: string;
+  isMainEvent?: boolean;
 }) {
   const homeNum = home === "" ? null : Number(home);
   const awayNum = away === "" ? null : Number(away);
@@ -451,7 +469,12 @@ function MatchRow({
   const hasFinalScore = status !== "not-started" && finalHomeScore !== null && finalAwayScore !== null;
 
   return (
-    <div className="rounded-xl border border-neutral-200 bg-surface p-3">
+    <div
+      className={`rounded-xl border p-3 ${
+        isMainEvent ? "border-[#d4a017] bg-[#d4a017]/5" : "border-neutral-200 bg-surface"
+      }`}
+    >
+      {isMainEvent && <MainEventBadge className="mb-2" />}
       {status === "not-started" ? (
         // justify-between with the badge first in DOM puts it at the box's
         // top right (RTL start) and the kickoff time at top left (RTL end).
@@ -550,6 +573,7 @@ function EndedMatchCard({
   actualHome,
   actualAway,
   points,
+  isMainEvent = false,
 }: {
   homeTeam: string;
   awayTeam: string;
@@ -558,13 +582,18 @@ function EndedMatchCard({
   actualHome: number;
   actualAway: number;
   points: number | null;
+  isMainEvent?: boolean;
 }) {
   const outcome = deriveOutcome(predHome, predAway, actualHome, actualAway);
   const s = OUTCOME_STYLES[outcome];
   const pointsLabel = points === null ? "" : points > 0 ? `+${points}` : "0";
 
   return (
-    <div className="flex overflow-hidden rounded-[18px] border border-[#e6e6e1] bg-white shadow-[0_1px_2px_rgba(17,17,17,.04)]">
+    <div
+      className={`flex overflow-hidden rounded-[18px] border bg-white shadow-[0_1px_2px_rgba(17,17,17,.04)] ${
+        isMainEvent ? "border-[#d4a017]" : "border-[#e6e6e1]"
+      }`}
+    >
       {/* Explicit corner rounding on the rail/points column too, not just
           relying on the parent's overflow-hidden clip — belt-and-braces
           so their own colored backgrounds definitely get the card's
@@ -572,6 +601,7 @@ function EndedMatchCard({
           side, since the row visually mirrors under RTL). */}
       <div className={`w-[5px] shrink-0 rounded-r-[18px] ${s.rail}`} />
       <div className="flex-1 px-4 py-3.5">
+        {isMainEvent && <MainEventBadge className="mb-2" />}
         <div className="mb-2.5 flex items-center justify-between">
           {/* First DOM child renders at the box's RTL start (right) — this
               must be the meta text, not the outcome label, matching the
