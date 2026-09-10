@@ -183,20 +183,11 @@ export default function MatchResultsModal({ onClose }: { onClose: () => void }) 
                     />
                     <span className="flex-1 truncate text-end text-sm">{m.away_team}</span>
                   </div>
-                  <div className="mt-2 flex items-center justify-between">
-                    <label className="flex items-center gap-1.5 text-xs text-muted">
-                      <input
-                        type="checkbox"
-                        checked={row?.final ?? false}
-                        onChange={(e) => setFinal(m.id, e.target.checked)}
-                        className="h-4 w-4 rounded border-neutral-300"
-                      />
-                      המשחק הסתיים
-                    </label>
+                  <div className="mt-1.5 flex justify-center">
                     {roundStatus === "open" ? (
                       <button
                         onClick={() => toggleMainEvent(m.id)}
-                        className={`text-lg leading-none ${
+                        className={`text-[21px] leading-none ${
                           row?.mainEvent ? "text-[#d4a017]" : "text-neutral-300 hover:text-neutral-400"
                         }`}
                         title="סמן כמשחק המרכזי של המחזור"
@@ -206,11 +197,22 @@ export default function MatchResultsModal({ onClose }: { onClose: () => void }) 
                       </button>
                     ) : (
                       row?.mainEvent && (
-                        <span className="text-lg leading-none text-[#d4a017]" title="המשחק המרכזי של המחזור">
+                        <span className="text-[21px] leading-none text-[#d4a017]" title="המשחק המרכזי של המחזור">
                           ★
                         </span>
                       )
                     )}
+                  </div>
+                  <div className="mt-1.5 flex items-center justify-between">
+                    <label className="flex items-center gap-1.5 text-xs text-muted">
+                      <input
+                        type="checkbox"
+                        checked={row?.final ?? false}
+                        onChange={(e) => setFinal(m.id, e.target.checked)}
+                        className="h-4 w-4 rounded border-neutral-300"
+                      />
+                      המשחק הסתיים
+                    </label>
                     <button
                       onClick={() => saveRow(m.id)}
                       disabled={!row || row.home === "" || row.away === "" || row.saving}
