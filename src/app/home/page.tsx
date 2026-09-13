@@ -66,10 +66,16 @@ export default function HomePage() {
       setSeason(seasonRow ?? null);
 
       // "Last round" = the round this user most recently actually
-      // participated in — not currentRound, which is the newest round
-      // overall and may be one the user hasn't played yet (e.g. it just
-      // opened for predictions). Round status never transitions to
-      // 'finished' in the SQL, so status can't be used to find it either.
+      // participated in *before* currentRound — not currentRound itself,
+      // which is the newest round overall and may be one the user has a
+      // real round_participation row for despite it having barely started
+      // (as of round 4: predictions open immediately, no Thursday gate,
+      // and submitting a prediction auto-creates that row — see
+      // /predictions' sendPrediction()) — so a highest-round_number-with-
+      // no-filter pick would show that near-empty round as "last round"
+      // instead of the previous, fully-played one. Round status never
+      // transitions to 'finished' in the SQL, so status can't be used to
+      // find it either.
       //
       // Sorted client-side, not via .order(..., { foreignTable }) — that
       // option only reorders rows *nested inside* an embed, it does NOT
@@ -91,9 +97,11 @@ export default function HomePage() {
           { merge: false }
         >();
 
-      const lastParticipation = (allParticipation ?? []).sort(
-        (a, b) => (b.rounds?.round_number ?? -1) - (a.rounds?.round_number ?? -1)
-      )[0];
+      const lastParticipation = (allParticipation ?? [])
+        .filter(
+          (p) => currentRound == null || (p.rounds?.round_number ?? Infinity) < currentRound.round_number
+        )
+        .sort((a, b) => (b.rounds?.round_number ?? -1) - (a.rounds?.round_number ?? -1))[0];
       setLastRound(
         lastParticipation
           ? { ...lastParticipation, round_number: lastParticipation.rounds?.round_number ?? null }

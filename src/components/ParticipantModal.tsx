@@ -20,6 +20,7 @@ type LastRoundRow = {
   total_points: number | null;
   exact_score_count: number | null;
   correct_result_count: number | null;
+  round_number: number | null;
 };
 
 type RoundMatchPrediction = {
@@ -37,9 +38,10 @@ export default function ParticipantModal({
   onClose,
 }: {
   userId: string;
-  // Only the round's id/status matter here — kept loose so callers can
+  // round_number is needed too, to exclude it (and anything after it) from
+  // "last round" candidates below — kept loose otherwise so callers can
   // pass their own CurrentRound (or RoundMatch-shaped object) as-is.
-  round: { id: string; status: string } | null;
+  round: { id: string; status: string; round_number: number } | null;
   onClose: () => void;
 }) {
   const [supabase] = useState(() => createClient());
@@ -113,9 +115,19 @@ export default function ParticipantModal({
       setSeason(seasonRow ?? null);
 
       // "Last round" = the round this user most recently actually
-      // participated in — not the newest round overall, which may be
-      // one they haven't played yet. Round status never transitions to
-      // 'finished' in the SQL, so status can't be used to find it either.
+      // participated in *before* whichever round this modal is currently
+      // viewed in context of (the `round` prop — the leaderboard's own
+      // selected round, defaulting to whichever is 'open') — not the
+      // newest round overall the user happens to have a row for. As of
+      // round 4 (predictions open immediately, no more Thursday gate, and
+      // submitting a prediction auto-creates a round_participation row —
+      // see /predictions' sendPrediction()), a participant can have a real
+      // row for the round that just opened today, before it's played a
+      // single match — the old round_number-desc-with-no-filter logic
+      // would happily show that near-empty round as "last round" instead
+      // of the previous, fully-played one. Round status never transitions
+      // to 'finished' in the SQL, so status can't be used to find it
+      // either.
       //
       // Sorted client-side, not via .order(..., { foreignTable }) — that
       // option only reorders rows *nested inside* an embed, it does NOT
@@ -137,14 +149,18 @@ export default function ParticipantModal({
           { merge: false }
         >();
 
-      const participation = (allParticipation ?? []).sort(
-        (a, b) => (b.rounds?.round_number ?? -1) - (a.rounds?.round_number ?? -1)
-      )[0];
-      setLastRound(participation ?? null);
+      const participation = (allParticipation ?? [])
+        .filter((p) => round == null || (p.rounds?.round_number ?? Infinity) < round.round_number)
+        .sort((a, b) => (b.rounds?.round_number ?? -1) - (a.rounds?.round_number ?? -1))[0];
+      setLastRound(
+        participation
+          ? { ...participation, round_number: participation.rounds?.round_number ?? null }
+          : null
+      );
 
       setLoading(false);
     })();
-  }, [supabase, userId]);
+  }, [supabase, userId, round?.round_number]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-6">
@@ -184,7 +200,7 @@ export default function ParticipantModal({
             )}
 
             <StatCard
-              title="מחזור אחרון"
+              title={lastRound?.round_number ? `מחזור אחרון (מחזור ${lastRound.round_number})` : "מחזור אחרון"}
               headline={`מקום: ${lastRound?.rank ?? 0}`}
               towards={lastRound?.correct_result_count ?? 0}
               points={lastRound?.total_points ?? 0}
