@@ -227,12 +227,14 @@ export default function LeaderboardPage() {
         rows={seasonPoints}
         countLabel="נק'"
         onSelect={setSelectedUserId}
+        scrollable
       />
       <LeaderTable
         title="הכי הרבה השתתפויות"
         rows={mostPlayed}
         countLabel="מחזורים"
         onSelect={setSelectedUserId}
+        scrollable
       />
 
       {selectedUserId && (
@@ -281,6 +283,7 @@ function LeaderTable({
   countLabel,
   onSelect,
   winnerJackpotLabel,
+  scrollable,
 }: {
   title: string;
   rows: Row[];
@@ -290,6 +293,11 @@ function LeaderTable({
   // finished — applied to rows[0], which is already the actual rank-1
   // winner (rows arrives pre-sorted by the DB's own tiebroken rank).
   winnerJackpotLabel?: string;
+  // Season/participation tables only — caps the card at ~5 rows tall
+  // (each row is 60px: h-9 avatar + py-3) and scrolls the rest, since
+  // these lists only grow over the season instead of resetting each
+  // round like the round-points table does.
+  scrollable?: boolean;
 }) {
   return (
     <section className="w-full max-w-md overflow-hidden rounded-[28px] bg-surface shadow-[0_1px_2px_rgba(0,0,0,0.04),0_16px_32px_-18px_rgba(0,0,0,0.28)]">
@@ -299,7 +307,7 @@ function LeaderTable({
           {countLabel}
         </span>
       </div>
-      <div className="divide-y divide-neutral-100">
+      <div className={`divide-y divide-neutral-100 ${scrollable ? "max-h-[300px] overflow-y-auto" : ""}`}>
         {rows.map((r, i) => (
           <LeaderRow
             key={r.userId}
