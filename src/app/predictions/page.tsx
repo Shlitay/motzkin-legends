@@ -275,7 +275,7 @@ export default function PredictionsPage() {
   }
 
   const heading =
-    !isOpenRound || editableMatches.length === 0
+    editableMatches.length === 0
       ? "צפייה בניחושים שהגשתם"
       : !predictionsOpen
       ? "הגשת ניחושים עדיין לא נפתחה"
@@ -324,7 +324,12 @@ export default function PredictionsPage() {
       <div className="w-full max-w-md space-y-4">
         {sortedMatches.map((m, i) => {
           const e = entries[m.id];
-          const readOnly = !isOpenRound || !predictionsOpen || isDayLocked(m);
+          // Per-day locking, not round-wide: a round's status flips to
+          // "locked" the moment its very first match anywhere kicks off,
+          // so gating on isOpenRound here would lock every later day's
+          // matches too the instant day 1 starts — isDayLocked(m) is the
+          // real per-match gate (see its own comment above).
+          const readOnly = !predictionsOpen || isDayLocked(m);
           const status = matchStatus(m.kickoff_at, m.is_final, now);
           return (
             <div key={m.id}>
@@ -364,7 +369,7 @@ export default function PredictionsPage() {
         })}
       </div>
 
-      {isOpenRound && predictionsOpen && editableMatches.length > 0 && (
+      {predictionsOpen && editableMatches.length > 0 && (
         <button
           disabled={!allFilled || saving}
           onClick={sendPrediction}
