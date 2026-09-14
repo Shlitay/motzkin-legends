@@ -14,7 +14,7 @@ import { createClient } from "@/lib/supabase/client";
 import { lockExpiredRounds } from "@/lib/lockExpiredRounds";
 import { matchStatus, type MatchStatus } from "@/lib/matchStatus";
 
-type Row = { userId: string; name: string; avatar: string; count: number };
+type Row = { userId: string; name: string; avatar: string; count: number; secondaryCount?: number };
 
 type DbRound = { id: string; round_number: number; deadline_at: string; status: string };
 
@@ -50,7 +50,6 @@ export default function LeaderboardPage() {
   const [roundPoints, setRoundPoints] = useState<Row[]>([]);
   const [pastParticipantCount, setPastParticipantCount] = useState<number | null>(null);
   const [seasonPoints, setSeasonPoints] = useState<Row[]>([]);
-  const [mostPlayed, setMostPlayed] = useState<Row[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
   // Drives the not-started -> live transition in the round match-status
@@ -82,6 +81,9 @@ export default function LeaderboardPage() {
         .overrideTypes<SeasonStatsRow[], { merge: false }>();
 
       const seasonRows = stats ?? [];
+      // Merged season table: points (primary sort) with rounds-played
+      // alongside each row — this used to be its own separate "most
+      // participations" table, dropped in favor of one combined view.
       setSeasonPoints(
         seasonRows
           .map((s) => ({
@@ -89,16 +91,7 @@ export default function LeaderboardPage() {
             name: s.display_name,
             avatar: s.avatar ?? "🙂",
             count: s.total_points,
-          }))
-          .sort((a, b) => b.count - a.count)
-      );
-      setMostPlayed(
-        seasonRows
-          .map((s) => ({
-            userId: s.user_id,
-            name: s.display_name,
-            avatar: s.avatar ?? "🙂",
-            count: s.rounds_played,
+            secondaryCount: s.rounds_played,
           }))
           .sort((a, b) => b.count - a.count)
       );
@@ -226,13 +219,7 @@ export default function LeaderboardPage() {
         title="הכי הרבה נקודות (עונה)"
         rows={seasonPoints}
         countLabel="נק'"
-        onSelect={setSelectedUserId}
-        scrollable
-      />
-      <LeaderTable
-        title="הכי הרבה השתתפויות"
-        rows={mostPlayed}
-        countLabel="מחזורים"
+        secondaryLabel="מחזורים"
         onSelect={setSelectedUserId}
         scrollable
       />
@@ -281,6 +268,7 @@ function LeaderTable({
   title,
   rows,
   countLabel,
+  secondaryLabel,
   onSelect,
   winnerJackpotLabel,
   scrollable,
@@ -288,23 +276,26 @@ function LeaderTable({
   title: string;
   rows: Row[];
   countLabel: string;
+  // Season table only — a second numeric column (rounds played) next to
+  // points. Omit for tables with just one stat (round-points).
+  secondaryLabel?: string;
   onSelect: (userId: string) => void;
   // Only ever passed for the round-points table, once that round is
   // finished — applied to rows[0], which is already the actual rank-1
   // winner (rows arrives pre-sorted by the DB's own tiebroken rank).
   winnerJackpotLabel?: string;
-  // Season/participation tables only — caps the card at ~5 rows tall
-  // (each row is 60px: h-9 avatar + py-3) and scrolls the rest, since
-  // these lists only grow over the season instead of resetting each
-  // round like the round-points table does.
+  // Season table only — caps the card at ~5 rows tall (each row is 60px:
+  // h-9 avatar + py-3) and scrolls the rest, since it only grows over the
+  // season instead of resetting each round like the round-points table.
   scrollable?: boolean;
 }) {
   return (
     <section className="w-full max-w-md overflow-hidden rounded-[28px] bg-surface shadow-[0_1px_2px_rgba(0,0,0,0.04),0_16px_32px_-18px_rgba(0,0,0,0.28)]">
       <div className="flex items-baseline justify-between gap-3 px-5 pb-1 pt-5">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">{title}</h2>
-        <span className="shrink-0 text-xs font-medium uppercase tracking-wide text-muted">
-          {countLabel}
+        <span className="flex shrink-0 gap-4 text-xs font-medium uppercase tracking-wide text-muted">
+          <span className="min-w-8 text-end">{countLabel}</span>
+          {secondaryLabel && <span className="min-w-8 text-end">{secondaryLabel}</span>}
         </span>
       </div>
       <div className={`divide-y divide-neutral-100 ${scrollable ? "max-h-[300px] overflow-y-auto" : ""}`}>
@@ -315,6 +306,7 @@ function LeaderTable({
             avatar={r.avatar}
             name={r.name}
             count={r.count}
+            secondaryCount={secondaryLabel ? r.secondaryCount : undefined}
             onClick={() => onSelect(r.userId)}
             crown={i === 0 && !!winnerJackpotLabel}
             jackpotLabel={i === 0 ? winnerJackpotLabel : undefined}

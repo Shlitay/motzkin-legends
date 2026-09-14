@@ -12,6 +12,9 @@ type LeaderRowProps = {
   avatar: string;
   name: string;
   count: number;
+  // Season table only — a second numeric column (rounds played) shown
+  // next to count/points, muted so it doesn't compete with the primary stat.
+  secondaryCount?: number;
   onClick?: () => void;
   // Round-winner treatment — only ever passed for rank 1 on the current
   // round's points table, once that round is finished (see /leaderboard).
@@ -26,6 +29,7 @@ export default function LeaderRow({
   avatar,
   name,
   count,
+  secondaryCount,
   onClick,
   crown = false,
   jackpotLabel,
@@ -59,7 +63,16 @@ export default function LeaderRow({
         )}
         <span className="font-medium text-ink">{name}</span>
       </span>
-      <span className="font-display text-sm font-semibold tabular-nums text-ink">{count}</span>
+      <span className="flex shrink-0 items-center gap-4">
+        <span className="min-w-8 text-end font-display text-sm font-semibold tabular-nums text-ink">
+          {count}
+        </span>
+        {secondaryCount !== undefined && (
+          <span className="min-w-8 text-end font-display text-sm font-semibold tabular-nums text-muted">
+            {secondaryCount}
+          </span>
+        )}
+      </span>
     </Wrapper>
   );
 }
