@@ -114,20 +114,18 @@ export default function ParticipantModal({
         .single();
       setSeason(seasonRow ?? null);
 
-      // "Last round" = the round this user most recently actually
-      // participated in *before* whichever round this modal is currently
-      // viewed in context of (the `round` prop — the leaderboard's own
-      // selected round, defaulting to whichever is 'open') — not the
-      // newest round overall the user happens to have a row for. As of
-      // round 4 (predictions open immediately, no more Thursday gate, and
-      // submitting a prediction auto-creates a round_participation row —
-      // see /predictions' sendPrediction()), a participant can have a real
-      // row for the round that just opened today, before it's played a
-      // single match — the old round_number-desc-with-no-filter logic
-      // would happily show that near-empty round as "last round" instead
-      // of the previous, fully-played one. Round status never transitions
-      // to 'finished' in the SQL, so status can't be used to find it
-      // either.
+      // "Last round" card: while the round this modal is viewed in context
+      // of (the `round` prop — the leaderboard's own selected round,
+      // defaulting to whichever is 'open') is still 'open' (not started),
+      // show the most recent round the user actually played *before* it —
+      // `round` itself may already have a real round_participation row
+      // despite having barely started (predictions open immediately and
+      // submitting one auto-creates that row — see /predictions'
+      // sendPrediction()), so a no-filter highest-round pick would show
+      // that near-empty round instead of the previous, fully-played one.
+      // But once `round` has actually started (status 'locked'/
+      // 'finished'), it IS the relevant round to show — live in-progress
+      // stats for the round underway, not the prior finished one.
       //
       // Sorted client-side, not via .order(..., { foreignTable }) — that
       // option only reorders rows *nested inside* an embed, it does NOT
@@ -150,7 +148,11 @@ export default function ParticipantModal({
         >();
 
       const participation = (allParticipation ?? [])
-        .filter((p) => round == null || (p.rounds?.round_number ?? Infinity) < round.round_number)
+        .filter((p) => {
+          if (round == null) return true;
+          const roundNumber = p.rounds?.round_number ?? Infinity;
+          return round.status === "open" ? roundNumber < round.round_number : roundNumber <= round.round_number;
+        })
         .sort((a, b) => (b.rounds?.round_number ?? -1) - (a.rounds?.round_number ?? -1))[0];
       setLastRound(
         participation

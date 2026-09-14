@@ -65,17 +65,19 @@ export default function HomePage() {
       setRound(currentRound);
       setSeason(seasonRow ?? null);
 
-      // "Last round" = the round this user most recently actually
-      // participated in *before* currentRound — not currentRound itself,
-      // which is the newest round overall and may be one the user has a
-      // real round_participation row for despite it having barely started
-      // (as of round 4: predictions open immediately, no Thursday gate,
-      // and submitting a prediction auto-creates that row — see
-      // /predictions' sendPrediction()) — so a highest-round_number-with-
-      // no-filter pick would show that near-empty round as "last round"
-      // instead of the previous, fully-played one. Round status never
-      // transitions to 'finished' in the SQL, so status can't be used to
-      // find it either.
+      // "Last round" card: while currentRound is still 'open' (not
+      // started), show the most recent round the user actually played
+      // *before* it — currentRound itself may already have a real
+      // round_participation row despite having barely started (predictions
+      // open immediately and submitting one auto-creates that row — see
+      // /predictions' sendPrediction()), so a no-filter highest-round pick
+      // would show that near-empty round instead of the previous, fully-
+      // played one. But once currentRound has actually started (status
+      // 'locked'/'finished'), it IS the relevant round to show — the user
+      // explicitly wants live in-progress stats for the round underway,
+      // not the prior finished one. Round status never reaches 'finished'
+      // in the SQL for a round still being played, so this only reads
+      // 'open' vs "already started" here.
       //
       // Sorted client-side, not via .order(..., { foreignTable }) — that
       // option only reorders rows *nested inside* an embed, it does NOT
@@ -98,9 +100,13 @@ export default function HomePage() {
         >();
 
       const lastParticipation = (allParticipation ?? [])
-        .filter(
-          (p) => currentRound == null || (p.rounds?.round_number ?? Infinity) < currentRound.round_number
-        )
+        .filter((p) => {
+          if (currentRound == null) return true;
+          const roundNumber = p.rounds?.round_number ?? Infinity;
+          return currentRound.status === "open"
+            ? roundNumber < currentRound.round_number
+            : roundNumber <= currentRound.round_number;
+        })
         .sort((a, b) => (b.rounds?.round_number ?? -1) - (a.rounds?.round_number ?? -1))[0];
       setLastRound(
         lastParticipation
