@@ -164,6 +164,21 @@ export default function ParticipantModal({
     })();
   }, [supabase, userId, round?.round_number]);
 
+  // Live only while the shown round IS the round this modal is currently
+  // viewed in context of and that round hasn't finished yet — a fallback
+  // to an earlier, already-finished round (round not started yet, or this
+  // user has no row for it) is always "previous", never "live".
+  const lastRoundIsLive =
+    !!lastRound?.round_number &&
+    round != null &&
+    lastRound.round_number === round.round_number &&
+    round.status === "locked";
+  const lastRoundTitle = !lastRound?.round_number
+    ? "מחזור אחרון"
+    : lastRoundIsLive
+      ? `מחזור חי נוכחי (מחזור ${lastRound.round_number})`
+      : `מחזור קודם (מחזור ${lastRound.round_number})`;
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-6">
       <div className="w-full max-w-sm rounded-2xl bg-white p-8 text-center shadow-lg">
@@ -202,7 +217,7 @@ export default function ParticipantModal({
             )}
 
             <StatCard
-              title={lastRound?.round_number ? `מחזור אחרון (מחזור ${lastRound.round_number})` : "מחזור אחרון"}
+              title={lastRoundTitle}
               headline={`מקום: ${lastRound?.rank ?? 0}`}
               towards={lastRound?.correct_result_count ?? 0}
               points={lastRound?.total_points ?? 0}

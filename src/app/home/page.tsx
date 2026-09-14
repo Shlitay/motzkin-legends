@@ -118,6 +118,21 @@ export default function HomePage() {
     })();
   }, [supabase]);
 
+  // Live only while the shown round IS the round currently in view and
+  // that round hasn't finished yet — a fallback to an earlier, already-
+  // finished round (round not started yet, or user has no row for it)
+  // is always "previous", never "live".
+  const lastRoundIsLive =
+    !!lastRound?.round_number &&
+    round != null &&
+    lastRound.round_number === round.round_number &&
+    round.status === "locked";
+  const lastRoundTitle = !lastRound?.round_number
+    ? "מחזור אחרון"
+    : lastRoundIsLive
+      ? `מחזור חי נוכחי (מחזור ${lastRound.round_number})`
+      : `מחזור קודם (מחזור ${lastRound.round_number})`;
+
   return (
     <main className="flex min-h-screen flex-col items-center gap-4 px-6 pb-24 pt-20">
       <TopBar />
@@ -135,7 +150,7 @@ export default function HomePage() {
       <RoundCountdown />
 
       <StatCard
-        title={lastRound?.round_number ? `מחזור אחרון (מחזור ${lastRound.round_number})` : "מחזור אחרון"}
+        title={lastRoundTitle}
         headline={`מקום: ${lastRound?.rank ?? 0}`}
         towards={lastRound?.correct_result_count ?? 0}
         points={lastRound?.total_points ?? 0}
