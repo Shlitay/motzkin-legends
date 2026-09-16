@@ -63,7 +63,18 @@ export default function RulesPage() {
       <section className="w-full max-w-md overflow-hidden rounded-[28px] bg-surface p-6 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_16px_32px_-18px_rgba(0,0,0,0.28)]">
         <CardHeader icon={<TargetIcon size={22} />} title="ניקוד" />
         <div className="mt-4 flex flex-col gap-2.5">
-          <ScoreRow dotClass="bg-brand" bgClass="bg-brand/10" textClass="text-brand" label="פגיעה — ניצחון מדויק" points={winHit} />
+          {winHit === drawHit ? (
+            <ScoreRow dotClass="bg-brand" bgClass="bg-brand/10" textClass="text-brand" label="פגיעה — ניצחון או תיקו מדויק" points={winHit} />
+          ) : (
+            // Only shown separately if a manager ever sets these two
+            // differently — merged into one row above whenever they match
+            // (the common case, both default to 10), so this never
+            // silently hides a real difference from participants.
+            <>
+              <ScoreRow dotClass="bg-brand" bgClass="bg-brand/10" textClass="text-brand" label="פגיעה — ניצחון מדויק" points={winHit} />
+              <ScoreRow dotClass="bg-brand" bgClass="bg-brand/10" textClass="text-brand" label="פגיעה — תיקו מדויק" points={drawHit} />
+            </>
+          )}
           <ScoreRow
             dotClass="bg-draw"
             bgClass="bg-draw/10"
@@ -72,7 +83,6 @@ export default function RulesPage() {
             points={winTowards + sameDiffBonus}
           />
           <ScoreRow dotClass="bg-draw" bgClass="bg-draw/10" textClass="text-draw" label="כיוון — הפרש שערים שונה" points={winTowards} />
-          <ScoreRow dotClass="bg-brand" bgClass="bg-brand/10" textClass="text-brand" label="פגיעה — תיקו מדויק" points={drawHit} />
           <ScoreRow dotClass="bg-draw" bgClass="bg-draw/10" textClass="text-draw" label="כיוון — תיקו לא מדויק" points={drawTowards} />
           <ScoreRow dotClass="bg-neutral-400" bgClass="bg-neutral-100" textClass="text-neutral-500" label="כיוון לא נכון" points={0} />
         </div>
