@@ -137,6 +137,8 @@ project has everything applied), run these in the SQL editor in order:
 
 37. `revert-service-role-manager-actions.sql` — reverts migration 36: the score-update automation it supported was cancelled (2026-09-14, user going back to manual score entry), so a bare service-role key no longer has any reason to pass `is_manager()`. Restores the original, narrower definition (real logged-in manager session only). **Applied 2026-09-14.**
 
+38. `add-goal-difference-bonus-points.sql` — new scoring tier requested directly by the user: a correct-direction (not exact) prediction that also gets the goal *difference* exactly right earns a bonus (`scoring_rules.goal_diff_bonus_points`, default 1) on top of `correct_result_points`. E.g. predict 2-0, actual 3-1 → both home wins by 2 → bonus applies (5+1=6 with defaults); predict 2-0, actual 4-0 → home wins but by 2 vs 4 → no bonus (5). Any two draws share the same difference (0), so a correct-but-inexact draw prediction gets this bonus too without needing a special case — exact-score draws are untouched (still `exact_score_points`). Extracts the scoring formula (previously identical copy-pasted `case` logic in `submit_match_result()` and `lock_expired_rounds()`) into a shared `compute_prediction_points()` SQL function so the two can't drift apart again. Manager-editable via `/manager`'s "כללי ניקוד" (`ScoringRulesModal.tsx`, third input added); shown to participants on `/rules` as a 4th scoring-ladder row. **Not yet applied.**
+
 The first-cut UI for this (an "everyone's predictions" list on `/predictions`) was removed the same day — see the `/leaderboard` feature just below instead, which is what actually shipped.
 
 Also, to make the manager account actually a manager (role defaults to

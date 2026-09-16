@@ -11,12 +11,13 @@ export default function ScoringRulesModal({ onClose }: { onClose: () => void }) 
 
   const [exactScore, setExactScore] = useState("10");
   const [correctResult, setCorrectResult] = useState("5");
+  const [goalDiffBonus, setGoalDiffBonus] = useState("1");
 
   useEffect(() => {
     (async () => {
       const { data, error: fetchError } = await supabase
         .from("scoring_rules")
-        .select("exact_score_points, correct_result_points")
+        .select("exact_score_points, correct_result_points, goal_diff_bonus_points")
         .order("effective_from", { ascending: false })
         .limit(1)
         .maybeSingle();
@@ -30,12 +31,13 @@ export default function ScoringRulesModal({ onClose }: { onClose: () => void }) 
       if (data) {
         setExactScore(String(data.exact_score_points));
         setCorrectResult(String(data.correct_result_points));
+        setGoalDiffBonus(String(data.goal_diff_bonus_points));
       }
       setLoading(false);
     })();
   }, [supabase]);
 
-  const filled = exactScore !== "" && correctResult !== "";
+  const filled = exactScore !== "" && correctResult !== "" && goalDiffBonus !== "";
 
   function setPoints(setter: (v: string) => void, value: string) {
     if (value !== "" && !/^\d{1,3}$/.test(value)) return;
@@ -60,6 +62,7 @@ export default function ScoringRulesModal({ onClose }: { onClose: () => void }) 
     const { error: insertError } = await supabase.from("scoring_rules").insert({
       exact_score_points: Number(exactScore),
       correct_result_points: Number(correctResult),
+      goal_diff_bonus_points: Number(goalDiffBonus),
       created_by: user.id,
     });
 
@@ -86,7 +89,7 @@ export default function ScoringRulesModal({ onClose }: { onClose: () => void }) 
               חל רק על המחזורים הבאים — מחזורים שעברו שומרים על הניקוד המקורי שלהם.
             </p>
 
-            <div className="mb-8 flex items-center justify-center gap-6">
+            <div className="mb-8 flex flex-wrap items-center justify-center gap-6">
               <PointsInput
                 label="תוצאה מדויקת"
                 value={exactScore}
@@ -96,6 +99,11 @@ export default function ScoringRulesModal({ onClose }: { onClose: () => void }) 
                 label="כיוון (תוצאה נכונה)"
                 value={correctResult}
                 onChange={(v) => setPoints(setCorrectResult, v)}
+              />
+              <PointsInput
+                label="בונוס הפרש שערים מדויק"
+                value={goalDiffBonus}
+                onChange={(v) => setPoints(setGoalDiffBonus, v)}
               />
             </div>
           </>

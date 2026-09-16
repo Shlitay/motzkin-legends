@@ -16,6 +16,7 @@ export default function RulesPage() {
   const [showProfile, setShowProfile] = useState(false);
   const [exactPoints, setExactPoints] = useState(10);
   const [correctPoints, setCorrectPoints] = useState(5);
+  const [goalDiffBonus, setGoalDiffBonus] = useState(1);
 
   // Scoring values are manager-configurable (see /manager's "כללי ניקוד"),
   // so this page reads the live rule instead of hardcoding a number that
@@ -24,7 +25,7 @@ export default function RulesPage() {
     (async () => {
       const { data } = await supabase
         .from("scoring_rules")
-        .select("exact_score_points, correct_result_points")
+        .select("exact_score_points, correct_result_points, goal_diff_bonus_points")
         .order("effective_from", { ascending: false })
         .limit(1)
         .maybeSingle();
@@ -32,6 +33,7 @@ export default function RulesPage() {
       if (data) {
         setExactPoints(data.exact_score_points);
         setCorrectPoints(data.correct_result_points);
+        setGoalDiffBonus(data.goal_diff_bonus_points);
       }
     })();
   }, [supabase]);
@@ -56,7 +58,14 @@ export default function RulesPage() {
         <CardHeader icon={<TargetIcon size={22} />} title="ניקוד" />
         <div className="mt-4 flex flex-col gap-2.5">
           <ScoreRow dotClass="bg-brand" bgClass="bg-brand/10" textClass="text-brand" label="פגיעה — תוצאה מדויקת" points={exactPoints} />
-          <ScoreRow dotClass="bg-draw" bgClass="bg-draw/10" textClass="text-draw" label="כיוון — כיוון נכון, תוצאה לא מדויקת" points={correctPoints} />
+          <ScoreRow
+            dotClass="bg-draw"
+            bgClass="bg-draw/10"
+            textClass="text-draw"
+            label="כיוון — הפרש שערים מדויק"
+            points={correctPoints + goalDiffBonus}
+          />
+          <ScoreRow dotClass="bg-draw" bgClass="bg-draw/10" textClass="text-draw" label="כיוון — הפרש שערים שונה" points={correctPoints} />
           <ScoreRow dotClass="bg-neutral-400" bgClass="bg-neutral-100" textClass="text-neutral-500" label="כיוון לא נכון" points={0} />
         </div>
       </section>
