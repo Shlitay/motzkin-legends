@@ -16,7 +16,7 @@ export default function RulesPage() {
   const [showProfile, setShowProfile] = useState(false);
   const [winHit, setWinHit] = useState(10);
   const [winTowards, setWinTowards] = useState(5);
-  const [sameDiffTowards, setSameDiffTowards] = useState(6);
+  const [sameDiffBonus, setSameDiffBonus] = useState(1);
   const [drawHit, setDrawHit] = useState(10);
   const [drawTowards, setDrawTowards] = useState(6);
 
@@ -28,7 +28,7 @@ export default function RulesPage() {
       const { data } = await supabase
         .from("scoring_rules")
         .select(
-          "win_hit_points, win_towards_points, same_diff_towards_points, draw_hit_points, draw_towards_points"
+          "win_hit_points, win_towards_points, same_diff_bonus_points, draw_hit_points, draw_towards_points"
         )
         .order("effective_from", { ascending: false })
         .limit(1)
@@ -37,7 +37,7 @@ export default function RulesPage() {
       if (data) {
         setWinHit(data.win_hit_points);
         setWinTowards(data.win_towards_points);
-        setSameDiffTowards(data.same_diff_towards_points);
+        setSameDiffBonus(data.same_diff_bonus_points);
         setDrawHit(data.draw_hit_points);
         setDrawTowards(data.draw_towards_points);
       }
@@ -64,7 +64,13 @@ export default function RulesPage() {
         <CardHeader icon={<TargetIcon size={22} />} title="ניקוד" />
         <div className="mt-4 flex flex-col gap-2.5">
           <ScoreRow dotClass="bg-brand" bgClass="bg-brand/10" textClass="text-brand" label="פגיעה — ניצחון מדויק" points={winHit} />
-          <ScoreRow dotClass="bg-draw" bgClass="bg-draw/10" textClass="text-draw" label="כיוון — הפרש שערים זהה" points={sameDiffTowards} />
+          <ScoreRow
+            dotClass="bg-draw"
+            bgClass="bg-draw/10"
+            textClass="text-draw"
+            label="כיוון — הפרש שערים זהה"
+            points={winTowards + sameDiffBonus}
+          />
           <ScoreRow dotClass="bg-draw" bgClass="bg-draw/10" textClass="text-draw" label="כיוון — הפרש שערים שונה" points={winTowards} />
           <ScoreRow dotClass="bg-brand" bgClass="bg-brand/10" textClass="text-brand" label="פגיעה — תיקו מדויק" points={drawHit} />
           <ScoreRow dotClass="bg-draw" bgClass="bg-draw/10" textClass="text-draw" label="כיוון — תיקו לא מדויק" points={drawTowards} />

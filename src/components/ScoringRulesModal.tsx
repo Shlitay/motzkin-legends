@@ -11,7 +11,7 @@ export default function ScoringRulesModal({ onClose }: { onClose: () => void }) 
 
   const [winHit, setWinHit] = useState("10");
   const [winTowards, setWinTowards] = useState("5");
-  const [sameDiffTowards, setSameDiffTowards] = useState("6");
+  const [sameDiffBonus, setSameDiffBonus] = useState("1");
   const [drawHit, setDrawHit] = useState("10");
   const [drawTowards, setDrawTowards] = useState("6");
 
@@ -20,7 +20,7 @@ export default function ScoringRulesModal({ onClose }: { onClose: () => void }) 
       const { data, error: fetchError } = await supabase
         .from("scoring_rules")
         .select(
-          "win_hit_points, win_towards_points, same_diff_towards_points, draw_hit_points, draw_towards_points"
+          "win_hit_points, win_towards_points, same_diff_bonus_points, draw_hit_points, draw_towards_points"
         )
         .order("effective_from", { ascending: false })
         .limit(1)
@@ -35,7 +35,7 @@ export default function ScoringRulesModal({ onClose }: { onClose: () => void }) 
       if (data) {
         setWinHit(String(data.win_hit_points));
         setWinTowards(String(data.win_towards_points));
-        setSameDiffTowards(String(data.same_diff_towards_points));
+        setSameDiffBonus(String(data.same_diff_bonus_points));
         setDrawHit(String(data.draw_hit_points));
         setDrawTowards(String(data.draw_towards_points));
       }
@@ -43,7 +43,7 @@ export default function ScoringRulesModal({ onClose }: { onClose: () => void }) 
     })();
   }, [supabase]);
 
-  const filled = [winHit, winTowards, sameDiffTowards, drawHit, drawTowards].every((v) => v !== "");
+  const filled = [winHit, winTowards, sameDiffBonus, drawHit, drawTowards].every((v) => v !== "");
 
   function setPoints(setter: (v: string) => void, value: string) {
     if (value !== "" && !/^\d{1,3}$/.test(value)) return;
@@ -68,7 +68,7 @@ export default function ScoringRulesModal({ onClose }: { onClose: () => void }) 
     const { error: insertError } = await supabase.from("scoring_rules").insert({
       win_hit_points: Number(winHit),
       win_towards_points: Number(winTowards),
-      same_diff_towards_points: Number(sameDiffTowards),
+      same_diff_bonus_points: Number(sameDiffBonus),
       draw_hit_points: Number(drawHit),
       draw_towards_points: Number(drawTowards),
       created_by: user.id,
@@ -104,9 +104,9 @@ export default function ScoringRulesModal({ onClose }: { onClose: () => void }) 
               </ScoreGroup>
               <ScoreGroup title="הפרש שערים זהה">
                 <PointsInput
-                  label="כיוון"
-                  value={sameDiffTowards}
-                  onChange={(v) => setPoints(setSameDiffTowards, v)}
+                  label="בונוס"
+                  value={sameDiffBonus}
+                  onChange={(v) => setPoints(setSameDiffBonus, v)}
                 />
               </ScoreGroup>
               <ScoreGroup title="תיקו">

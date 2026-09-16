@@ -6,14 +6,15 @@
 --   ניצחון בית/חוץ (home/away win) — actual result is a win for either
 --     side. towards = correct winner, WRONG goal difference (e.g. predict
 --     2-0, actual 4-0). hit = exact score (predict 2-0, actual 2-0).
---   הפרש שערים זהה (same goal difference) — actual result is a win,
---     predicted the correct winner AND the exact goal difference, but not
---     the exact score (predict 2-0, actual 3-1: both +2). Only a
---     "towards" value — an exact score match always already has a
+--   הפרש שערים זהה (same goal difference) — a BONUS added on top of
+--     win_towards_points when the correct winner AND the exact goal
+--     difference were predicted, but not the exact score (predict 2-0,
+--     actual 3-1: both +2 -> win_towards_points + same_diff_bonus_points).
+--     No separate "hit" here — an exact score match always already has a
 --     matching difference too, so that combination is scored by the win
---     category's own "hit" above, not a second "hit" here (confirmed with
---     the user rather than guessing, since the two cases are impossible
---     to distinguish once the score is actually exact).
+--     category's own "hit" above, not a second field (confirmed with the
+--     user rather than guessing, since the two cases are impossible to
+--     distinguish once the score is actually exact).
 --   תיקו (draw) — actual result is a draw. towards = predicted a draw,
 --     wrong exact score (predict 1-1, actual 2-2). hit = exact draw score.
 --
@@ -26,7 +27,7 @@
 alter table scoring_rules
   add column if not exists win_hit_points int not null default 10,
   add column if not exists win_towards_points int not null default 5,
-  add column if not exists same_diff_towards_points int not null default 6,
+  add column if not exists same_diff_bonus_points int not null default 1,
   add column if not exists draw_hit_points int not null default 10,
   add column if not exists draw_towards_points int not null default 6;
 
@@ -44,7 +45,7 @@ create or replace function compute_prediction_points(
   p_actual_away int,
   p_win_hit_pts int,
   p_win_towards_pts int,
-  p_same_diff_towards_pts int,
+  p_same_diff_bonus_pts int,
   p_draw_hit_pts int,
   p_draw_towards_pts int
 )
@@ -65,7 +66,8 @@ as $$
       case
         when p_pred_home = p_actual_home and p_pred_away = p_actual_away then p_win_hit_pts
         when sign(p_pred_home - p_pred_away) <> sign(p_actual_home - p_actual_away) then 0
-        when (p_pred_home - p_pred_away) = (p_actual_home - p_actual_away) then p_same_diff_towards_pts
+        when (p_pred_home - p_pred_away) = (p_actual_home - p_actual_away)
+          then p_win_towards_pts + p_same_diff_bonus_pts
         else p_win_towards_pts
       end
   end;
@@ -87,7 +89,7 @@ declare
   v_round_id uuid;
   v_win_hit int;
   v_win_towards int;
-  v_same_diff_towards int;
+  v_same_diff_bonus int;
   v_draw_hit int;
   v_draw_towards int;
 begin
@@ -99,14 +101,14 @@ begin
   where id = p_match_id
   returning round_id into v_round_id;
 
-  select win_hit_points, win_towards_points, same_diff_towards_points, draw_hit_points, draw_towards_points
-  into v_win_hit, v_win_towards, v_same_diff_towards, v_draw_hit, v_draw_towards
+  select win_hit_points, win_towards_points, same_diff_bonus_points, draw_hit_points, draw_towards_points
+  into v_win_hit, v_win_towards, v_same_diff_bonus, v_draw_hit, v_draw_towards
   from scoring_rules order by effective_from desc limit 1;
 
   update predictions p
   set points_earned = compute_prediction_points(
     p.pred_home_score, p.pred_away_score, p_home_score, p_away_score,
-    v_win_hit, v_win_towards, v_same_diff_towards, v_draw_hit, v_draw_towards
+    v_win_hit, v_win_towards, v_same_diff_bonus, v_draw_hit, v_draw_towards
   )
   where p.match_id = p_match_id;
 
@@ -132,7 +134,7 @@ declare
   r record;
   v_win_hit int;
   v_win_towards int;
-  v_same_diff_towards int;
+  v_same_diff_bonus int;
   v_draw_hit int;
   v_draw_towards int;
 begin
@@ -162,14 +164,14 @@ begin
     update matches set home_score = 0, away_score = 0, is_final = false
     where round_id = r.id and home_score is null;
 
-    select win_hit_points, win_towards_points, same_diff_towards_points, draw_hit_points, draw_towards_points
-    into v_win_hit, v_win_towards, v_same_diff_towards, v_draw_hit, v_draw_towards
+    select win_hit_points, win_towards_points, same_diff_bonus_points, draw_hit_points, draw_towards_points
+    into v_win_hit, v_win_towards, v_same_diff_bonus, v_draw_hit, v_draw_towards
     from scoring_rules order by effective_from desc limit 1;
 
     update predictions p
     set points_earned = compute_prediction_points(
       p.pred_home_score, p.pred_away_score, m.home_score, m.away_score,
-      v_win_hit, v_win_towards, v_same_diff_towards, v_draw_hit, v_draw_towards
+      v_win_hit, v_win_towards, v_same_diff_bonus, v_draw_hit, v_draw_towards
     )
     from matches m
     where p.match_id = m.id and m.round_id = r.id;
