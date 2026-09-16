@@ -14,9 +14,11 @@ import { createClient } from "@/lib/supabase/client";
 export default function RulesPage() {
   const [supabase] = useState(() => createClient());
   const [showProfile, setShowProfile] = useState(false);
-  const [exactPoints, setExactPoints] = useState(10);
-  const [correctPoints, setCorrectPoints] = useState(5);
-  const [goalDiffBonus, setGoalDiffBonus] = useState(1);
+  const [winHit, setWinHit] = useState(10);
+  const [winTowards, setWinTowards] = useState(5);
+  const [sameDiffTowards, setSameDiffTowards] = useState(6);
+  const [drawHit, setDrawHit] = useState(10);
+  const [drawTowards, setDrawTowards] = useState(6);
 
   // Scoring values are manager-configurable (see /manager's "כללי ניקוד"),
   // so this page reads the live rule instead of hardcoding a number that
@@ -25,15 +27,19 @@ export default function RulesPage() {
     (async () => {
       const { data } = await supabase
         .from("scoring_rules")
-        .select("exact_score_points, correct_result_points, goal_diff_bonus_points")
+        .select(
+          "win_hit_points, win_towards_points, same_diff_towards_points, draw_hit_points, draw_towards_points"
+        )
         .order("effective_from", { ascending: false })
         .limit(1)
         .maybeSingle();
 
       if (data) {
-        setExactPoints(data.exact_score_points);
-        setCorrectPoints(data.correct_result_points);
-        setGoalDiffBonus(data.goal_diff_bonus_points);
+        setWinHit(data.win_hit_points);
+        setWinTowards(data.win_towards_points);
+        setSameDiffTowards(data.same_diff_towards_points);
+        setDrawHit(data.draw_hit_points);
+        setDrawTowards(data.draw_towards_points);
       }
     })();
   }, [supabase]);
@@ -57,15 +63,11 @@ export default function RulesPage() {
       <section className="w-full max-w-md overflow-hidden rounded-[28px] bg-surface p-6 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_16px_32px_-18px_rgba(0,0,0,0.28)]">
         <CardHeader icon={<TargetIcon size={22} />} title="ניקוד" />
         <div className="mt-4 flex flex-col gap-2.5">
-          <ScoreRow dotClass="bg-brand" bgClass="bg-brand/10" textClass="text-brand" label="פגיעה — תוצאה מדויקת" points={exactPoints} />
-          <ScoreRow
-            dotClass="bg-draw"
-            bgClass="bg-draw/10"
-            textClass="text-draw"
-            label="כיוון — הפרש שערים מדויק"
-            points={correctPoints + goalDiffBonus}
-          />
-          <ScoreRow dotClass="bg-draw" bgClass="bg-draw/10" textClass="text-draw" label="כיוון — הפרש שערים שונה" points={correctPoints} />
+          <ScoreRow dotClass="bg-brand" bgClass="bg-brand/10" textClass="text-brand" label="פגיעה — ניצחון מדויק" points={winHit} />
+          <ScoreRow dotClass="bg-draw" bgClass="bg-draw/10" textClass="text-draw" label="כיוון — הפרש שערים זהה" points={sameDiffTowards} />
+          <ScoreRow dotClass="bg-draw" bgClass="bg-draw/10" textClass="text-draw" label="כיוון — הפרש שערים שונה" points={winTowards} />
+          <ScoreRow dotClass="bg-brand" bgClass="bg-brand/10" textClass="text-brand" label="פגיעה — תיקו מדויק" points={drawHit} />
+          <ScoreRow dotClass="bg-draw" bgClass="bg-draw/10" textClass="text-draw" label="כיוון — תיקו לא מדויק" points={drawTowards} />
           <ScoreRow dotClass="bg-neutral-400" bgClass="bg-neutral-100" textClass="text-neutral-500" label="כיוון לא נכון" points={0} />
         </div>
       </section>

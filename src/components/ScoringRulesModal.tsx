@@ -9,15 +9,19 @@ export default function ScoringRulesModal({ onClose }: { onClose: () => void }) 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [exactScore, setExactScore] = useState("10");
-  const [correctResult, setCorrectResult] = useState("5");
-  const [goalDiffBonus, setGoalDiffBonus] = useState("1");
+  const [winHit, setWinHit] = useState("10");
+  const [winTowards, setWinTowards] = useState("5");
+  const [sameDiffTowards, setSameDiffTowards] = useState("6");
+  const [drawHit, setDrawHit] = useState("10");
+  const [drawTowards, setDrawTowards] = useState("6");
 
   useEffect(() => {
     (async () => {
       const { data, error: fetchError } = await supabase
         .from("scoring_rules")
-        .select("exact_score_points, correct_result_points, goal_diff_bonus_points")
+        .select(
+          "win_hit_points, win_towards_points, same_diff_towards_points, draw_hit_points, draw_towards_points"
+        )
         .order("effective_from", { ascending: false })
         .limit(1)
         .maybeSingle();
@@ -29,15 +33,17 @@ export default function ScoringRulesModal({ onClose }: { onClose: () => void }) 
       }
 
       if (data) {
-        setExactScore(String(data.exact_score_points));
-        setCorrectResult(String(data.correct_result_points));
-        setGoalDiffBonus(String(data.goal_diff_bonus_points));
+        setWinHit(String(data.win_hit_points));
+        setWinTowards(String(data.win_towards_points));
+        setSameDiffTowards(String(data.same_diff_towards_points));
+        setDrawHit(String(data.draw_hit_points));
+        setDrawTowards(String(data.draw_towards_points));
       }
       setLoading(false);
     })();
   }, [supabase]);
 
-  const filled = exactScore !== "" && correctResult !== "" && goalDiffBonus !== "";
+  const filled = [winHit, winTowards, sameDiffTowards, drawHit, drawTowards].every((v) => v !== "");
 
   function setPoints(setter: (v: string) => void, value: string) {
     if (value !== "" && !/^\d{1,3}$/.test(value)) return;
@@ -60,9 +66,11 @@ export default function ScoringRulesModal({ onClose }: { onClose: () => void }) 
     }
 
     const { error: insertError } = await supabase.from("scoring_rules").insert({
-      exact_score_points: Number(exactScore),
-      correct_result_points: Number(correctResult),
-      goal_diff_bonus_points: Number(goalDiffBonus),
+      win_hit_points: Number(winHit),
+      win_towards_points: Number(winTowards),
+      same_diff_towards_points: Number(sameDiffTowards),
+      draw_hit_points: Number(drawHit),
+      draw_towards_points: Number(drawTowards),
       created_by: user.id,
     });
 
@@ -89,22 +97,22 @@ export default function ScoringRulesModal({ onClose }: { onClose: () => void }) 
               חל רק על המחזורים הבאים — מחזורים שעברו שומרים על הניקוד המקורי שלהם.
             </p>
 
-            <div className="mb-8 flex flex-wrap items-center justify-center gap-6">
-              <PointsInput
-                label="תוצאה מדויקת"
-                value={exactScore}
-                onChange={(v) => setPoints(setExactScore, v)}
-              />
-              <PointsInput
-                label="כיוון (תוצאה נכונה)"
-                value={correctResult}
-                onChange={(v) => setPoints(setCorrectResult, v)}
-              />
-              <PointsInput
-                label="בונוס הפרש שערים מדויק"
-                value={goalDiffBonus}
-                onChange={(v) => setPoints(setGoalDiffBonus, v)}
-              />
+            <div className="mb-8 flex flex-col gap-5">
+              <ScoreGroup title="ניצחון בית/חוץ">
+                <PointsInput label="כיוון" value={winTowards} onChange={(v) => setPoints(setWinTowards, v)} />
+                <PointsInput label="פגיעה" value={winHit} onChange={(v) => setPoints(setWinHit, v)} />
+              </ScoreGroup>
+              <ScoreGroup title="הפרש שערים זהה">
+                <PointsInput
+                  label="כיוון"
+                  value={sameDiffTowards}
+                  onChange={(v) => setPoints(setSameDiffTowards, v)}
+                />
+              </ScoreGroup>
+              <ScoreGroup title="תיקו">
+                <PointsInput label="כיוון" value={drawTowards} onChange={(v) => setPoints(setDrawTowards, v)} />
+                <PointsInput label="פגיעה" value={drawHit} onChange={(v) => setPoints(setDrawHit, v)} />
+              </ScoreGroup>
             </div>
           </>
         )}
@@ -127,6 +135,15 @@ export default function ScoringRulesModal({ onClose }: { onClose: () => void }) 
           </button>
         </div>
       </div>
+    </div>
+  );
+}
+
+function ScoreGroup({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col items-center gap-2 rounded-2xl bg-neutral-50 px-4 py-3">
+      <span className="text-sm font-medium text-ink">{title}</span>
+      <div className="flex flex-wrap items-center justify-center gap-6">{children}</div>
     </div>
   );
 }
