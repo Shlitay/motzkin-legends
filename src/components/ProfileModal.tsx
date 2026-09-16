@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { AVATAR_LIBRARY } from "@/lib/mock-data";
+import { AVATAR_LIBRARY } from "@/lib/constants";
 
 export default function ProfileModal({ onClose }: { onClose: () => void }) {
   const [supabase] = useState(() => createClient());

@@ -11,7 +11,7 @@ import TopBar from "@/components/TopBar";
 import { createClient } from "@/lib/supabase/client";
 import { getCurrentRound, type CurrentRound } from "@/lib/currentRound";
 import { lockExpiredRounds } from "@/lib/lockExpiredRounds";
-import { currentUser } from "@/lib/mock-data";
+import { currentUser } from "@/lib/constants";
 
 type ProfileRow = { full_name: string; nickname: string | null; avatar: string | null };
 

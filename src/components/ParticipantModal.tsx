@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import StatCard from "@/components/StatCard";
 import { ChevronIcon } from "@/components/icons";
-import { TEAM_LOGOS, shortTeamName } from "@/lib/mock-data";
+import { TEAM_LOGOS, shortTeamName } from "@/lib/constants";
 
 type SeasonRow = {
   display_name: string;

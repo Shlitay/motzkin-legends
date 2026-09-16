@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import TopBar from "@/components/TopBar";
 import { createClient } from "@/lib/supabase/client";
-import { AVATAR_LIBRARY } from "@/lib/mock-data";
+import { AVATAR_LIBRARY } from "@/lib/constants";
 
 export default function OnboardingPage() {
   const router = useRouter();
