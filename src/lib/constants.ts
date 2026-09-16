@@ -23,6 +23,16 @@ export const TEAM_LOGOS: Record<string, string> = {
   "מכבי פתח תקווה": "/team-logos/maccabi-petah-tikva.png",
   "מכבי נתניה": "/team-logos/maccabi-netanya.png",
   "מכבי תל אביב": "/team-logos/maccabi-tel-aviv.png",
+
+  // European clubs, added 2026-09-16 for round 5 onward (10 matches/round).
+  "ארסנל": "/team-logos/arsenal.png",
+  "ברייטון": "/team-logos/brighton.png",
+  "דורטמונד": "/team-logos/borussia-dortmund.png",
+  "שטוטגרט": "/team-logos/vfb-stuttgart.png",
+  "אינטר מילאן": "/team-logos/inter-milan.png",
+  "רומא": "/team-logos/roma.png",
+  "ברצלונה": "/team-logos/barcelona.png",
+  "סביליה": "/team-logos/sevilla.png",
 };
 
 // Shortened display forms for full team names that wrap to two lines in
