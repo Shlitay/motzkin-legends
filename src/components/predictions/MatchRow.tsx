@@ -5,6 +5,7 @@ import { ChevronIcon } from "@/components/icons";
 import { formatMatchKickoff } from "@/lib/israelTime";
 import { TEAM_LOGOS, shortTeamName } from "@/lib/constants";
 import type { MatchStatus } from "@/lib/matchStatus";
+import { deriveOutcome, type Outcome } from "@/lib/predictionOutcome";
 import MainEventBadge from "./MainEventBadge";
 import MatchParticipantsList from "./MatchParticipantsList";
 
@@ -34,18 +35,38 @@ function TeamLogo({ team }: { team: string }) {
   return <img src={src} alt="" className="h-8 w-8 shrink-0 object-contain" />;
 }
 
+// While a match is actually live, a locked-in prediction gets a visual
+// nudge for its current standing against the live score — gold and
+// bigger for a current exact hit, circled green for a current correct-
+// direction ("towards") hit. Deliberately the reverse of this app's
+// usual exact=green/direction=gold convention (EndedMatchCard, /rules'
+// scoring ladder) — the user asked for gold specifically on the exact
+// hit here, to read as "the big one," not for consistency with those.
 function ScoreBox({
   value,
   onChange,
   readOnly,
+  liveOutcome,
 }: {
   value: string;
   onChange?: (v: string) => void;
   readOnly?: boolean;
+  liveOutcome?: Outcome | null;
 }) {
   if (readOnly) {
+    if (liveOutcome === "exact") {
+      return (
+        <div className="font-display flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-draw text-sm font-bold text-white">
+          {value}
+        </div>
+      );
+    }
     return (
-      <div className="font-display flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-ink text-xs font-semibold text-white">
+      <div
+        className={`font-display flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-ink text-xs font-semibold text-white ${
+          liveOutcome === "direction" ? "ring-2 ring-brand ring-offset-1" : ""
+        }`}
+      >
         {value}
       </div>
     );
@@ -116,6 +137,13 @@ export default function MatchRow({
   // production data until that migration is run).
   const hasFinalScore = status !== "not-started" && finalHomeScore !== null && finalAwayScore !== null;
 
+  // Only while the match is actually live — once it ends, EndedMatchCard
+  // takes over with its own (differently-colored) outcome treatment.
+  const liveOutcome =
+    status === "live" && hasBoth && finalHomeScore !== null && finalAwayScore !== null
+      ? deriveOutcome(homeNum!, awayNum!, finalHomeScore, finalAwayScore)
+      : null;
+
   return (
     <div
       className={`rounded-xl border p-3 ${
@@ -142,8 +170,8 @@ export default function MatchRow({
           <TeamLogo team={homeTeam} />
           <span>{shortTeamName(homeTeam)}</span>
         </div>
-        <ScoreBox value={home} onChange={onChangeHome} readOnly={readOnly} />
-        <ScoreBox value={away} onChange={onChangeAway} readOnly={readOnly} />
+        <ScoreBox value={home} onChange={onChangeHome} readOnly={readOnly} liveOutcome={liveOutcome} />
+        <ScoreBox value={away} onChange={onChangeAway} readOnly={readOnly} liveOutcome={liveOutcome} />
         <div className={`flex flex-1 items-center justify-end gap-2.5 overflow-hidden rounded-lg border py-3 ps-3 text-end text-sm ${teamClass(awayWins)}`}>
           <span>{shortTeamName(awayTeam)}</span>
           <TeamLogo team={awayTeam} />
