@@ -36,6 +36,14 @@ type DbRound = {
   predictions_open_at: string | null;
 };
 
+type StandingsEntry = { userId: string; name: string; avatar: string };
+
+type RawRoundParticipationRow = {
+  user_id: string;
+  rank: number | null;
+  users: { full_name: string; nickname: string | null; avatar: string | null } | null;
+};
+
 const STATUS_ORDER: Record<MatchStatus, number> = { live: 0, "not-started": 1, ended: 2 };
 
 export default function PredictionsPage() {
@@ -49,6 +57,7 @@ export default function PredictionsPage() {
   const [selectedRoundId, setSelectedRoundId] = useState<string | null>(null);
   const [matches, setMatches] = useState<DbMatch[]>([]);
   const [entries, setEntries] = useState<Record<string, ScoreEntry>>({});
+  const [standingsOrder, setStandingsOrder] = useState<StandingsEntry[]>([]);
   const [now, setNow] = useState(() => new Date());
 
   // Drives the not-started -> live transition for whichever match's kickoff
@@ -141,6 +150,36 @@ export default function PredictionsPage() {
       setEntries(nextEntries);
       setError(null);
       setLoading(false);
+    })();
+  }, [supabase, selectedRoundId]);
+
+  // Current round standings order — fetched once per round (not once per
+  // match expanded) so every locked match's "who predicted what" list can
+  // share it. Same rank the round-points table on /leaderboard already
+  // sorts by (recompute_round_standings()'s tiebreak chain), not raw
+  // points, so the two stay consistent. RLS only returns rows once this
+  // round is locked, matching per-day visibility (fix-predictions-visible-
+  // per-day.sql) — before that, this list is just empty and no matches
+  // are readOnly yet anyway, so nothing tries to render it.
+  useEffect(() => {
+    if (!selectedRoundId) return;
+
+    (async () => {
+      const { data } = await supabase
+        .from("round_participation")
+        .select("user_id, rank, users(full_name, nickname, avatar)")
+        .eq("round_id", selectedRoundId)
+        .overrideTypes<RawRoundParticipationRow[], { merge: false }>();
+
+      setStandingsOrder(
+        [...(data ?? [])]
+          .sort((a, b) => (a.rank ?? Number.MAX_SAFE_INTEGER) - (b.rank ?? Number.MAX_SAFE_INTEGER))
+          .map((r) => ({
+            userId: r.user_id,
+            name: r.users?.nickname ?? r.users?.full_name ?? "Unknown",
+            avatar: r.users?.avatar ?? "🙂",
+          }))
+      );
     })();
   }, [supabase, selectedRoundId]);
 
@@ -340,6 +379,7 @@ export default function PredictionsPage() {
               {i === firstEndedIndex && <SectionDivider label="משחקים שהסתיימו" />}
               {status !== "ended" ? (
                 <MatchRow
+                  matchId={m.id}
                   homeTeam={m.home_team}
                   awayTeam={m.away_team}
                   home={e.home}
@@ -352,6 +392,7 @@ export default function PredictionsPage() {
                   status={status}
                   kickoffAt={m.kickoff_at}
                   isMainEvent={m.is_main_event}
+                  standingsOrder={standingsOrder}
                 />
               ) : (
                 m.home_score !== null &&

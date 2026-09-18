@@ -1,7 +1,12 @@
+"use client";
+
+import { useState } from "react";
+import { ChevronIcon } from "@/components/icons";
 import { formatMatchKickoff } from "@/lib/israelTime";
 import { TEAM_LOGOS, shortTeamName } from "@/lib/constants";
 import type { MatchStatus } from "@/lib/matchStatus";
 import MainEventBadge from "./MainEventBadge";
+import MatchParticipantsList from "./MatchParticipantsList";
 
 // Ended matches use EndedMatchCard's own outcome label instead of this
 // badge, so it only ever renders for the other two statuses.
@@ -59,6 +64,7 @@ function ScoreBox({
 // Live and not-started matches only — ended matches render via
 // EndedMatchCard instead.
 export default function MatchRow({
+  matchId,
   homeTeam,
   awayTeam,
   home,
@@ -71,7 +77,9 @@ export default function MatchRow({
   status,
   kickoffAt,
   isMainEvent = false,
+  standingsOrder = [],
 }: {
+  matchId: string;
   homeTeam: string;
   awayTeam: string;
   home: string;
@@ -84,7 +92,14 @@ export default function MatchRow({
   status: Exclude<MatchStatus, "ended">;
   kickoffAt: string;
   isMainEvent?: boolean;
+  // Current round standings order (round_participation.rank), fetched
+  // once per round by the page and passed down — only used once expanded
+  // to show "who predicted what" in the same order as /leaderboard's
+  // round-points table, not fetched again per match.
+  standingsOrder?: { userId: string; name: string; avatar: string }[];
 }) {
+  const [expanded, setExpanded] = useState(false);
+
   const homeNum = home === "" ? null : Number(home);
   const awayNum = away === "" ? null : Number(away);
   const hasBoth = homeNum !== null && awayNum !== null;
@@ -146,6 +161,25 @@ export default function MatchRow({
         <p className="mt-1 text-center text-xs text-muted">
           תוצאה נוכחית: {finalAwayScore}-{finalHomeScore}
         </p>
+      )}
+      {readOnly && (
+        <>
+          <button
+            onClick={() => setExpanded((e) => !e)}
+            className="mt-2 flex w-full items-center justify-center gap-1 text-xs font-medium text-brand hover:underline"
+          >
+            צפייה בניחושי כל המשתתפים
+            <ChevronIcon size={12} className={expanded ? "rotate-90" : "-rotate-90"} />
+          </button>
+          {expanded && (
+            <MatchParticipantsList
+              matchId={matchId}
+              homeScore={finalHomeScore}
+              awayScore={finalAwayScore}
+              standingsOrder={standingsOrder}
+            />
+          )}
+        </>
       )}
     </div>
   );
