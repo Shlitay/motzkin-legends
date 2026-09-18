@@ -10,15 +10,34 @@ import RoundApprovalStatus from "@/components/RoundApprovalStatus";
 import RoundCountdown from "@/components/RoundCountdown";
 import TopBar from "@/components/TopBar";
 import { createClient } from "@/lib/supabase/client";
+import { getCurrentRound } from "@/lib/currentRound";
 
 export default function RulesPage() {
   const [supabase] = useState(() => createClient());
   const [showProfile, setShowProfile] = useState(false);
+  const [matchCount, setMatchCount] = useState(10);
   const [winHit, setWinHit] = useState(10);
   const [winTowards, setWinTowards] = useState(5);
   const [sameDiffBonus, setSameDiffBonus] = useState(1);
   const [drawHit, setDrawHit] = useState(10);
   const [drawTowards, setDrawTowards] = useState(6);
+
+  // How many matches a round has has changed before (7 -> 10 as of round
+  // 5) — read the current round's real match count instead of
+  // hardcoding a number that could drift out of date again.
+  useEffect(() => {
+    (async () => {
+      const round = await getCurrentRound(supabase);
+      if (!round) return;
+
+      const { count } = await supabase
+        .from("matches")
+        .select("id", { count: "exact", head: true })
+        .eq("round_id", round.id);
+
+      if (count !== null) setMatchCount(count);
+    })();
+  }, [supabase]);
 
   // Scoring values are manager-configurable (see /manager's "כללי ניקוד"),
   // so this page reads the live rule instead of hardcoding a number that
@@ -57,7 +76,7 @@ export default function RulesPage() {
       </div>
 
       <RuleCard icon={<ClockIcon size={22} />} title="לפני הבעיטה הראשונה">
-        נחשו את התוצאה המדויקת של כל 10 המשחקים במחזור (החל ממחזור 5). מותר לשנות ניחוש לכל משחק עד הבעיטה הראשונה של המשחקים באותו היום — ברגע שהמשחק הראשון של היום מתחיל, כל משחקי אותו היום ננעלים, אבל אפשר עדיין לעדכן משחקים בימים הבאים עד שהם מתחילים.
+        נחשו את התוצאה המדויקת של כל {matchCount} המשחקים במחזור. מותר לשנות ניחוש לכל משחק עד הבעיטה הראשונה של המשחקים באותו היום — ברגע שהמשחק הראשון של היום מתחיל, כל משחקי אותו היום ננעלים, אבל אפשר עדיין לעדכן משחקים בימים הבאים עד שהם מתחילים.
       </RuleCard>
 
       <section className="w-full max-w-md overflow-hidden rounded-[28px] bg-surface p-6 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_16px_32px_-18px_rgba(0,0,0,0.28)]">
