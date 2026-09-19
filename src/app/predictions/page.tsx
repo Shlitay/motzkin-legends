@@ -227,12 +227,20 @@ export default function PredictionsPage() {
 
   // Live matches first, then upcoming, then ended — kickoff_at order (the
   // DB query's own sort) is preserved within each group since Array#sort
-  // is stable.
-  const sortedMatches = [...matches].sort(
-    (a, b) =>
-      STATUS_ORDER[matchStatus(a.kickoff_at, a.is_final, now)] -
-      STATUS_ORDER[matchStatus(b.kickoff_at, b.is_final, now)]
-  );
+  // is stable. Ended matches are the exception: the ones that earned this
+  // participant points come first, most points on top, then every
+  // no-points match (0 or none) in kickoff order.
+  const sortedMatches = [...matches].sort((a, b) => {
+    const statusA = matchStatus(a.kickoff_at, a.is_final, now);
+    const statusB = matchStatus(b.kickoff_at, b.is_final, now);
+    if (statusA !== statusB) return STATUS_ORDER[statusA] - STATUS_ORDER[statusB];
+    if (statusA !== "ended") return 0;
+
+    const pointsA = entries[a.id]?.pointsEarned ?? 0;
+    const pointsB = entries[b.id]?.pointsEarned ?? 0;
+    if (pointsA > 0 || pointsB > 0) return pointsB - pointsA;
+    return 0;
+  });
   const firstEndedIndex = sortedMatches.findIndex(
     (m) => matchStatus(m.kickoff_at, m.is_final, now) === "ended"
   );
