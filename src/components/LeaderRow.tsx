@@ -32,8 +32,11 @@ type LeaderRowProps = {
 export function statColumnClass(columnCount: number) {
   // Header and row cells must share one width or they drift apart — a
   // single column can stay compact, several need room for the widest
-  // Hebrew label ("מחזורים").
-  return columnCount > 1 ? "w-11 text-end" : "min-w-8 text-end";
+  // Hebrew label ("מחזורים"). Several columns are also centered (header
+  // and values alike) so each number sits under its label, rather than
+  // both hugging the same edge and drifting apart by their width
+  // difference.
+  return columnCount > 1 ? "w-11 text-center" : "min-w-8 text-end";
 }
 
 export default function LeaderRow({
