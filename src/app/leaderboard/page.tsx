@@ -216,14 +216,17 @@ export default function LeaderboardPage() {
           winnerJackpotLabel={winnerPayout !== null ? `זכה בקופה: ${winnerPayout} ₪` : undefined}
         />
       )}
-      <LeaderTable
-        title="הכי הרבה נקודות (עונה)"
-        rows={seasonPoints}
-        columnLabels={["פגיעה", "כיוון", "מחזורים", "נק'"]}
-        onSelect={setSelectedUserId}
-        scrollable
-        hideAvatars
-      />
+      <div className="flex w-full max-w-md flex-col items-center gap-3">
+        <h2 className="text-base font-medium text-ink">סטטיסטיקות עונה</h2>
+        <LeaderTable
+          title="הכי הרבה נקודות"
+          rows={seasonPoints}
+          columnLabels={["פגיעה", "כיוון", "מחזורים", "נק'"]}
+          onSelect={setSelectedUserId}
+          scrollable
+          hideAvatars
+        />
+      </div>
 
       {selectedUserId && (
         <ParticipantModal
