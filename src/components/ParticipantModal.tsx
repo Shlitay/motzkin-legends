@@ -177,7 +177,7 @@ export default function ParticipantModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-6">
-      <div className="max-h-[90vh] w-full max-w-sm overflow-y-auto rounded-2xl bg-white px-8 pb-8 pt-5 text-center shadow-lg">
+      <div className="max-h-[90vh] w-full max-w-sm overflow-y-auto rounded-2xl bg-white px-8 pb-8 pt-[15px] text-center shadow-lg">
         {loading ? (
           <p className="text-sm text-muted">טוען...</p>
         ) : !season ? (
@@ -185,7 +185,7 @@ export default function ParticipantModal({
         ) : (
           <div className="flex flex-col items-center gap-6">
             <div className="-mb-2 flex flex-col items-center gap-2">
-              <div className="flex h-[51px] w-[51px] items-center justify-center rounded-full bg-neutral-100 text-2xl">
+              <div className="flex h-[26px] w-[26px] items-center justify-center rounded-full bg-neutral-100 text-xs">
                 {season.avatar ?? "🙂"}
               </div>
               <p className="font-medium text-ink">{season.display_name}</p>
