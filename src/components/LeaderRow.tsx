@@ -11,10 +11,11 @@ type LeaderRowProps = {
   rank: number;
   avatar: string;
   name: string;
-  count: number;
-  // Season table only — a second numeric column (rounds played) shown
-  // next to count/points, muted so it doesn't compete with the primary stat.
-  secondaryCount?: number;
+  // One number per column, in the same order as LeaderTable's column
+  // labels. The last one is the primary stat (points) and gets full ink;
+  // any before it (season table: hits, towards, rounds) are muted so they
+  // don't compete with it.
+  values: number[];
   onClick?: () => void;
   // Round-winner treatment — only ever passed for rank 1 on the current
   // round's points table, once that round is finished (see /leaderboard).
@@ -22,14 +23,20 @@ type LeaderRowProps = {
   jackpotLabel?: string;
 };
 
-// The count's unit (points/rounds) is now a column header above the table
+// Each value's unit (points/hits/rounds) is a column header above the table
 // (see LeaderTable) rather than repeated as a label on every row.
+export function statColumnClass(columnCount: number) {
+  // Header and row cells must share one width or they drift apart — a
+  // single column can stay compact, several need room for the widest
+  // Hebrew label ("מחזורים").
+  return columnCount > 1 ? "w-11 text-end" : "min-w-8 text-end";
+}
+
 export default function LeaderRow({
   rank,
   avatar,
   name,
-  count,
-  secondaryCount,
+  values,
   onClick,
   crown = false,
   jackpotLabel,
@@ -63,15 +70,17 @@ export default function LeaderRow({
         )}
         <span className="font-medium text-ink">{name}</span>
       </span>
-      <span className="flex shrink-0 items-center gap-4">
-        <span className="min-w-8 text-end font-display text-sm font-semibold tabular-nums text-ink">
-          {count}
-        </span>
-        {secondaryCount !== undefined && (
-          <span className="min-w-8 text-end font-display text-sm font-semibold tabular-nums text-muted">
-            {secondaryCount}
+      <span className={`flex shrink-0 items-center ${values.length > 1 ? "gap-2" : "gap-4"}`}>
+        {values.map((v, i) => (
+          <span
+            key={i}
+            className={`${statColumnClass(values.length)} font-display text-sm font-semibold tabular-nums ${
+              i === values.length - 1 ? "text-ink" : "text-muted"
+            }`}
+          >
+            {v}
           </span>
-        )}
+        ))}
       </span>
     </Wrapper>
   );

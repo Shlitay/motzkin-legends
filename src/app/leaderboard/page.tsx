@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import BottomNav from "@/components/BottomNav";
 import { ChevronIcon } from "@/components/icons";
 import { ENTRY_FEE_ILS } from "@/components/JackpotBadge";
-import LeaderRow from "@/components/LeaderRow";
+import LeaderRow, { statColumnClass } from "@/components/LeaderRow";
 import NewsTicker from "@/components/NewsTicker";
 import ParticipantModal from "@/components/ParticipantModal";
 import RoundApprovalStatus from "@/components/RoundApprovalStatus";
@@ -14,7 +14,8 @@ import { createClient } from "@/lib/supabase/client";
 import { lockExpiredRounds } from "@/lib/lockExpiredRounds";
 import { matchStatus, type MatchStatus } from "@/lib/matchStatus";
 
-type Row = { userId: string; name: string; avatar: string; count: number; secondaryCount?: number };
+// values line up with the owning LeaderTable's columnLabels, one per column.
+type Row = { userId: string; name: string; avatar: string; values: number[] };
 
 type DbRound = { id: string; round_number: number; deadline_at: string; status: string };
 
@@ -33,6 +34,8 @@ type SeasonStatsRow = {
   avatar: string | null;
   total_points: number;
   rounds_played: number;
+  season_hits: number;
+  season_towards: number;
 };
 
 export default function LeaderboardPage() {
@@ -77,23 +80,21 @@ export default function LeaderboardPage() {
 
       const { data: stats } = await supabase
         .from("season_stats")
-        .select("user_id, display_name, avatar, total_points, rounds_played")
+        .select("user_id, display_name, avatar, total_points, rounds_played, season_hits, season_towards")
         .overrideTypes<SeasonStatsRow[], { merge: false }>();
 
       const seasonRows = stats ?? [];
-      // Merged season table: points (primary sort) with rounds-played
-      // alongside each row — this used to be its own separate "most
-      // participations" table, dropped in favor of one combined view.
+      // Season table columns, in display order: hits, towards, rounds
+      // played, total points (last = primary stat, and the sort key).
       setSeasonPoints(
         seasonRows
           .map((s) => ({
             userId: s.user_id,
             name: s.display_name,
             avatar: s.avatar ?? "🙂",
-            count: s.total_points,
-            secondaryCount: s.rounds_played,
+            values: [s.season_hits, s.season_towards, s.rounds_played, s.total_points],
           }))
-          .sort((a, b) => b.count - a.count)
+          .sort((a, b) => b.values[3] - a.values[3])
       );
     })();
   }, [supabase]);
@@ -127,7 +128,7 @@ export default function LeaderboardPage() {
             userId: r.user_id,
             name: r.users?.nickname ?? r.users?.full_name ?? "Unknown",
             avatar: r.users?.avatar ?? "🙂",
-            count: r.total_points ?? 0,
+            values: [r.total_points ?? 0],
           }))
       );
 
@@ -210,7 +211,7 @@ export default function LeaderboardPage() {
         <LeaderTable
           title={`נקודות מחזור ${selectedRound.round_number}`}
           rows={roundPoints}
-          countLabel="נק'"
+          columnLabels={["נק'"]}
           onSelect={setSelectedUserId}
           winnerJackpotLabel={winnerPayout !== null ? `זכה בקופה: ${winnerPayout} ₪` : undefined}
         />
@@ -218,8 +219,7 @@ export default function LeaderboardPage() {
       <LeaderTable
         title="הכי הרבה נקודות (עונה)"
         rows={seasonPoints}
-        countLabel="נק'"
-        secondaryLabel="מחזורים"
+        columnLabels={["פגיעה", "כיוון", "מחזורים", "נק'"]}
         onSelect={setSelectedUserId}
         scrollable
       />
@@ -267,18 +267,15 @@ function RoundMatchSummary({ matches, now }: { matches: RoundMatch[]; now: Date 
 function LeaderTable({
   title,
   rows,
-  countLabel,
-  secondaryLabel,
+  columnLabels,
   onSelect,
   winnerJackpotLabel,
   scrollable,
 }: {
   title: string;
   rows: Row[];
-  countLabel: string;
-  // Season table only — a second numeric column (rounds played) next to
-  // points. Omit for tables with just one stat (round-points).
-  secondaryLabel?: string;
+  // One header per numeric column, matching each Row's values order.
+  columnLabels: string[];
   onSelect: (userId: string) => void;
   // Only ever passed for the round-points table, once that round is
   // finished — applied to rows[0], which is already the actual rank-1
@@ -293,9 +290,16 @@ function LeaderTable({
     <section className="w-full max-w-md overflow-hidden rounded-[28px] bg-surface shadow-[0_1px_2px_rgba(0,0,0,0.04),0_16px_32px_-18px_rgba(0,0,0,0.28)]">
       <div className="flex items-baseline justify-between gap-3 px-5 pb-1 pt-5">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">{title}</h2>
-        <span className="flex shrink-0 gap-4 text-xs font-medium uppercase tracking-wide text-muted">
-          <span className="min-w-8 text-end">{countLabel}</span>
-          {secondaryLabel && <span className="min-w-8 text-end">{secondaryLabel}</span>}
+        <span
+          className={`flex shrink-0 font-medium uppercase tracking-wide text-muted ${
+            columnLabels.length > 1 ? "gap-2 text-[11px]" : "gap-4 text-xs"
+          }`}
+        >
+          {columnLabels.map((label) => (
+            <span key={label} className={statColumnClass(columnLabels.length)}>
+              {label}
+            </span>
+          ))}
         </span>
       </div>
       <div className={`divide-y divide-neutral-100 ${scrollable ? "max-h-[300px] overflow-y-auto" : ""}`}>
@@ -305,8 +309,7 @@ function LeaderTable({
             rank={i + 1}
             avatar={r.avatar}
             name={r.name}
-            count={r.count}
-            secondaryCount={secondaryLabel ? r.secondaryCount : undefined}
+            values={r.values}
             onClick={() => onSelect(r.userId)}
             crown={i === 0 && !!winnerJackpotLabel}
             jackpotLabel={i === 0 ? winnerJackpotLabel : undefined}
