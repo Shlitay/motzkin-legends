@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import StatCard from "@/components/StatCard";
-import { ChevronIcon } from "@/components/icons";
 import { TEAM_LOGOS, shortTeamName } from "@/lib/constants";
 
 type SeasonRow = {
@@ -49,22 +48,18 @@ export default function ParticipantModal({
   const [season, setSeason] = useState<SeasonRow | null>(null);
   const [lastRound, setLastRound] = useState<LastRoundRow | null>(null);
 
-  // The stats popup and the predictions popup are two separate screens of
-  // the same modal — "predictions" fully replaces the stats content
-  // rather than showing alongside it.
-  const [view, setView] = useState<"stats" | "predictions">("stats");
-
-  // This participant's picks for every match in the current round, as a
-  // plain list. Only meaningful once the round has started (locked) —
-  // while it's still 'open' nobody but the predictor themselves can read
-  // these rows anyway (rls.sql), and once the round is 'finished' this
-  // quick "follow along live" view isn't the point anymore.
+  // This participant's picks for every match in the round the modal is
+  // viewed in context of, shown inline under the stats. Only meaningful
+  // once the round has started (locked or finished) — while it's still
+  // 'open' nobody but the predictor themselves can read these rows anyway
+  // (rls.sql). Which days are actually readable is RLS's call, per match
+  // day, not this component's — a hidden day just comes back as "-".
   const [roundMatches, setRoundMatches] = useState<RoundMatchPrediction[]>([]);
-  const hasPredictions = round?.status === "locked" && roundMatches.length > 0;
+  const roundStarted = !!round && round.status !== "open";
 
   useEffect(() => {
     (async () => {
-      if (!round || round.status !== "locked") {
+      if (!round || round.status === "open") {
         setRoundMatches([]);
         return;
       }
@@ -164,39 +159,31 @@ export default function ParticipantModal({
     })();
   }, [supabase, userId, round?.round_number]);
 
-  // Live only while the shown round IS the round this modal is currently
-  // viewed in context of and that round hasn't finished yet — a fallback
-  // to an earlier, already-finished round (round not started yet, or this
-  // user has no row for it) is always "previous", never "live".
-  const lastRoundIsLive =
+  // The shown round IS the round this modal is viewed in context of once
+  // that round has started — "live" while it's still locked (matches
+  // underway), plain "מחזור N" once finished. A fallback to an earlier
+  // round (this round not started yet, or this user has no row for it) is
+  // always "previous".
+  const lastRoundIsSelected =
     !!lastRound?.round_number &&
     round != null &&
     lastRound.round_number === round.round_number &&
-    round.status === "locked";
+    round.status !== "open";
   const lastRoundTitle = !lastRound?.round_number
     ? "מחזור אחרון"
-    : lastRoundIsLive
-      ? `מחזור חי נוכחי (מחזור ${lastRound.round_number})`
+    : lastRoundIsSelected
+      ? round?.status === "locked"
+        ? `מחזור חי נוכחי (מחזור ${lastRound.round_number})`
+        : `מחזור ${lastRound.round_number}`
       : `מחזור קודם (מחזור ${lastRound.round_number})`;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-6">
-      <div className="w-full max-w-sm rounded-2xl bg-white p-8 text-center shadow-lg">
+      <div className="max-h-[90vh] w-full max-w-sm overflow-y-auto rounded-2xl bg-white p-8 text-center shadow-lg">
         {loading ? (
           <p className="text-sm text-muted">טוען...</p>
         ) : !season ? (
           <p className="text-sm text-danger">לא ניתן היה לטעון את המשתתף.</p>
-        ) : view === "predictions" ? (
-          <div className="flex flex-col items-center gap-4">
-            <button
-              onClick={() => setView("stats")}
-              className="flex items-center gap-1 self-start text-sm font-medium text-muted hover:text-ink"
-            >
-              <ChevronIcon size={14} className="rotate-180" />
-              חזרה
-            </button>
-            <PredictionsList name={season.display_name} matches={roundMatches} />
-          </div>
         ) : (
           <div className="flex flex-col items-center gap-6">
             <div className="flex flex-col items-center gap-2">
@@ -205,16 +192,6 @@ export default function ParticipantModal({
               </div>
               <p className="font-medium text-ink">{season.display_name}</p>
             </div>
-
-            {hasPredictions && (
-              <button
-                onClick={() => setView("predictions")}
-                className="flex items-center gap-1 text-sm font-medium text-brand hover:underline"
-              >
-                צפייה בניחושי המשתתף
-                <ChevronIcon size={14} />
-              </button>
-            )}
 
             <StatCard
               title={lastRoundTitle}
@@ -231,6 +208,14 @@ export default function ParticipantModal({
               points={season.total_points}
               hit={season.season_hits}
             />
+
+            {roundStarted && roundMatches.length > 0 && (
+              <PredictionsList
+                name={season.display_name}
+                roundNumber={round.round_number}
+                matches={roundMatches}
+              />
+            )}
           </div>
         )}
 
@@ -247,11 +232,19 @@ export default function ParticipantModal({
 
 // One line per match: home team, this participant's predicted score, away
 // team — the whole current round at a glance, no per-match navigation.
-function PredictionsList({ name, matches }: { name: string; matches: RoundMatchPrediction[] }) {
+function PredictionsList({
+  name,
+  roundNumber,
+  matches,
+}: {
+  name: string;
+  roundNumber: number;
+  matches: RoundMatchPrediction[];
+}) {
   return (
     <div className="w-full">
       <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">
-        ניחושי {name} למחזור הנוכחי
+        ניחושי {name} — מחזור {roundNumber}
       </p>
 
       <ul className="space-y-2">
