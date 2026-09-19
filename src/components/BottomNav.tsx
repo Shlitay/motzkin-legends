@@ -4,10 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import ProfileModal from "@/components/ProfileModal";
-import { BookIcon, GaugeIcon, HomeIcon, OneXTwoIcon, WinnerIcon } from "@/components/icons";
+import { BookIcon, GaugeIcon, OneXTwoIcon, WinnerIcon } from "@/components/icons";
 
 const links = [
-  { href: "/home", label: "בית", Icon: HomeIcon },
   { href: "/predictions", label: "ניחושים", Icon: OneXTwoIcon },
   { href: "/leaderboard", label: "טבלת הליגה", Icon: WinnerIcon },
   { href: "/rules", label: "חוקים", Icon: BookIcon },

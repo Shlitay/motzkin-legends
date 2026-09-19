@@ -29,7 +29,7 @@ export default function LoginPage() {
         </p>
 
         <GoogleSignInButton
-          next="/home"
+          next="/predictions"
           className="flex items-center gap-2 rounded-full border border-neutral-300 px-6 py-3 font-medium shadow-sm hover:bg-neutral-50"
         >
           המשך עם Google

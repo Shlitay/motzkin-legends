@@ -52,7 +52,7 @@ export default function OnboardingPage() {
       return;
     }
 
-    router.push("/home");
+    router.push("/predictions");
   }
 
   return (

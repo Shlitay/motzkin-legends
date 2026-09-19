@@ -162,7 +162,7 @@ export default function ManagerDashboard() {
   if (loading) {
     return (
       <main className="flex min-h-screen flex-col items-center justify-center gap-4 px-6 pt-20 text-center">
-        <TopBar href="/manager" rightAction={{ label: "חזרה למשחק", href: "/home" }} />
+        <TopBar href="/manager" rightAction={{ label: "חזרה למשחק", href: "/predictions" }} />
         <p className="text-sm text-muted">טוען...</p>
       </main>
     );
@@ -170,7 +170,7 @@ export default function ManagerDashboard() {
 
   return (
     <main className="flex min-h-screen flex-col items-center gap-8 px-6 pb-10 pt-20">
-      <TopBar href="/manager" rightAction={{ label: "חזרה למשחק", href: "/home" }} />
+      <TopBar href="/manager" rightAction={{ label: "חזרה למשחק", href: "/predictions" }} />
       <NewsTicker />
       <div>
         <span className="rounded bg-fuchsia-400 px-3 py-1 text-sm font-medium text-white">

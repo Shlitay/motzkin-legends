@@ -58,14 +58,3 @@ export const AVATAR_LIBRARY = [
   "🦖", "🐢", "🦉", "🐺", "🦔", "🐰", "🐹", "🦝", "🐬", "🦈",
   "🐲", "🤖", "👽", "👻", "🥷", "🎃", "🐝", "🦋", "🦥", "🐧",
 ];
-
-// Fallback display shown briefly before a real user's profile row loads
-// (see /home).
-export const currentUser = {
-  id: "u1",
-  fullName: "Itay",
-  avatar: "🦊",
-  role: "participant" as const,
-  defaultHomeScore: null as number | null,
-  defaultAwayScore: null as number | null,
-};

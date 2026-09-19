@@ -42,7 +42,7 @@ export async function updateSession(request: NextRequest) {
       .eq("id", user.id)
       .single();
     if (profile?.role !== "manager") {
-      return NextResponse.redirect(new URL("/home", request.url));
+      return NextResponse.redirect(new URL("/predictions", request.url));
     }
     return supabaseResponse;
   }

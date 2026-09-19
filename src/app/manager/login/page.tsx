@@ -20,7 +20,7 @@ export default function ManagerLoginPage() {
         </p>
 
         {/* Middleware checks role = 'manager' on the resulting session and
-            bounces non-managers to /home. */}
+            bounces non-managers to /predictions. */}
         <GoogleSignInButton
           next="/manager"
           className="flex items-center gap-2 rounded-full border border-neutral-300 px-6 py-3 font-medium shadow-sm hover:bg-neutral-50"

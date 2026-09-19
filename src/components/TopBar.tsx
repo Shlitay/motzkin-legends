@@ -13,7 +13,7 @@ type RightAction = { label: string; href: string };
 const DEFAULT_ACTION: RightAction = { label: "פאנל ניהול", href: "/manager" };
 
 export default function TopBar({
-  href = "/home",
+  href = "/predictions",
   rightAction,
 }: {
   href?: string | null;

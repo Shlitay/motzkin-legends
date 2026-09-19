@@ -33,16 +33,6 @@ export function OneXTwoIcon({ className, size }: IconProps) {
   );
 }
 
-export function HomeIcon({ className }: IconProps) {
-  return (
-    <svg {...base} className={className}>
-      <path d="M4 11.5 12 4l8 7.5" />
-      <path d="M6 10v9a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-9" />
-      <path d="M10 20v-5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v5" />
-    </svg>
-  );
-}
-
 export function WinnerIcon({ className }: IconProps) {
   return (
     <svg {...base} className={className}>
