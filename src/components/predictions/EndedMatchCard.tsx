@@ -1,3 +1,4 @@
+import { ChevronIcon } from "@/components/icons";
 import { TEAM_LOGOS, shortTeamName } from "@/lib/constants";
 import { deriveOutcome, type Outcome } from "@/lib/predictionOutcome";
 import MainEventBadge from "./MainEventBadge";
@@ -54,6 +55,8 @@ export default function EndedMatchCard({
   actualAway,
   points,
   isMainEvent = false,
+  expanded = false,
+  onToggle,
 }: {
   homeTeam: string;
   awayTeam: string;
@@ -63,6 +66,11 @@ export default function EndedMatchCard({
   actualAway: number;
   points: number | null;
   isMainEvent?: boolean;
+  // When onToggle is given the whole card is one tap target for "view
+  // everyone's predictions" (the link text inside it is just the label);
+  // `expanded` only drives the chevron and aria state.
+  expanded?: boolean;
+  onToggle?: () => void;
 }) {
   const outcome = deriveOutcome(predHome, predAway, actualHome, actualAway);
   const s = OUTCOME_STYLES[outcome];
@@ -72,7 +80,19 @@ export default function EndedMatchCard({
     <div
       className={`flex overflow-hidden rounded-[18px] border bg-white shadow-[0_1px_2px_rgba(17,17,17,.04)] ${
         isMainEvent ? "border-[#d4a017]" : "border-[#e6e6e1]"
-      }`}
+      } ${onToggle ? "cursor-pointer" : ""}`}
+      {...(onToggle && {
+        role: "button",
+        tabIndex: 0,
+        "aria-expanded": expanded,
+        onClick: onToggle,
+        onKeyDown: (ev: React.KeyboardEvent) => {
+          if (ev.key === "Enter" || ev.key === " ") {
+            ev.preventDefault();
+            onToggle();
+          }
+        },
+      })}
     >
       {/* Explicit corner rounding on the rail/points column too, not just
           relying on the parent's overflow-hidden clip — belt-and-braces
@@ -131,6 +151,12 @@ export default function EndedMatchCard({
             <span className="whitespace-nowrap text-[13px] font-bold text-ink">{shortTeamName(awayTeam)}</span>
           </div>
         </div>
+        {onToggle && (
+          <div className="mt-2.5 flex items-center justify-center gap-1 text-xs font-medium text-brand">
+            צפייה בניחושי כל המשתתפים
+            <ChevronIcon size={12} className={expanded ? "rotate-90" : "-rotate-90"} />
+          </div>
+        )}
       </div>
       <div
         className={`flex w-16 shrink-0 flex-col items-center justify-center gap-0.5 rounded-l-[18px] ${s.pointsBg}`}
