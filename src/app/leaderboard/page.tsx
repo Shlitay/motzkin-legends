@@ -222,6 +222,7 @@ export default function LeaderboardPage() {
         columnLabels={["פגיעה", "כיוון", "מחזורים", "נק'"]}
         onSelect={setSelectedUserId}
         scrollable
+        hideAvatars
       />
 
       {selectedUserId && (
@@ -271,6 +272,7 @@ function LeaderTable({
   onSelect,
   winnerJackpotLabel,
   scrollable,
+  hideAvatars,
 }: {
   title: string;
   rows: Row[];
@@ -281,10 +283,13 @@ function LeaderTable({
   // finished — applied to rows[0], which is already the actual rank-1
   // winner (rows arrives pre-sorted by the DB's own tiebroken rank).
   winnerJackpotLabel?: string;
-  // Season table only — caps the card at ~5 rows tall (each row is 60px:
-  // h-9 avatar + py-3) and scrolls the rest, since it only grows over the
-  // season instead of resetting each round like the round-points table.
+  // Season table only — caps the card at 300px and scrolls the rest, since
+  // it only grows over the season instead of resetting each round like the
+  // round-points table. That's ~6 rows now that it has no avatars (each row
+  // is ~48px: one text line + py-3), ~5 back when it did (60px).
   scrollable?: boolean;
+  // Season table only — rows show just rank + name + stats.
+  hideAvatars?: boolean;
 }) {
   return (
     <section className="w-full max-w-md overflow-hidden rounded-[28px] bg-surface shadow-[0_1px_2px_rgba(0,0,0,0.04),0_16px_32px_-18px_rgba(0,0,0,0.28)]">
@@ -308,6 +313,7 @@ function LeaderTable({
             key={r.userId}
             rank={i + 1}
             avatar={r.avatar}
+            hideAvatar={hideAvatars}
             name={r.name}
             values={r.values}
             onClick={() => onSelect(r.userId)}

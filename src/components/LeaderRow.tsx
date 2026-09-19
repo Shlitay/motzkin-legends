@@ -10,6 +10,10 @@ const ROW_TINT: Record<number, string> = {
 type LeaderRowProps = {
   rank: number;
   avatar: string;
+  // Season table leaves the avatar out to give the name (and its four stat
+  // columns) more room; the round table keeps it, and its crown badge
+  // hangs off the avatar.
+  hideAvatar?: boolean;
   name: string;
   // One number per column, in the same order as LeaderTable's column
   // labels. The last one is the primary stat (points) and gets full ink;
@@ -35,6 +39,7 @@ export function statColumnClass(columnCount: number) {
 export default function LeaderRow({
   rank,
   avatar,
+  hideAvatar = false,
   name,
   values,
   onClick,
@@ -50,18 +55,20 @@ export default function LeaderRow({
       }`}
     >
       <RankBadge rank={rank} />
-      <span className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-lg">
-        {avatar}
-        {crown && (
-          // Avatar circle is 36px (h-9 w-9) — sized/positioned so roughly
-          // the crown's bottom quarter overlaps the top of the circle,
-          // rather than floating entirely above it.
-          <CrownIcon
-            size={24}
-            className="absolute -top-[15px] -end-[6px] -rotate-[22deg] text-[#d9b74a] drop-shadow-[0_1px_1px_rgba(0,0,0,0.25)]"
-          />
-        )}
-      </span>
+      {!hideAvatar && (
+        <span className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-lg">
+          {avatar}
+          {crown && (
+            // Avatar circle is 36px (h-9 w-9) — sized/positioned so roughly
+            // the crown's bottom quarter overlaps the top of the circle,
+            // rather than floating entirely above it.
+            <CrownIcon
+              size={24}
+              className="absolute -top-[15px] -end-[6px] -rotate-[22deg] text-[#d9b74a] drop-shadow-[0_1px_1px_rgba(0,0,0,0.25)]"
+            />
+          )}
+        </span>
+      )}
       <span className="flex min-w-0 flex-1 flex-col items-start gap-1">
         {jackpotLabel && (
           <span className="shine-badge whitespace-nowrap rounded-full px-2 py-0.5 text-[10px] font-extrabold text-white shadow [text-shadow:0_1px_1px_rgba(0,0,0,0.35)] [background:linear-gradient(135deg,#f6e6ab_0%,#d9b74a_35%,#c9a227_65%,#a8811f_100%)]">
