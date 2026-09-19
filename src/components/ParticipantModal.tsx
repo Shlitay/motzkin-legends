@@ -5,13 +5,11 @@ import { createClient } from "@/lib/supabase/client";
 import StatCard from "@/components/StatCard";
 import { TEAM_LOGOS, shortTeamName } from "@/lib/constants";
 
+// Only the identity fields — the modal no longer shows season totals, but
+// season_stats is still where a participant's display name/avatar come from.
 type SeasonRow = {
   display_name: string;
   avatar: string | null;
-  rounds_played: number;
-  total_points: number;
-  season_hits: number;
-  season_towards: number;
 };
 
 type LastRoundRow = {
@@ -104,7 +102,7 @@ export default function ParticipantModal({
     (async () => {
       const { data: seasonRow } = await supabase
         .from("season_stats")
-        .select("display_name, avatar, rounds_played, total_points, season_hits, season_towards")
+        .select("display_name, avatar")
         .eq("user_id", userId)
         .single();
       setSeason(seasonRow ?? null);
@@ -199,14 +197,6 @@ export default function ParticipantModal({
               towards={lastRound?.correct_result_count ?? 0}
               points={lastRound?.total_points ?? 0}
               hit={lastRound?.exact_score_count ?? 0}
-            />
-
-            <StatCard
-              title="כל העונה"
-              headline={`סה"כ השתתפויות: ${season.rounds_played}`}
-              towards={season.season_towards}
-              points={season.total_points}
-              hit={season.season_hits}
             />
 
             {roundStarted && roundMatches.length > 0 && (
