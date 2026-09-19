@@ -9,6 +9,7 @@ import RoundCountdown from "@/components/RoundCountdown";
 import SectionDivider from "@/components/SectionDivider";
 import TopBar from "@/components/TopBar";
 import EndedMatchCard from "@/components/predictions/EndedMatchCard";
+import MatchParticipantsToggle from "@/components/predictions/MatchParticipantsToggle";
 import MatchRow from "@/components/predictions/MatchRow";
 import { createClient } from "@/lib/supabase/client";
 import { formatIsraelDeadline, israelDateKey } from "@/lib/israelTime";
@@ -405,16 +406,24 @@ export default function PredictionsPage() {
               ) : (
                 m.home_score !== null &&
                 m.away_score !== null && (
-                  <EndedMatchCard
-                    homeTeam={m.home_team}
-                    awayTeam={m.away_team}
-                    predHome={Number(e.home)}
-                    predAway={Number(e.away)}
-                    actualHome={m.home_score}
-                    actualAway={m.away_score}
-                    points={e.pointsEarned}
-                    isMainEvent={m.is_main_event}
-                  />
+                  <>
+                    <EndedMatchCard
+                      homeTeam={m.home_team}
+                      awayTeam={m.away_team}
+                      predHome={Number(e.home)}
+                      predAway={Number(e.away)}
+                      actualHome={m.home_score}
+                      actualAway={m.away_score}
+                      points={e.pointsEarned}
+                      isMainEvent={m.is_main_event}
+                    />
+                    <MatchParticipantsToggle
+                      matchId={m.id}
+                      homeScore={m.home_score}
+                      awayScore={m.away_score}
+                      standingsOrder={standingsOrder}
+                    />
+                  </>
                 )
               )}
             </div>
