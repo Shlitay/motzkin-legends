@@ -219,7 +219,6 @@ export default function LeaderboardPage() {
       <div className="flex w-full max-w-md flex-col items-center gap-3">
         <h2 className="text-base font-medium text-ink">סטטיסטיקות עונה</h2>
         <LeaderTable
-          title="הכי הרבה נקודות"
           rows={seasonPoints}
           columnLabels={["פגיעה", "כיוון", "מחזורים", "נק'"]}
           onSelect={setSelectedUserId}
@@ -277,7 +276,9 @@ function LeaderTable({
   scrollable,
   hideAvatars,
 }: {
-  title: string;
+  // Omit for a table whose heading lives outside the card (season table) —
+  // the header row then holds just the column labels, pushed to the end.
+  title?: string;
   rows: Row[];
   // One header per numeric column, matching each Row's values order.
   columnLabels: string[];
@@ -297,9 +298,9 @@ function LeaderTable({
   return (
     <section className="w-full max-w-md overflow-hidden rounded-[28px] bg-surface shadow-[0_1px_2px_rgba(0,0,0,0.04),0_16px_32px_-18px_rgba(0,0,0,0.28)]">
       <div className="flex items-baseline justify-between gap-3 px-5 pb-1 pt-5">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">{title}</h2>
+        {title && <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">{title}</h2>}
         <span
-          className={`flex shrink-0 font-medium uppercase tracking-wide text-muted ${
+          className={`ms-auto flex shrink-0 font-medium uppercase tracking-wide text-muted ${
             columnLabels.length > 1 ? "gap-2 text-[11px]" : "gap-4 text-xs"
           }`}
         >
