@@ -27,12 +27,22 @@
 -- Stuttgart, Dortmund, Roma) have no TEAM_LOGOS crest yet -- fine for
 -- the seed itself, matches will just render without a crest until
 -- crests are added separately.
+--
+-- v2, 2026-09-29: v1 looked up season_id via `where name = '2026/27
+-- Season'`, matching every prior seed-roundN.sql's convention -- but the
+-- seasons row's real name is '2026/27 Seasor' (a pre-existing typo, ends
+-- in "r" not "n"), so v1's insert matched zero seasons rows and silently
+-- inserted nothing (confirmed live: "Success. No rows returned" for an
+-- insert that truly inserted 0 rows looks identical to a normal DDL
+-- confirmation -- checked by querying `rounds` directly afterward and
+-- finding no round 6). Fixed by hardcoding the season's actual id
+-- instead of matching on its name at all, sidestepping the typo. If a
+-- future seed-roundN.sql is ever written from scratch again, don't
+-- assume the season is named '2026/27 Season' -- query `seasons` first.
 
 with new_round as (
   insert into rounds (season_id, round_number, deadline_at, status)
-  select id, 6, '2026-10-13T16:45:00Z'::timestamptz, 'open'
-  from seasons
-  where name = '2026/27 Season'
+  values ('eca4b656-e9d8-497c-9a0e-eb20ad165ef1', 6, '2026-10-13T16:45:00Z'::timestamptz, 'open')
   returning id
 )
 insert into matches (round_id, home_team, away_team, kickoff_at)
