@@ -10,6 +10,7 @@ import SectionDivider from "@/components/SectionDivider";
 import TopBar from "@/components/TopBar";
 import EndedMatchWithParticipants from "@/components/predictions/EndedMatchWithParticipants";
 import MatchRow from "@/components/predictions/MatchRow";
+import MatchViewToggle from "@/components/predictions/MatchViewToggle";
 import { createClient } from "@/lib/supabase/client";
 import { formatIsraelDeadline, israelDateKey } from "@/lib/israelTime";
 import { lockExpiredRounds } from "@/lib/lockExpiredRounds";
@@ -59,6 +60,7 @@ export default function PredictionsPage() {
   const [entries, setEntries] = useState<Record<string, ScoreEntry>>({});
   const [standingsOrder, setStandingsOrder] = useState<StandingsEntry[]>([]);
   const [now, setNow] = useState(() => new Date());
+  const [viewMode, setViewMode] = useState<"all" | "live">("all");
 
   // Drives the not-started -> live transition for whichever match's kickoff
   // just passed while this page is sitting open.
@@ -225,6 +227,32 @@ export default function PredictionsPage() {
     editableMatches.length > 0 &&
     editableMatches.every((m) => entries[m.id]?.home !== "" && entries[m.id]?.away !== "");
 
+  // The all/live toggle only appears once something in the round has
+  // actually kicked off — before that there's nothing for "live" to show,
+  // same reasoning as this app's other started/not-started gates.
+  // liveMatches stays in kickoff_at order for free, since `matches` itself
+  // is already fetched ordered by kickoff_at.
+  const showViewToggle = matches.some(
+    (m) => matchStatus(m.kickoff_at, m.is_final, now) !== "not-started"
+  );
+  const liveMatches = matches.filter((m) => matchStatus(m.kickoff_at, m.is_final, now) === "live");
+
+  // Reset to "all" whenever the round changes, so switching rounds never
+  // carries over a "live" selection that has nothing to do with the newly
+  // selected round.
+  useEffect(() => {
+    setViewMode("all");
+  }, [selectedRoundId]);
+
+  // Auto-fall back to "all" the moment nothing is currently live (a match
+  // just ended, or we're between two matches' kickoffs) rather than
+  // leaving the user on an empty screen.
+  useEffect(() => {
+    if (viewMode === "live" && liveMatches.length === 0) {
+      setViewMode("all");
+    }
+  }, [viewMode, liveMatches.length]);
+
   // Live matches first, then upcoming, then ended — kickoff_at order (the
   // DB query's own sort) is preserved within each group since Array#sort
   // is stable. Ended matches are the exception: the ones that earned this
@@ -244,6 +272,7 @@ export default function PredictionsPage() {
   const firstEndedIndex = sortedMatches.findIndex(
     (m) => matchStatus(m.kickoff_at, m.is_final, now) === "ended"
   );
+  const displayedMatches = viewMode === "live" ? liveMatches : sortedMatches;
 
   function setScore(matchId: string, side: "home" | "away", value: string) {
     if (value !== "" && !/^\d$/.test(value)) return;
@@ -364,6 +393,8 @@ export default function PredictionsPage() {
         </div>
       </div>
 
+      {showViewToggle && <MatchViewToggle value={viewMode} onChange={setViewMode} />}
+
       {isOpenRound && !predictionsOpen && selectedRound.predictions_open_at && (
         <div className="w-full max-w-md rounded-2xl border border-draw/40 bg-draw/10 p-4 text-center text-sm font-medium text-draw">
           הגשת ניחושים למחזור {selectedRound.round_number} תיפתח ב-
@@ -373,7 +404,7 @@ export default function PredictionsPage() {
       )}
 
       <div className="w-full max-w-md space-y-4">
-        {sortedMatches.map((m, i) => {
+        {displayedMatches.map((m, i) => {
           const e = entries[m.id];
           // Per-day locking, not round-wide: a round's status flips to
           // "locked" the moment its very first match anywhere kicks off,
@@ -384,7 +415,12 @@ export default function PredictionsPage() {
           const status = matchStatus(m.kickoff_at, m.is_final, now);
           return (
             <div key={m.id}>
-              {i === firstEndedIndex && <SectionDivider label="משחקים שהסתיימו" />}
+              {/* firstEndedIndex is an index into sortedMatches — only
+                  meaningful (and only ever hit) in the "all" view, since
+                  the "live" view's matches are never "ended". */}
+              {viewMode === "all" && i === firstEndedIndex && (
+                <SectionDivider label="משחקים שהסתיימו" />
+              )}
               {status !== "ended" ? (
                 <MatchRow
                   matchId={m.id}
