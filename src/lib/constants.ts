@@ -35,8 +35,6 @@ export const TEAM_LOGOS: Record<string, string> = {
   "סביליה": "/team-logos/sevilla.png",
 
   // Champions League clubs, added 2026-09-29 for round 6 (all-CL round).
-  // Slovan Bratislava has no crest yet — no URL was supplied for it, so
-  // it just renders without one on /predictions until one is added.
   "סבאח": "/team-logos/sabah.png",
   "סלאביה פראג": "/team-logos/slavia-praha.png",
   "לאנס": "/team-logos/rc-lens.png",
@@ -66,6 +64,7 @@ export const TEAM_LOGOS: Record<string, string> = {
   "בטיס": "/team-logos/real-betis.png",
   "פנרבחצ׳ה": "/team-logos/fenerbahce.png",
   "אסטון וילה": "/team-logos/aston-villa.png",
+  "סלובאן ברטיסלבה": "/team-logos/slovan-bratislava.png",
 };
 
 // Shortened display forms for full team names that wrap to two lines in
