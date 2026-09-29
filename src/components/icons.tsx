@@ -123,3 +123,26 @@ export function TargetIcon({ className, size }: IconProps) {
     </svg>
   );
 }
+
+export function GridIcon({ className, size }: IconProps) {
+  return (
+    <svg {...base} width={size ?? base.width} height={size ?? base.height} className={className}>
+      <rect x="3" y="3" width="8" height="8" rx="1.5" />
+      <rect x="13" y="3" width="8" height="8" rx="1.5" />
+      <rect x="3" y="13" width="8" height="8" rx="1.5" />
+      <rect x="13" y="13" width="8" height="8" rx="1.5" />
+    </svg>
+  );
+}
+
+export function BroadcastIcon({ className, size }: IconProps) {
+  return (
+    <svg {...base} width={size ?? base.width} height={size ?? base.height} className={className}>
+      <circle cx="12" cy="12" r="2" fill="currentColor" stroke="none" />
+      <path d="M8.5 8.5a5 5 0 0 0 0 7" />
+      <path d="M15.5 8.5a5 5 0 0 1 0 7" />
+      <path d="M5.5 5.5a9 9 0 0 0 0 13" />
+      <path d="M18.5 5.5a9 9 0 0 1 0 13" />
+    </svg>
+  );
+}
