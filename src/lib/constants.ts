@@ -33,6 +33,39 @@ export const TEAM_LOGOS: Record<string, string> = {
   "רומא": "/team-logos/roma.png",
   "ברצלונה": "/team-logos/barcelona.png",
   "סביליה": "/team-logos/sevilla.png",
+
+  // Champions League clubs, added 2026-09-29 for round 6 (all-CL round).
+  // Slovan Bratislava has no crest yet — no URL was supplied for it, so
+  // it just renders without one on /predictions until one is added.
+  "סבאח": "/team-logos/sabah.png",
+  "סלאביה פראג": "/team-logos/slavia-praha.png",
+  "לאנס": "/team-logos/rc-lens.png",
+  "ספורטינג": "/team-logos/sporting-cp.png",
+  "ויאריאל": "/team-logos/villarreal.png",
+  "נאפולי": "/team-logos/napoli.png",
+  "ויקינג": "/team-logos/viking.png",
+  "באיירן מינכן": "/team-logos/bayern-munchen.png",
+  "אתלטיקו מדריד": "/team-logos/atletico-madrid.png",
+  "מנצ׳סטר יונייטד": "/team-logos/manchester-united.png",
+  "קלאב בריז׳": "/team-logos/club-brugge.png",
+  "לייפציג": "/team-logos/rb-leipzig.png",
+  "PSV איינדהובן": "/team-logos/psv.png",
+  "גלטסראיי": "/team-logos/galatasaray.png",
+  "ליל": "/team-logos/lille.png",
+  "לאסק לינץ": "/team-logos/lask.png",
+  "ליברפול": "/team-logos/liverpool.png",
+  "פיינורד": "/team-logos/feyenoord.png",
+  "קומו": "/team-logos/como-1907.png",
+  "בודו/גלימט": "/team-logos/bodo-glimt.png",
+  "שחטאר דונייצק": "/team-logos/shakhtar.png",
+  "איאק אתונה": "/team-logos/aek-athens.png",
+  "פריז סן ז׳רמן": "/team-logos/paris-saint-germain.png",
+  "מנצ׳סטר סיטי": "/team-logos/manchester-city.png",
+  "ריאל מדריד": "/team-logos/real-madrid.png",
+  "פורטו": "/team-logos/fc-porto.png",
+  "בטיס": "/team-logos/real-betis.png",
+  "פנרבחצ׳ה": "/team-logos/fenerbahce.png",
+  "אסטון וילה": "/team-logos/aston-villa.png",
 };
 
 // Shortened display forms for full team names that wrap to two lines in
