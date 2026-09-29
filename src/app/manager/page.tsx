@@ -81,7 +81,7 @@ export default function ManagerDashboard() {
     })();
   }, [supabase]);
 
-  async function setPaymentStatus(participationId: string, status: "waiting" | "approved") {
+  async function setPaymentStatus(participationId: string, status: "waiting" | "approved" | "rejected") {
     const { error: updateError } = await supabase
       .from("round_participation")
       .update({ payment_status: status })
@@ -116,20 +116,27 @@ export default function ManagerDashboard() {
     setWaiting((w) => [...w, person]);
   }
 
-  // Deletes the round_participation row entirely (rather than setting
-  // payment_status to 'rejected'), so the participant lands back on the
-  // "send money to Paybox" screen instead of the "you weren't approved"
-  // one — for the case where they clicked "money sent" without actually
-  // paying, and should just start over.
+  // Dismisses a participant off the waiting list WITHOUT deleting their
+  // round_participation row — sets payment_status to 'rejected' (a valid
+  // value per schema.sql's check constraint, otherwise unused anywhere in
+  // the app) rather than hard-deleting. /leaderboard's round-points query
+  // has no payment_status filter at all, so their real predictions and
+  // standings keep working normally either way — this purely clears them
+  // off the manager's own to-do list. If they submit predictions again
+  // for a future round, that's a new round_participation row (new
+  // round_id), so they show up as a fresh "waiting" entry there.
+  //
+  // Used to be a real DELETE — safe back when the only way onto the
+  // waiting list was an old "כסף נשלח" button someone could click by
+  // mistake with nothing behind it. Since 2026-09-08, submitting real
+  // predictions is the *only* way onto this list, so every "waiting" row
+  // already has real predictions attached — a hard delete here silently
+  // orphaned real standings data from round_participation, a real bug
+  // that hit round 3 and round 5 both (root-caused and repaired
+  // 2026-09-29 — see fix-round3/5-missing-participation.sql) before this
+  // fix. Don't reintroduce the delete.
   async function removeFromWaiting(person: Participant) {
-    const { error: deleteError } = await supabase
-      .from("round_participation")
-      .delete()
-      .eq("id", person.participationId);
-    if (deleteError) {
-      setError(deleteError.message);
-      return;
-    }
+    if (!(await setPaymentStatus(person.participationId, "rejected"))) return;
     setWaiting((w) => w.filter((p) => p.participationId !== person.participationId));
   }
 
