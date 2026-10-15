@@ -91,41 +91,43 @@ export default function LeaderRow({
         )}
         <span className="font-medium text-ink">{name}</span>
       </span>
-      {(exactCount !== undefined || towardsCount !== undefined) && (
-        <span className="flex shrink-0 items-center gap-[5.28px]">
-          {exactCount !== undefined && (
-            <span className="relative shrink-0">
-              <span className="font-display flex h-[18px] w-[18px] items-center justify-center rounded-full bg-brand text-[11px] font-bold text-white">
-                {exactCount}
+      <span className="flex shrink-0 items-center gap-1.5">
+        {(exactCount !== undefined || towardsCount !== undefined) && (
+          <span className="flex shrink-0 items-center gap-[5.28px]">
+            {exactCount !== undefined && (
+              <span className="relative shrink-0">
+                <span className="font-display flex h-[18px] w-[18px] items-center justify-center rounded-full bg-brand text-[11px] font-bold text-white">
+                  {exactCount}
+                </span>
+                <span className="absolute -top-1 -end-1 flex h-[10px] w-[10px] items-center justify-center rounded-full bg-white">
+                  <TargetIcon size={7} className="text-brand" />
+                </span>
               </span>
-              <span className="absolute -top-1 -end-1 flex h-[10px] w-[10px] items-center justify-center rounded-full bg-white">
-                <TargetIcon size={7} className="text-brand" />
+            )}
+            {towardsCount !== undefined && (
+              <span className="relative shrink-0">
+                <span className="font-display flex h-[18px] w-[18px] items-center justify-center rounded-full bg-draw text-[11px] font-bold text-white">
+                  {towardsCount}
+                </span>
+                <span className="absolute -top-1 -end-1 flex h-[10px] w-[10px] items-center justify-center rounded-full bg-white">
+                  <ArrowUpRightIcon size={7} className="text-draw" />
+                </span>
               </span>
-            </span>
-          )}
-          {towardsCount !== undefined && (
-            <span className="relative shrink-0">
-              <span className="font-display flex h-[18px] w-[18px] items-center justify-center rounded-full bg-draw text-[11px] font-bold text-white">
-                {towardsCount}
-              </span>
-              <span className="absolute -top-1 -end-1 flex h-[10px] w-[10px] items-center justify-center rounded-full bg-white">
-                <ArrowUpRightIcon size={7} className="text-draw" />
-              </span>
-            </span>
-          )}
-        </span>
-      )}
-      <span className={`flex shrink-0 items-center ${values.length > 1 ? "gap-2" : "gap-4"}`}>
-        {values.map((v, i) => (
-          <span
-            key={i}
-            className={`${statColumnClass(values.length)} font-display text-sm font-semibold tabular-nums ${
-              i === values.length - 1 ? "text-ink" : "text-muted"
-            }`}
-          >
-            {v}
+            )}
           </span>
-        ))}
+        )}
+        <span className={`flex shrink-0 items-center ${values.length > 1 ? "gap-2" : "gap-4"}`}>
+          {values.map((v, i) => (
+            <span
+              key={i}
+              className={`${statColumnClass(values.length)} font-display text-sm font-semibold tabular-nums ${
+                i === values.length - 1 ? "text-ink" : "text-muted"
+              }`}
+            >
+              {v}
+            </span>
+          ))}
+        </span>
       </span>
     </Wrapper>
   );
