@@ -83,15 +83,15 @@ export default function LeaderRow({
           )}
         </span>
       )}
-      <span className="flex min-w-0 flex-1 flex-col items-start gap-1">
-        {jackpotLabel && (
-          <span className="shine-badge whitespace-nowrap rounded-full px-2 py-0.5 text-[10px] font-extrabold text-white shadow [text-shadow:0_1px_1px_rgba(0,0,0,0.35)] [background:linear-gradient(135deg,#f6e6ab_0%,#d9b74a_35%,#c9a227_65%,#a8811f_100%)]">
-            {jackpotLabel}
-          </span>
-        )}
-        <span className="font-medium text-ink">{name}</span>
-      </span>
-      <span className="flex shrink-0 items-center gap-1.5">
+      <span className="flex min-w-0 flex-1 items-center gap-1.5">
+        <span className="flex min-w-0 flex-col items-start gap-1">
+          {jackpotLabel && (
+            <span className="shine-badge whitespace-nowrap rounded-full px-2 py-0.5 text-[10px] font-extrabold text-white shadow [text-shadow:0_1px_1px_rgba(0,0,0,0.35)] [background:linear-gradient(135deg,#f6e6ab_0%,#d9b74a_35%,#c9a227_65%,#a8811f_100%)]">
+              {jackpotLabel}
+            </span>
+          )}
+          <span className="font-medium text-ink">{name}</span>
+        </span>
         {(exactCount !== undefined || towardsCount !== undefined) && (
           <span className="flex shrink-0 items-center gap-[5.28px]">
             {exactCount !== undefined && (
@@ -116,18 +116,18 @@ export default function LeaderRow({
             )}
           </span>
         )}
-        <span className={`flex shrink-0 items-center ${values.length > 1 ? "gap-2" : "gap-4"}`}>
-          {values.map((v, i) => (
-            <span
-              key={i}
-              className={`${statColumnClass(values.length)} font-display font-semibold tabular-nums ${
-                i === values.length - 1 ? "text-[17px] text-ink" : "text-sm text-muted"
-              }`}
-            >
-              {v}
-            </span>
-          ))}
-        </span>
+      </span>
+      <span className={`flex shrink-0 items-center ${values.length > 1 ? "gap-2" : "gap-4"}`}>
+        {values.map((v, i) => (
+          <span
+            key={i}
+            className={`${statColumnClass(values.length)} font-display font-semibold tabular-nums ${
+              i === values.length - 1 ? "text-[17px] text-ink" : "text-sm text-muted"
+            }`}
+          >
+            {v}
+          </span>
+        ))}
       </span>
     </Wrapper>
   );
