@@ -77,6 +77,20 @@ export const TEAM_SHORT_NAMES: Record<string, string> = {
   "הפועל קריית שמונה": 'הפועל ק"ש',
   "מכבי פתח תקווה": 'מכבי פ"ת',
   "הפועל פתח תקווה": 'הפועל פ"ת',
+
+  // Champions League names long enough to wrap the same way — reported
+  // live for Man Utd vs Atletico Madrid (round 6), shortened the other
+  // comparably-long ones pre-emptively rather than one bug report at a
+  // time. Kept each short form unambiguous against any other team in the
+  // roster (e.g. "מנצ'" alone would collide between City and United).
+  "מנצ׳סטר יונייטד": "מנצ' יונייטד",
+  "מנצ׳סטר סיטי": "מנצ' סיטי",
+  "אתלטיקו מדריד": "אתלטיקו",
+  "באיירן מינכן": "באיירן",
+  "שחטאר דונייצק": "שחטאר",
+  "פריז סן ז׳רמן": "PSG",
+  "PSV איינדהובן": "PSV",
+  "סלובאן ברטיסלבה": "סלובאן",
 };
 
 export function shortTeamName(team: string): string {
