@@ -60,7 +60,7 @@ export default function PredictionsPage() {
   const [entries, setEntries] = useState<Record<string, ScoreEntry>>({});
   const [standingsOrder, setStandingsOrder] = useState<StandingsEntry[]>([]);
   const [now, setNow] = useState(() => new Date());
-  const [viewMode, setViewMode] = useState<"all" | "live">("all");
+  const [viewMode, setViewMode] = useState<"all" | "live" | "ended">("all");
 
   // Drives the not-started -> live transition for whichever match's kickoff
   // just passed while this page is sitting open.
@@ -227,52 +227,63 @@ export default function PredictionsPage() {
     editableMatches.length > 0 &&
     editableMatches.every((m) => entries[m.id]?.home !== "" && entries[m.id]?.away !== "");
 
-  // The all/live toggle only appears once something in the round has
-  // actually kicked off — before that there's nothing for "live" to show,
-  // same reasoning as this app's other started/not-started gates.
+  // Each of the "live"/"ended" toggle options only appears once there's
+  // actually something in that bucket — "live" disappears again once the
+  // round's fully finished, same as it never shows before kickoff.
   // liveMatches stays in kickoff_at order for free, since `matches` itself
   // is already fetched ordered by kickoff_at.
-  const showViewToggle = matches.some(
-    (m) => matchStatus(m.kickoff_at, m.is_final, now) !== "not-started"
+  const showLiveOption = matches.some((m) => matchStatus(m.kickoff_at, m.is_final, now) === "live");
+  const showEndedOption = matches.some(
+    (m) => matchStatus(m.kickoff_at, m.is_final, now) === "ended"
   );
+  const showViewToggle = showLiveOption || showEndedOption;
   const liveMatches = matches.filter((m) => matchStatus(m.kickoff_at, m.is_final, now) === "live");
 
+  const pointsSortDesc = (a: DbMatch, b: DbMatch) => {
+    const pointsA = entries[a.id]?.pointsEarned ?? 0;
+    const pointsB = entries[b.id]?.pointsEarned ?? 0;
+    if (pointsA > 0 || pointsB > 0) return pointsB - pointsA;
+    return 0;
+  };
+  const endedMatches = matches
+    .filter((m) => matchStatus(m.kickoff_at, m.is_final, now) === "ended")
+    .sort(pointsSortDesc);
+
   // Reset to "all" whenever the round changes, so switching rounds never
-  // carries over a "live" selection that has nothing to do with the newly
-  // selected round.
+  // carries over a "live"/"ended" selection that has nothing to do with
+  // the newly selected round.
   useEffect(() => {
     setViewMode("all");
   }, [selectedRoundId]);
 
-  // Auto-fall back to "all" the moment nothing is currently live (a match
-  // just ended, or we're between two matches' kickoffs) rather than
+  // Auto-fall back to "all" the moment the selected tab's own bucket is
+  // empty (nothing currently live, or — if a manager ever un-finalizes
+  // the round's last final match — nothing ended anymore) rather than
   // leaving the user on an empty screen.
   useEffect(() => {
-    if (viewMode === "live" && liveMatches.length === 0) {
-      setViewMode("all");
-    }
-  }, [viewMode, liveMatches.length]);
+    if (viewMode === "live" && !showLiveOption) setViewMode("all");
+    if (viewMode === "ended" && !showEndedOption) setViewMode("all");
+  }, [viewMode, showLiveOption, showEndedOption]);
 
   // Live matches first, then upcoming, then ended — kickoff_at order (the
   // DB query's own sort) is preserved within each group since Array#sort
   // is stable. Ended matches are the exception: the ones that earned this
   // participant points come first, most points on top, then every
-  // no-points match (0 or none) in kickoff order.
+  // no-points match (0 or none) in kickoff order — same rule as the
+  // "ended" tab's own sort (pointsSortDesc), just applied within the one
+  // group here instead of across the whole list.
   const sortedMatches = [...matches].sort((a, b) => {
     const statusA = matchStatus(a.kickoff_at, a.is_final, now);
     const statusB = matchStatus(b.kickoff_at, b.is_final, now);
     if (statusA !== statusB) return STATUS_ORDER[statusA] - STATUS_ORDER[statusB];
     if (statusA !== "ended") return 0;
-
-    const pointsA = entries[a.id]?.pointsEarned ?? 0;
-    const pointsB = entries[b.id]?.pointsEarned ?? 0;
-    if (pointsA > 0 || pointsB > 0) return pointsB - pointsA;
-    return 0;
+    return pointsSortDesc(a, b);
   });
   const firstEndedIndex = sortedMatches.findIndex(
     (m) => matchStatus(m.kickoff_at, m.is_final, now) === "ended"
   );
-  const displayedMatches = viewMode === "live" ? liveMatches : sortedMatches;
+  const displayedMatches =
+    viewMode === "live" ? liveMatches : viewMode === "ended" ? endedMatches : sortedMatches;
 
   function setScore(matchId: string, side: "home" | "away", value: string) {
     if (value !== "" && !/^\d$/.test(value)) return;
@@ -393,7 +404,14 @@ export default function PredictionsPage() {
         </div>
       </div>
 
-      {showViewToggle && <MatchViewToggle value={viewMode} onChange={setViewMode} />}
+      {showViewToggle && (
+        <MatchViewToggle
+          value={viewMode}
+          onChange={setViewMode}
+          showLive={showLiveOption}
+          showEnded={showEndedOption}
+        />
+      )}
 
       {isOpenRound && !predictionsOpen && selectedRound.predictions_open_at && (
         <div className="w-full max-w-md rounded-2xl border border-draw/40 bg-draw/10 p-4 text-center text-sm font-medium text-draw">
