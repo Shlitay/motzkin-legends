@@ -15,7 +15,17 @@ import { lockExpiredRounds } from "@/lib/lockExpiredRounds";
 import { matchStatus, type MatchStatus } from "@/lib/matchStatus";
 
 // values line up with the owning LeaderTable's columnLabels, one per column.
-type Row = { userId: string; name: string; avatar: string; values: number[] };
+// exactCount/towardsCount are only ever set on the round-points table's
+// rows (see LeaderRow) — the season table already shows its own hits/
+// towards as plain columns via `values`, so it leaves these undefined.
+type Row = {
+  userId: string;
+  name: string;
+  avatar: string;
+  values: number[];
+  exactCount?: number;
+  towardsCount?: number;
+};
 
 type DbRound = { id: string; round_number: number; deadline_at: string; status: string };
 
@@ -24,6 +34,8 @@ type RoundMatch = { id: string; kickoff_at: string; is_final: boolean };
 type RawRoundParticipationRow = {
   user_id: string;
   total_points: number | null;
+  exact_score_count: number | null;
+  correct_result_count: number | null;
   rank: number | null;
   users: { full_name: string; nickname: string | null; avatar: string | null } | null;
 };
@@ -112,7 +124,9 @@ export default function LeaderboardPage() {
 
       const { data: rows } = await supabase
         .from("round_participation")
-        .select("user_id, total_points, rank, users(full_name, nickname, avatar)")
+        .select(
+          "user_id, total_points, exact_score_count, correct_result_count, rank, users(full_name, nickname, avatar)"
+        )
         .eq("round_id", selectedRoundId)
         .overrideTypes<RawRoundParticipationRow[], { merge: false }>();
 
@@ -129,6 +143,8 @@ export default function LeaderboardPage() {
             name: r.users?.nickname ?? r.users?.full_name ?? "Unknown",
             avatar: r.users?.avatar ?? "🙂",
             values: [r.total_points ?? 0],
+            exactCount: r.exact_score_count ?? 0,
+            towardsCount: r.correct_result_count ?? 0,
           }))
       );
 
@@ -323,6 +339,8 @@ function LeaderTable({
             onClick={() => onSelect(r.userId)}
             crown={i === 0 && !!winnerJackpotLabel}
             jackpotLabel={i === 0 ? winnerJackpotLabel : undefined}
+            exactCount={r.exactCount}
+            towardsCount={r.towardsCount}
           />
         ))}
       </div>

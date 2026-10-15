@@ -25,6 +25,15 @@ type LeaderRowProps = {
   // round's points table, once that round is finished (see /leaderboard).
   crown?: boolean;
   jackpotLabel?: string;
+  // Round-points table only — this round's exact-score/correct-direction
+  // counts, shown as two small colored badges rather than extra plain-text
+  // columns (the season table already shows its own version of these as
+  // columns, via `values`). Green = exact, gold = towards, matching the
+  // convention used everywhere else results are shown (ended-match cards,
+  // /rules) — not the reversed one used for live in-progress feedback.
+  // Undefined on the season table, where neither badge renders.
+  exactCount?: number;
+  towardsCount?: number;
 };
 
 // Each value's unit (points/hits/rounds) is a column header above the table
@@ -48,6 +57,8 @@ export default function LeaderRow({
   onClick,
   crown = false,
   jackpotLabel,
+  exactCount,
+  towardsCount,
 }: LeaderRowProps) {
   const Wrapper = onClick ? "button" : "div";
   return (
@@ -80,6 +91,20 @@ export default function LeaderRow({
         )}
         <span className="font-medium text-ink">{name}</span>
       </span>
+      {(exactCount !== undefined || towardsCount !== undefined) && (
+        <span className="flex shrink-0 items-center gap-1">
+          {exactCount !== undefined && (
+            <span className="font-display flex h-6 w-6 items-center justify-center rounded-full bg-brand text-xs font-bold text-white">
+              {exactCount}
+            </span>
+          )}
+          {towardsCount !== undefined && (
+            <span className="font-display flex h-6 w-6 items-center justify-center rounded-full bg-draw text-xs font-bold text-white">
+              {towardsCount}
+            </span>
+          )}
+        </span>
+      )}
       <span className={`flex shrink-0 items-center ${values.length > 1 ? "gap-2" : "gap-4"}`}>
         {values.map((v, i) => (
           <span
