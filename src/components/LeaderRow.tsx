@@ -1,5 +1,5 @@
 import RankBadge from "@/components/RankBadge";
-import { CrownIcon } from "@/components/icons";
+import { ArrowUpRightIcon, CrownIcon, TargetIcon } from "@/components/icons";
 
 const ROW_TINT: Record<number, string> = {
   1: "bg-[#D4AF37]/15",
@@ -94,13 +94,23 @@ export default function LeaderRow({
       {(exactCount !== undefined || towardsCount !== undefined) && (
         <span className="flex shrink-0 items-center gap-[5.28px]">
           {exactCount !== undefined && (
-            <span className="font-display flex h-[18px] w-[18px] items-center justify-center rounded-full bg-brand text-[11px] font-bold text-white">
-              {exactCount}
+            <span className="relative shrink-0">
+              <span className="font-display flex h-[18px] w-[18px] items-center justify-center rounded-full bg-brand text-[11px] font-bold text-white">
+                {exactCount}
+              </span>
+              <span className="absolute -top-1 -end-1 flex h-[10px] w-[10px] items-center justify-center rounded-full bg-white">
+                <TargetIcon size={7} className="text-brand" />
+              </span>
             </span>
           )}
           {towardsCount !== undefined && (
-            <span className="font-display flex h-[18px] w-[18px] items-center justify-center rounded-full bg-draw text-[11px] font-bold text-white">
-              {towardsCount}
+            <span className="relative shrink-0">
+              <span className="font-display flex h-[18px] w-[18px] items-center justify-center rounded-full bg-draw text-[11px] font-bold text-white">
+                {towardsCount}
+              </span>
+              <span className="absolute -top-1 -end-1 flex h-[10px] w-[10px] items-center justify-center rounded-full bg-white">
+                <ArrowUpRightIcon size={7} className="text-draw" />
+              </span>
             </span>
           )}
         </span>

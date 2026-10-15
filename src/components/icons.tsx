@@ -135,6 +135,15 @@ export function GridIcon({ className, size }: IconProps) {
   );
 }
 
+export function ArrowUpRightIcon({ className, size }: IconProps) {
+  return (
+    <svg {...base} width={size ?? base.width} height={size ?? base.height} className={className}>
+      <path d="M7 17 17 7" />
+      <path d="M9 7h8v8" />
+    </svg>
+  );
+}
+
 export function BroadcastIcon({ className, size }: IconProps) {
   return (
     <svg {...base} width={size ?? base.width} height={size ?? base.height} className={className}>
