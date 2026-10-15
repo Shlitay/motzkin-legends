@@ -61,6 +61,10 @@ export default function LeaderRow({
   towardsCount,
 }: LeaderRowProps) {
   const Wrapper = onClick ? "button" : "div";
+  // Only the round table ever passes these — fixing the name to a column
+  // width only makes sense (and only triggers) there, so the season table
+  // keeps its original full-width, un-truncated name.
+  const hasBadges = exactCount !== undefined || towardsCount !== undefined;
   return (
     <Wrapper
       onClick={onClick}
@@ -84,7 +88,11 @@ export default function LeaderRow({
         </span>
       )}
       <span className="flex min-w-0 flex-1 items-center gap-1.5">
-        <span className="flex w-[100px] shrink-0 flex-col items-start gap-1">
+        <span
+          className={`flex flex-col items-start gap-1 ${
+            hasBadges ? "w-[100px] shrink-0" : "min-w-0 flex-1"
+          }`}
+        >
           {jackpotLabel && (
             <span className="shine-badge whitespace-nowrap rounded-full px-2 py-0.5 text-[10px] font-extrabold text-white shadow [text-shadow:0_1px_1px_rgba(0,0,0,0.35)] [background:linear-gradient(135deg,#f6e6ab_0%,#d9b74a_35%,#c9a227_65%,#a8811f_100%)]">
               {jackpotLabel}
@@ -92,7 +100,7 @@ export default function LeaderRow({
           )}
           <span className="w-full truncate font-medium text-ink">{name}</span>
         </span>
-        {(exactCount !== undefined || towardsCount !== undefined) && (
+        {hasBadges && (
           <span className="flex shrink-0 items-center gap-[5.28px]">
             {exactCount !== undefined && (
               <span className="relative shrink-0">
