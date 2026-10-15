@@ -92,14 +92,14 @@ export default function LeaderRow({
         <span className="font-medium text-ink">{name}</span>
       </span>
       {(exactCount !== undefined || towardsCount !== undefined) && (
-        <span className="flex shrink-0 items-center gap-[4.8px]">
+        <span className="flex shrink-0 items-center gap-[5.28px]">
           {exactCount !== undefined && (
-            <span className="font-display flex h-[21.6px] w-[21.6px] items-center justify-center rounded-full bg-brand text-xs font-bold text-white">
+            <span className="font-display flex h-[21.6px] w-[21.6px] items-center justify-center rounded-full bg-brand text-[16px] font-bold text-white">
               {exactCount}
             </span>
           )}
           {towardsCount !== undefined && (
-            <span className="font-display flex h-[21.6px] w-[21.6px] items-center justify-center rounded-full bg-draw text-xs font-bold text-white">
+            <span className="font-display flex h-[21.6px] w-[21.6px] items-center justify-center rounded-full bg-draw text-[16px] font-bold text-white">
               {towardsCount}
             </span>
           )}
