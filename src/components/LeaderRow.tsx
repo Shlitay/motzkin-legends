@@ -120,8 +120,8 @@ export default function LeaderRow({
           {values.map((v, i) => (
             <span
               key={i}
-              className={`${statColumnClass(values.length)} font-display text-sm font-semibold tabular-nums ${
-                i === values.length - 1 ? "text-ink" : "text-muted"
+              className={`${statColumnClass(values.length)} font-display font-semibold tabular-nums ${
+                i === values.length - 1 ? "text-[17px] text-ink" : "text-sm text-muted"
               }`}
             >
               {v}
