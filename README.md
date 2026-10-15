@@ -157,6 +157,8 @@ project has everything applied), run these in the SQL editor in order:
 
 47. `add-round7-day2-extra-match.sql` — adds a 4th match to round 7's Sunday 18.10.2026 (added 2026-10-15, same session): Real Madrid–Sevilla, La Liga. Both teams already exist, no new crests needed. Kickoff (22:00) treated as already Israel-local, same reasoning as migration 45's European kickoffs, not re-confirmed. Same round-number lookup pattern — must run after migration 44; independent of 45/46 otherwise. **Not yet applied.**
 
+48. `seed-round7-all.sql` — single-paste convenience version combining everything migrations 44–47 do (round 7 + all 10 matches across 3 days + the 3 new teams) into one script, requested by the user to avoid pasting four separate files. **Run this one file OR 44+45+46+47 in order — never both**, since `matches` has no unique constraint guarding against duplicate rows on a second run. Migrations 44–47 stay as the authoritative, individually-documented history; this is purely a convenience copy. **Not yet applied.**
+
 The first-cut UI for this (an "everyone's predictions" list on `/predictions`) was removed the same day — see the `/leaderboard` feature just below instead, which is what actually shipped.
 
 Also, to make the manager account actually a manager (role defaults to
