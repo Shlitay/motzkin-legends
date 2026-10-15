@@ -227,16 +227,19 @@ export default function PredictionsPage() {
     editableMatches.length > 0 &&
     editableMatches.every((m) => entries[m.id]?.home !== "" && entries[m.id]?.away !== "");
 
-  // Each of the "live"/"ended" toggle options only appears once there's
-  // actually something in that bucket — "live" disappears again once the
-  // round's fully finished, same as it never shows before kickoff.
-  // liveMatches stays in kickoff_at order for free, since `matches` itself
-  // is already fetched ordered by kickoff_at.
+  // The whole toggle only exists while something is actually live —
+  // before kickoff there's nothing to switch between, and once every
+  // match in the round has ended, "all" and "ended" show the same thing
+  // anyway (sortedMatches already sorts a fully-ended round by points,
+  // same as the "ended" tab does), so the toggle would be pure clutter.
+  // "ended" itself still only shows as an option once something has
+  // actually ended (so it can't appear in the first half of a round
+  // before any match is done yet).
   const showLiveOption = matches.some((m) => matchStatus(m.kickoff_at, m.is_final, now) === "live");
   const showEndedOption = matches.some(
     (m) => matchStatus(m.kickoff_at, m.is_final, now) === "ended"
   );
-  const showViewToggle = showLiveOption || showEndedOption;
+  const showViewToggle = showLiveOption;
   const liveMatches = matches.filter((m) => matchStatus(m.kickoff_at, m.is_final, now) === "live");
 
   const pointsSortDesc = (a: DbMatch, b: DbMatch) => {
@@ -258,12 +261,15 @@ export default function PredictionsPage() {
 
   // Auto-fall back to "all" the moment the selected tab's own bucket is
   // empty (nothing currently live, or — if a manager ever un-finalizes
-  // the round's last final match — nothing ended anymore) rather than
-  // leaving the user on an empty screen.
+  // the round's last final match — nothing ended anymore), or the whole
+  // toggle has disappeared (round fully finished) — a hidden toggle must
+  // never leave a stale "live"/"ended" selection still filtering the list
+  // underneath it.
   useEffect(() => {
+    if (!showViewToggle && viewMode !== "all") setViewMode("all");
     if (viewMode === "live" && !showLiveOption) setViewMode("all");
     if (viewMode === "ended" && !showEndedOption) setViewMode("all");
-  }, [viewMode, showLiveOption, showEndedOption]);
+  }, [viewMode, showViewToggle, showLiveOption, showEndedOption]);
 
   // Live matches first, then upcoming, then ended — kickoff_at order (the
   // DB query's own sort) is preserved within each group since Array#sort
