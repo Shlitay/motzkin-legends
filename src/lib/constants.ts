@@ -65,6 +65,11 @@ export const TEAM_LOGOS: Record<string, string> = {
   "פנרבחצ׳ה": "/team-logos/fenerbahce.png",
   "אסטון וילה": "/team-logos/aston-villa.png",
   "סלובאן ברטיסלבה": "/team-logos/slovan-bratislava.png",
+
+  // Round 7 additions, 2026-10-15.
+  "לידס": "/team-logos/leeds-united.png",
+  "לאציו": "/team-logos/lazio.png",
+  "יובנטוס": "/team-logos/juventus.png",
 };
 
 // Shortened display forms for full team names that wrap to two lines in
