@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import StatCard from "@/components/StatCard";
 import { TEAM_LOGOS, shortTeamName } from "@/lib/constants";
+import { deriveOutcome } from "@/lib/predictionOutcome";
 
 // Only the identity fields — the modal no longer shows season totals, but
 // season_stats is still where a participant's display name/avatar come from.
@@ -27,6 +28,9 @@ type RoundMatchPrediction = {
   predHome: number | null;
   predAway: number | null;
   isMainEvent: boolean;
+  homeScore: number | null;
+  awayScore: number | null;
+  pointsEarned: number | null;
 };
 
 export default function ParticipantModal({
@@ -64,7 +68,7 @@ export default function ParticipantModal({
 
       const { data: matchRows } = await supabase
         .from("matches")
-        .select("id, home_team, away_team, kickoff_at, is_main_event")
+        .select("id, home_team, away_team, kickoff_at, is_main_event, home_score, away_score")
         .eq("round_id", round.id)
         .order("kickoff_at");
 
@@ -80,7 +84,7 @@ export default function ParticipantModal({
       // of this round, regardless of whose predictions these are.
       const { data: predRows } = await supabase
         .from("predictions")
-        .select("match_id, pred_home_score, pred_away_score")
+        .select("match_id, pred_home_score, pred_away_score, points_earned")
         .eq("user_id", userId)
         .in("match_id", list.map((m) => m.id));
 
@@ -93,6 +97,9 @@ export default function ParticipantModal({
           predHome: byMatch.get(m.id)?.pred_home_score ?? null,
           predAway: byMatch.get(m.id)?.pred_away_score ?? null,
           isMainEvent: m.is_main_event,
+          homeScore: m.home_score,
+          awayScore: m.away_score,
+          pointsEarned: byMatch.get(m.id)?.points_earned ?? null,
         }))
       );
     })();
@@ -238,39 +245,60 @@ function PredictionsList({
       </p>
 
       <ul className="space-y-2">
-        {matches.map((m) => (
-          <li
-            key={m.id}
-            className={`flex items-center gap-2 rounded-lg border bg-surface px-3 py-2 text-sm ${
-              m.isMainEvent ? "border-[#d4a017] bg-[#d4a017]/5" : "border-neutral-200"
-            }`}
-          >
-            <span className="flex flex-1 items-center gap-1.5 text-ink">
-              <TeamLogo team={m.home_team} />
-              {shortTeamName(m.home_team)}
-            </span>
-            {/* Home box is DOM-first so it renders visually *right* under
-                this row's RTL mirroring, away box visually *left* (same
-                pattern as MatchRow/EndedMatchCard elsewhere in this app).
-                A dir="ltr" span always reads left-to-right regardless of
-                being one atomic chip rather than two stacked digits — a
-                reader still associates the leftmost digit with whichever
-                box sits on the left, so away has to come first here too,
-                home second, same fix already needed twice elsewhere in
-                this codebase for the identical reason. */}
-            <span
-              className="shrink-0 font-display font-bold tabular-nums text-ink"
-              dir="ltr"
-              style={{ unicodeBidi: "isolate" }}
+        {matches.map((m) => {
+          // Only derivable once both a real result and a real prediction
+          // exist — same deriveOutcome() used by EndedMatchCard/MatchRow's
+          // live feedback, so this reads the same way everywhere else in
+          // the app. No outcome yet (not played, or no prediction) falls
+          // back to the existing plain/main-event border.
+          const outcome =
+            m.homeScore !== null && m.awayScore !== null && m.predHome !== null && m.predAway !== null
+              ? deriveOutcome(m.predHome, m.predAway, m.homeScore, m.awayScore)
+              : null;
+          const borderClass =
+            outcome === "exact"
+              ? "border-2 border-brand"
+              : outcome === "direction"
+              ? "border-2 border-draw"
+              : m.isMainEvent
+              ? "border-[#d4a017] bg-[#d4a017]/5"
+              : "border-neutral-200";
+
+          return (
+            <li
+              key={m.id}
+              className={`flex items-center gap-2 rounded-lg border bg-surface px-3 py-2 text-sm ${borderClass}`}
             >
-              {m.predAway ?? "-"}-{m.predHome ?? "-"}
-            </span>
-            <span className="flex flex-1 items-center justify-end gap-1.5 text-end text-ink">
-              {shortTeamName(m.away_team)}
-              <TeamLogo team={m.away_team} />
-            </span>
-          </li>
-        ))}
+              <span className="flex flex-1 items-center gap-1.5 text-ink">
+                <TeamLogo team={m.home_team} />
+                {shortTeamName(m.home_team)}
+              </span>
+              {/* Home box is DOM-first so it renders visually *right* under
+                  this row's RTL mirroring, away box visually *left* (same
+                  pattern as MatchRow/EndedMatchCard elsewhere in this app).
+                  A dir="ltr" span always reads left-to-right regardless of
+                  being one atomic chip rather than two stacked digits — a
+                  reader still associates the leftmost digit with whichever
+                  box sits on the left, so away has to come first here too,
+                  home second, same fix already needed twice elsewhere in
+                  this codebase for the identical reason. */}
+              <span
+                className="shrink-0 font-display font-bold tabular-nums text-ink"
+                dir="ltr"
+                style={{ unicodeBidi: "isolate" }}
+              >
+                {m.predAway ?? "-"}-{m.predHome ?? "-"}
+              </span>
+              <span className="flex flex-1 items-center justify-end gap-1.5 text-end text-ink">
+                {shortTeamName(m.away_team)}
+                <TeamLogo team={m.away_team} />
+              </span>
+              {!!m.pointsEarned && (
+                <span className="shrink-0 text-[12px] font-bold text-muted">+{m.pointsEarned}</span>
+              )}
+            </li>
+          );
+        })}
       </ul>
     </div>
   );
