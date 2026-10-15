@@ -155,6 +155,8 @@ project has everything applied), run these in the SQL editor in order:
 
 46. `add-round7-day3-match.sql` — adds round 7's 3rd day (added 2026-10-15, same session): Monday 19.10.2026, 1 more match (Beitar Jerusalem–Maccabi Tel Aviv, both already in `teams`/`TEAM_LOGOS`, no new crests needed) on top of migrations 44/45's 8. Straightforward Israeli fixture, kickoff already Israel-local, no timezone ambiguity. Same round-number lookup pattern as migration 45 — must run after 44 and 45. **Not yet applied.**
 
+47. `add-round7-day2-extra-match.sql` — adds a 4th match to round 7's Sunday 18.10.2026 (added 2026-10-15, same session): Real Madrid–Sevilla, La Liga. Both teams already exist, no new crests needed. Kickoff (22:00) treated as already Israel-local, same reasoning as migration 45's European kickoffs, not re-confirmed. Same round-number lookup pattern — must run after migration 44; independent of 45/46 otherwise. **Not yet applied.**
+
 The first-cut UI for this (an "everyone's predictions" list on `/predictions`) was removed the same day — see the `/leaderboard` feature just below instead, which is what actually shipped.
 
 Also, to make the manager account actually a manager (role defaults to
