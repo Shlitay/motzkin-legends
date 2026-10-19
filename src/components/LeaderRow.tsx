@@ -34,6 +34,13 @@ type LeaderRowProps = {
   // already carries the 1st/2nd/3rd signal, so the row background is
   // free to mean something else instead).
   isCurrentUser?: boolean;
+  // Top-3 only, round-points table only, and only while the round is
+  // live (see /leaderboard's showRankChange) — a small green/red arrow
+  // on the avatar's corner marking whether this participant's rank just
+  // moved up or down the last time standings were recomputed (a goal,
+  // typically). undefined means either no change happened or the caller
+  // decided not to show it at all right now.
+  rankChange?: "up" | "down";
 };
 
 // Each value's unit (points/hits/rounds) is a column header above the table
@@ -60,6 +67,7 @@ export default function LeaderRow({
   exactCount,
   towardsCount,
   isCurrentUser = false,
+  rankChange,
 }: LeaderRowProps) {
   const Wrapper = onClick ? "button" : "div";
   // Only the round table ever passes these — fixing the name to a column
@@ -85,6 +93,18 @@ export default function LeaderRow({
               size={24}
               className="absolute -top-[15px] -end-[6px] -rotate-[22deg] text-[#d9b74a] drop-shadow-[0_1px_1px_rgba(0,0,0,0.25)]"
             />
+          )}
+          {rankChange && (
+            <span
+              className={`absolute -bottom-1 -end-1 flex h-[14px] w-[14px] items-center justify-center rounded-full ${
+                rankChange === "up" ? "bg-brand" : "bg-danger"
+              }`}
+            >
+              <ArrowUpRightIcon
+                size={8}
+                className={`text-white ${rankChange === "up" ? "-rotate-45" : "rotate-[135deg]"}`}
+              />
+            </span>
           )}
         </span>
       )}

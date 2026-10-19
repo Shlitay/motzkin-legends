@@ -18,6 +18,7 @@ import { matchStatus, type MatchStatus } from "@/lib/matchStatus";
 // exactCount/towardsCount are only ever set on the round-points table's
 // rows (see LeaderRow) — the season table already shows its own hits/
 // towards as plain columns via `values`, so it leaves these undefined.
+// rankChange is also round-table-only — see its own comment below.
 type Row = {
   userId: string;
   name: string;
@@ -25,6 +26,7 @@ type Row = {
   values: number[];
   exactCount?: number;
   towardsCount?: number;
+  rankChange?: "up" | "down";
 };
 
 type DbRound = { id: string; round_number: number; deadline_at: string; status: string };
@@ -37,6 +39,7 @@ type RawRoundParticipationRow = {
   exact_score_count: number | null;
   correct_result_count: number | null;
   rank: number | null;
+  previous_rank: number | null;
   users: { full_name: string; nickname: string | null; avatar: string | null } | null;
 };
 
@@ -131,7 +134,7 @@ export default function LeaderboardPage() {
       const { data: rows } = await supabase
         .from("round_participation")
         .select(
-          "user_id, total_points, exact_score_count, correct_result_count, rank, users(full_name, nickname, avatar)"
+          "user_id, total_points, exact_score_count, correct_result_count, rank, previous_rank, users(full_name, nickname, avatar)"
         )
         .eq("round_id", selectedRoundId)
         .overrideTypes<RawRoundParticipationRow[], { merge: false }>();
@@ -151,6 +154,19 @@ export default function LeaderboardPage() {
             values: [r.total_points ?? 0],
             exactCount: r.exact_score_count ?? 0,
             towardsCount: r.correct_result_count ?? 0,
+            // A lower rank number is better — moving from 4th to 2nd is
+            // "up" even though 2 < 4. previous_rank is snapshotted
+            // server-side inside recompute_round_standings() itself (see
+            // add-rank-movement-tracking.sql), so this reflects the real
+            // last goal/result event, not just "changed since I last
+            // loaded the page" — correct even for someone opening the
+            // page for the first time after it happened.
+            rankChange:
+              r.rank !== null && r.previous_rank !== null && r.rank !== r.previous_rank
+                ? r.rank < r.previous_rank
+                  ? "up"
+                  : "down"
+                : undefined,
           }))
       );
 
@@ -237,6 +253,7 @@ export default function LeaderboardPage() {
           onSelect={setSelectedUserId}
           winnerJackpotLabel={winnerPayout !== null ? `זכה בקופה: ${winnerPayout} ₪` : undefined}
           currentUserId={currentUserId}
+          showRankChange={selectedRound.status === "locked"}
         />
       )}
       <div className="flex w-full max-w-md flex-col items-center gap-3">
@@ -300,6 +317,7 @@ function LeaderTable({
   scrollable,
   hideAvatars,
   currentUserId,
+  showRankChange = false,
 }: {
   // Omit for a table whose heading lives outside the card (season table) —
   // the header row then holds just the column labels, pushed to the end.
@@ -323,6 +341,11 @@ function LeaderTable({
   // their own place at a glance, on both tables. Null while logged out or
   // not yet loaded, in which case no row is highlighted.
   currentUserId: string | null;
+  // Round-points table only, and only while the round is actually
+  // 'locked' (live, in progress) — once 'finished', nothing can move
+  // again, so there's nothing left to indicate. Also gated to the top 3
+  // rows only, inside the rows.map below.
+  showRankChange?: boolean;
 }) {
   return (
     <section className="w-full max-w-md overflow-hidden rounded-[28px] bg-surface shadow-[0_1px_2px_rgba(0,0,0,0.04),0_16px_32px_-18px_rgba(0,0,0,0.28)]">
@@ -355,6 +378,7 @@ function LeaderTable({
             exactCount={r.exactCount}
             towardsCount={r.towardsCount}
             isCurrentUser={r.userId === currentUserId}
+            rankChange={showRankChange && i < 3 ? r.rankChange : undefined}
           />
         ))}
       </div>
