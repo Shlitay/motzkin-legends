@@ -71,7 +71,7 @@ export default function LeaderRow({
       onClick={onClick}
       className={`flex w-full items-center gap-3 px-5 py-3 text-start ${
         isCurrentUser ? "bg-brand/10" : ""
-      } ${rank === 3 ? "border-b border-neutral-300" : ""} ${onClick ? "hover:bg-black/5" : ""}`}
+      } ${rank === 3 ? "border-b border-neutral-400" : ""} ${onClick ? "hover:bg-black/5" : ""}`}
     >
       <RankBadge rank={rank} />
       {!hideAvatar && (
