@@ -159,6 +159,8 @@ project has everything applied), run these in the SQL editor in order:
 
 48. `seed-round7-all.sql` — single-paste convenience version combining everything migrations 44–47 do (round 7 + all 10 matches across 3 days + the 3 new teams) into one script, requested by the user to avoid pasting four separate files. **Run this one file OR 44+45+46+47 in order — never both**, since `matches` has no unique constraint guarding against duplicate rows on a second run. Migrations 44–47 stay as the authoritative, individually-documented history; this is purely a convenience copy. **Not yet applied.**
 
+49. `add-rank-movement-tracking.sql` — adds `round_participation.previous_rank`, snapshotted inside `recompute_round_standings()` itself every time it runs (`set previous_rank = rp.rank, rank = ranked.rnk` — the old-row value of `rank` is what lands in `previous_rank`, correctly landing on "no change" when a recompute doesn't actually move anyone). Powers a new `/leaderboard` feature: a small green/red arrow on the top-3 avatars showing whether that participant's rank just improved or dropped, only while the round is `locked` (live) — nothing shows once `finished`, since standings are final by then. `create or replace function`, same signature, based on the latest definition in `fix-standings-count-only-started-matches.sql` (confirmed via grep across every `.sql` file first, per this project's own redefinition pitfall). **Not yet applied.**
+
 The first-cut UI for this (an "everyone's predictions" list on `/predictions`) was removed the same day — see the `/leaderboard` feature just below instead, which is what actually shipped.
 
 Also, to make the manager account actually a manager (role defaults to
