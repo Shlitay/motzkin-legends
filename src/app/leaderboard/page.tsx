@@ -66,6 +66,7 @@ export default function LeaderboardPage() {
   const [pastParticipantCount, setPastParticipantCount] = useState<number | null>(null);
   const [seasonPoints, setSeasonPoints] = useState<Row[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   // Drives the not-started -> live transition in the round match-status
   // summary if this page is left open across a match's kickoff.
@@ -79,6 +80,11 @@ export default function LeaderboardPage() {
   useEffect(() => {
     (async () => {
       await lockExpiredRounds(supabase);
+
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      setCurrentUserId(user?.id ?? null);
 
       const { data } = await supabase
         .from("rounds")
@@ -230,6 +236,7 @@ export default function LeaderboardPage() {
           columnLabels={["נק'"]}
           onSelect={setSelectedUserId}
           winnerJackpotLabel={winnerPayout !== null ? `זכה בקופה: ${winnerPayout} ₪` : undefined}
+          currentUserId={currentUserId}
         />
       )}
       <div className="flex w-full max-w-md flex-col items-center gap-3">
@@ -240,6 +247,7 @@ export default function LeaderboardPage() {
           onSelect={setSelectedUserId}
           scrollable
           hideAvatars
+          currentUserId={currentUserId}
         />
       </div>
 
@@ -291,6 +299,7 @@ function LeaderTable({
   winnerJackpotLabel,
   scrollable,
   hideAvatars,
+  currentUserId,
 }: {
   // Omit for a table whose heading lives outside the card (season table) —
   // the header row then holds just the column labels, pushed to the end.
@@ -310,6 +319,10 @@ function LeaderTable({
   scrollable?: boolean;
   // Season table only — rows show just rank + name + stats.
   hideAvatars?: boolean;
+  // Highlights whichever row's userId matches — lets a participant spot
+  // their own place at a glance, on both tables. Null while logged out or
+  // not yet loaded, in which case no row is highlighted.
+  currentUserId: string | null;
 }) {
   return (
     <section className="w-full max-w-md overflow-hidden rounded-[28px] bg-surface shadow-[0_1px_2px_rgba(0,0,0,0.04),0_16px_32px_-18px_rgba(0,0,0,0.28)]">
@@ -341,6 +354,7 @@ function LeaderTable({
             jackpotLabel={i === 0 ? winnerJackpotLabel : undefined}
             exactCount={r.exactCount}
             towardsCount={r.towardsCount}
+            isCurrentUser={r.userId === currentUserId}
           />
         ))}
       </div>

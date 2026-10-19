@@ -1,12 +1,6 @@
 import RankBadge from "@/components/RankBadge";
 import { ArrowUpRightIcon, CrownIcon, TargetIcon } from "@/components/icons";
 
-const ROW_TINT: Record<number, string> = {
-  1: "bg-[#D4AF37]/15",
-  2: "bg-[#C0C0C0]/20",
-  3: "bg-[#CD7F32]/15",
-};
-
 type LeaderRowProps = {
   rank: number;
   avatar: string;
@@ -34,6 +28,12 @@ type LeaderRowProps = {
   // Undefined on the season table, where neither badge renders.
   exactCount?: number;
   towardsCount?: number;
+  // Highlights this row as the viewer's own — replaces the old gold/
+  // silver/bronze rank-1/2/3 row tint, which made it harder to spot
+  // yourself in the table at a glance (the rank badge's own circle color
+  // already carries the 1st/2nd/3rd signal, so the row background is
+  // free to mean something else instead).
+  isCurrentUser?: boolean;
 };
 
 // Each value's unit (points/hits/rounds) is a column header above the table
@@ -59,6 +59,7 @@ export default function LeaderRow({
   jackpotLabel,
   exactCount,
   towardsCount,
+  isCurrentUser = false,
 }: LeaderRowProps) {
   const Wrapper = onClick ? "button" : "div";
   // Only the round table ever passes these — fixing the name to a column
@@ -68,9 +69,9 @@ export default function LeaderRow({
   return (
     <Wrapper
       onClick={onClick}
-      className={`flex w-full items-center gap-3 px-5 py-3 text-start ${ROW_TINT[rank] ?? ""} ${
-        onClick ? "hover:bg-black/5" : ""
-      }`}
+      className={`flex w-full items-center gap-3 px-5 py-3 text-start ${
+        isCurrentUser ? "bg-brand/10" : ""
+      } ${onClick ? "hover:bg-black/5" : ""}`}
     >
       <RankBadge rank={rank} />
       {!hideAvatar && (
