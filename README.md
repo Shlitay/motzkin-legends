@@ -165,6 +165,10 @@ project has everything applied), run these in the SQL editor in order:
 
 51. `add-round8-day2-match.sql` — adds round 8's 2nd day (added 2026-10-20, same session): Sunday 25.10.2026, 1 match (Hapoel Petah Tikva–Beitar Jerusalem, both already existing teams, no new crests needed). **The predicted DST wrinkle from migration 50 landed immediately** — this match kicks off at 20:15, after Israel's clocks move back from IDT to IST (UTC+2) at 2am that same morning, so it converts with `-2h`, not the `-3h` every single prior match in this project has used (including this same round's own Saturday 7, still on IDT). Looks up round 8 by `round_number` — must run after migration 50. **Not yet applied.**
 
+52. `add-round8-day3-match.sql` — adds round 8's 3rd day (added 2026-10-20, same session): Monday 26.10.2026, 1 match (Maccabi Haifa–Hapoel Beer Sheva, both already existing teams). Fully past the DST boundary now, so also `-2h` (IST) like migration 51. Looks up round 8 by `round_number` — must run after migration 50. **Not yet applied.**
+
+53. `seed-round8-all.sql` — single-paste convenience version combining everything migrations 50–52 do (round 8 + all 9 matches across 3 days + the 2 new teams) into one script, same pattern as `seed-round7-all.sql`. **Run this one file OR 50+51+52 in order — never both.** Migrations 50–52 stay as the authoritative, individually-documented history. **Not yet applied.**
+
 The first-cut UI for this (an "everyone's predictions" list on `/predictions`) was removed the same day — see the `/leaderboard` feature just below instead, which is what actually shipped.
 
 Also, to make the manager account actually a manager (role defaults to
