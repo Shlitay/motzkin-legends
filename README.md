@@ -163,6 +163,8 @@ project has everything applied), run these in the SQL editor in order:
 
 50. `seed-round8.sql` — creates round 8's 7 matches (added 2026-10-20): 5 Israeli Premier League fixtures + 2 European (Chelsea–Tottenham, Napoli–Roma), all Saturday 24.10.2026. Napoli and Roma already existed with crests; **Chelsea and Tottenham are brand new**, added names-only, linked to Premier League, no crests yet. This is the **last round before Israel's/the UK's/Italy's DST all end (25.10.2026)** — the next round's European kickoffs, if any, need a different UTC offset than the `-3h` used here and every prior round. `season_id` hardcoded directly, per migration 42's lesson. **Not yet applied.**
 
+51. `add-round8-day2-match.sql` — adds round 8's 2nd day (added 2026-10-20, same session): Sunday 25.10.2026, 1 match (Hapoel Petah Tikva–Beitar Jerusalem, both already existing teams, no new crests needed). **The predicted DST wrinkle from migration 50 landed immediately** — this match kicks off at 20:15, after Israel's clocks move back from IDT to IST (UTC+2) at 2am that same morning, so it converts with `-2h`, not the `-3h` every single prior match in this project has used (including this same round's own Saturday 7, still on IDT). Looks up round 8 by `round_number` — must run after migration 50. **Not yet applied.**
+
 The first-cut UI for this (an "everyone's predictions" list on `/predictions`) was removed the same day — see the `/leaderboard` feature just below instead, which is what actually shipped.
 
 Also, to make the manager account actually a manager (role defaults to
