@@ -114,6 +114,14 @@ export function ChevronIcon({ className, size }: IconProps) {
   );
 }
 
+export function XIcon({ className, size }: IconProps) {
+  return (
+    <svg {...base} width={size ?? base.width} height={size ?? base.height} className={className}>
+      <path d="M6 6l12 12M18 6 6 18" />
+    </svg>
+  );
+}
+
 export function TargetIcon({ className, size }: IconProps) {
   return (
     <svg {...base} width={size ?? base.width} height={size ?? base.height} className={className}>

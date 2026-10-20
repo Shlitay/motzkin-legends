@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import CloseButton from "@/components/CloseButton";
 
 export default function NewsStripModal({ onClose }: { onClose: () => void }) {
   const [supabase] = useState(() => createClient());
@@ -71,6 +72,7 @@ export default function NewsStripModal({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-6">
+      <CloseButton onClick={onClose} />
       <div className="w-full max-w-sm rounded-2xl bg-white p-8 text-center shadow-lg">
         <h2 className="mb-6 text-xl font-semibold">רצועת חדשות</h2>
 

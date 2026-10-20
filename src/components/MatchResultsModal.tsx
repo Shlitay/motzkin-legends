@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import CloseButton from "@/components/CloseButton";
 import { getCurrentRound } from "@/lib/currentRound";
 
 type DbMatch = {
@@ -146,6 +147,7 @@ export default function MatchResultsModal({ onClose }: { onClose: () => void }) 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-6">
+      <CloseButton onClick={onClose} />
       <div className="max-h-[85vh] w-full max-w-md overflow-y-auto rounded-2xl bg-white p-6 text-center shadow-lg">
         <h2 className="mb-1 text-xl font-semibold">
           {roundNumber ? `תוצאות מחזור ${roundNumber}` : "תוצאות מחזור"}

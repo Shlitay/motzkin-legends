@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import CloseButton from "@/components/CloseButton";
 import StatCard from "@/components/StatCard";
 import { TEAM_LOGOS, shortTeamName } from "@/lib/constants";
 import { deriveOutcome } from "@/lib/predictionOutcome";
@@ -184,6 +185,7 @@ export default function ParticipantModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-6">
+      <CloseButton onClick={onClose} />
       <div className="max-h-[90vh] w-full max-w-sm overflow-y-auto rounded-2xl bg-white px-8 pb-8 pt-[15px] text-center shadow-lg">
         {loading ? (
           <p className="text-sm text-muted">טוען...</p>
