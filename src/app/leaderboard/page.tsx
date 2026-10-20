@@ -349,7 +349,7 @@ function LeaderTable({
 }) {
   return (
     <section className="w-full max-w-md overflow-hidden rounded-[28px] bg-surface shadow-[0_1px_2px_rgba(0,0,0,0.04),0_16px_32px_-18px_rgba(0,0,0,0.28)]">
-      <div className="flex items-baseline justify-between gap-3 px-5 pb-1 pt-5">
+      <div className="sticky top-20 z-10 flex items-baseline justify-between gap-3 bg-surface px-5 pb-1 pt-5">
         {title && <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">{title}</h2>}
         <span
           className={`ms-auto flex shrink-0 font-medium uppercase tracking-wide text-muted ${
