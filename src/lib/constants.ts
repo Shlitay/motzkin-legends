@@ -70,6 +70,10 @@ export const TEAM_LOGOS: Record<string, string> = {
   "לידס": "/team-logos/leeds-united.png",
   "לאציו": "/team-logos/lazio.png",
   "יובנטוס": "/team-logos/juventus.png",
+
+  // Round 8 additions, 2026-10-20.
+  "צ׳לסי": "/team-logos/chelsea.png",
+  "טוטנהאם": "/team-logos/tottenham.png",
 };
 
 // Shortened display forms for full team names that wrap to two lines in
