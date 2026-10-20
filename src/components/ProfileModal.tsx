@@ -94,78 +94,80 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-6">
-      <CloseButton onClick={onClose} />
-      <div className="w-full max-w-sm rounded-2xl bg-white p-8 text-center shadow-lg">
-        <h2 className="mb-6 text-xl font-semibold">פרופיל</h2>
+      <div className="relative w-full max-w-sm">
+        <CloseButton onClick={onClose} />
+        <div className="rounded-2xl bg-white p-8 text-center shadow-lg">
+          <h2 className="mb-6 text-xl font-semibold">פרופיל</h2>
 
-        {loading ? (
-          <p className="text-sm text-muted">טוען...</p>
-        ) : (
-          <>
-            <p className="mb-1 text-sm font-medium text-ink">כינוי</p>
-            <p className="mb-3 text-xs text-muted">
-              יוצג במקום השם מ-Google. השאירו ריק כדי להשתמש ב&quot;{fullName}&quot;.
-            </p>
-            <input
-              value={nickname}
-              onChange={(e) => setNickname(e.target.value)}
-              placeholder={fullName}
-              maxLength={40}
-              className="mb-7 w-full rounded-lg border border-neutral-300 px-3 py-2 text-center text-sm"
-            />
+          {loading ? (
+            <p className="text-sm text-muted">טוען...</p>
+          ) : (
+            <>
+              <p className="mb-1 text-sm font-medium text-ink">כינוי</p>
+              <p className="mb-3 text-xs text-muted">
+                יוצג במקום השם מ-Google. השאירו ריק כדי להשתמש ב&quot;{fullName}&quot;.
+              </p>
+              <input
+                value={nickname}
+                onChange={(e) => setNickname(e.target.value)}
+                placeholder={fullName}
+                maxLength={40}
+                className="mb-7 w-full rounded-lg border border-neutral-300 px-3 py-2 text-center text-sm"
+              />
 
-            <p className="mb-3 text-sm font-medium text-ink">אווטאר</p>
-            <div className="mb-7 grid grid-cols-6 gap-2">
-              {AVATAR_LIBRARY.map((emoji) => {
-                const selected = avatar === emoji;
-                return (
-                  <button
-                    key={emoji}
-                    onClick={() => setAvatar(emoji)}
-                    aria-pressed={selected}
-                    aria-label={`בחירת אווטאר ${emoji}`}
-                    className={
-                      "flex h-10 w-10 items-center justify-center rounded-full text-lg transition " +
-                      (selected
-                        ? "bg-brand/15 ring-2 ring-brand"
-                        : "bg-neutral-100 hover:bg-neutral-200")
-                    }
-                  >
-                    {emoji}
-                  </button>
-                );
-              })}
-            </div>
+              <p className="mb-3 text-sm font-medium text-ink">אווטאר</p>
+              <div className="mb-7 grid grid-cols-6 gap-2">
+                {AVATAR_LIBRARY.map((emoji) => {
+                  const selected = avatar === emoji;
+                  return (
+                    <button
+                      key={emoji}
+                      onClick={() => setAvatar(emoji)}
+                      aria-pressed={selected}
+                      aria-label={`בחירת אווטאר ${emoji}`}
+                      className={
+                        "flex h-10 w-10 items-center justify-center rounded-full text-lg transition " +
+                        (selected
+                          ? "bg-brand/15 ring-2 ring-brand"
+                          : "bg-neutral-100 hover:bg-neutral-200")
+                      }
+                    >
+                      {emoji}
+                    </button>
+                  );
+                })}
+              </div>
 
-            <p className="mb-1 text-sm font-medium text-ink">ניחוש ברירת מחדל</p>
-            <p className="mb-4 text-xs text-muted">
-              ישמש אוטומטית אם תפספסו את המועד האחרון של מחזור.
-            </p>
+              <p className="mb-1 text-sm font-medium text-ink">ניחוש ברירת מחדל</p>
+              <p className="mb-4 text-xs text-muted">
+                ישמש אוטומטית אם תפספסו את המועד האחרון של מחזור.
+              </p>
 
-            <div className="mb-8 flex items-center justify-center gap-3">
-              <ScoreInput label="בית" value={home} onChange={(v) => setScore(setHome, v)} />
-              <span className="text-lg font-semibold text-muted">–</span>
-              <ScoreInput label="חוץ" value={away} onChange={(v) => setScore(setAway, v)} />
-            </div>
-          </>
-        )}
+              <div className="mb-8 flex items-center justify-center gap-3">
+                <ScoreInput label="בית" value={home} onChange={(v) => setScore(setHome, v)} />
+                <span className="text-lg font-semibold text-muted">–</span>
+                <ScoreInput label="חוץ" value={away} onChange={(v) => setScore(setAway, v)} />
+              </div>
+            </>
+          )}
 
-        {error && <p className="mb-4 text-xs text-danger">{error}</p>}
+          {error && <p className="mb-4 text-xs text-danger">{error}</p>}
 
-        <div className="flex justify-center gap-4">
-          <button
-            onClick={onClose}
-            className="rounded-full border border-neutral-300 px-6 py-2 font-medium hover:bg-neutral-50"
-          >
-            ביטול
-          </button>
-          <button
-            disabled={loading || !filled || saving}
-            onClick={save}
-            className="rounded-full bg-brand px-6 py-2 font-medium text-white enabled:hover:bg-brand-dark disabled:cursor-not-allowed disabled:bg-neutral-300"
-          >
-            {saving ? "שומר..." : "שמירה"}
-          </button>
+          <div className="flex justify-center gap-4">
+            <button
+              onClick={onClose}
+              className="rounded-full border border-neutral-300 px-6 py-2 font-medium hover:bg-neutral-50"
+            >
+              ביטול
+            </button>
+            <button
+              disabled={loading || !filled || saving}
+              onClick={save}
+              className="rounded-full bg-brand px-6 py-2 font-medium text-white enabled:hover:bg-brand-dark disabled:cursor-not-allowed disabled:bg-neutral-300"
+            >
+              {saving ? "שומר..." : "שמירה"}
+            </button>
+          </div>
         </div>
       </div>
     </div>

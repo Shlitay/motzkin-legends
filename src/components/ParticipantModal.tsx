@@ -185,45 +185,47 @@ export default function ParticipantModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-6">
-      <CloseButton onClick={onClose} />
-      <div className="max-h-[90vh] w-full max-w-sm overflow-y-auto rounded-2xl bg-white px-8 pb-8 pt-[15px] text-center shadow-lg">
-        {loading ? (
-          <p className="text-sm text-muted">טוען...</p>
-        ) : !season ? (
-          <p className="text-sm text-danger">לא ניתן היה לטעון את המשתתף.</p>
-        ) : (
-          <div className="flex flex-col items-center gap-6">
-            <div className="-mb-2 flex flex-col items-center gap-2">
-              <div className="flex h-[26px] w-[26px] items-center justify-center rounded-full bg-neutral-100 text-xs">
-                {season.avatar ?? "🙂"}
+      <div className="relative w-full max-w-sm">
+        <CloseButton onClick={onClose} />
+        <div className="max-h-[90vh] overflow-y-auto rounded-2xl bg-white px-8 pb-8 pt-[15px] text-center shadow-lg">
+          {loading ? (
+            <p className="text-sm text-muted">טוען...</p>
+          ) : !season ? (
+            <p className="text-sm text-danger">לא ניתן היה לטעון את המשתתף.</p>
+          ) : (
+            <div className="flex flex-col items-center gap-6">
+              <div className="-mb-2 flex flex-col items-center gap-2">
+                <div className="flex h-[26px] w-[26px] items-center justify-center rounded-full bg-neutral-100 text-xs">
+                  {season.avatar ?? "🙂"}
+                </div>
+                <p className="font-medium text-ink">{season.display_name}</p>
               </div>
-              <p className="font-medium text-ink">{season.display_name}</p>
-            </div>
 
-            <StatCard
-              title={lastRoundTitle}
-              headline={`מקום: ${lastRound?.rank ?? 0}`}
-              towards={lastRound?.correct_result_count ?? 0}
-              points={lastRound?.total_points ?? 0}
-              hit={lastRound?.exact_score_count ?? 0}
-            />
-
-            {roundStarted && roundMatches.length > 0 && (
-              <PredictionsList
-                name={season.display_name}
-                roundNumber={round.round_number}
-                matches={roundMatches}
+              <StatCard
+                title={lastRoundTitle}
+                headline={`מקום: ${lastRound?.rank ?? 0}`}
+                towards={lastRound?.correct_result_count ?? 0}
+                points={lastRound?.total_points ?? 0}
+                hit={lastRound?.exact_score_count ?? 0}
               />
-            )}
-          </div>
-        )}
 
-        <button
-          onClick={onClose}
-          className="mt-6 rounded-full border border-neutral-300 px-6 py-2 font-medium hover:bg-neutral-50"
-        >
-          סגירה
-        </button>
+              {roundStarted && roundMatches.length > 0 && (
+                <PredictionsList
+                  name={season.display_name}
+                  roundNumber={round.round_number}
+                  matches={roundMatches}
+                />
+              )}
+            </div>
+          )}
+
+          <button
+            onClick={onClose}
+            className="mt-6 rounded-full border border-neutral-300 px-6 py-2 font-medium hover:bg-neutral-50"
+          >
+            סגירה
+          </button>
+        </div>
       </div>
     </div>
   );

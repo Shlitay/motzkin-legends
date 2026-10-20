@@ -147,8 +147,9 @@ export default function MatchResultsModal({ onClose }: { onClose: () => void }) 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-6">
+      <div className="relative w-full max-w-md">
       <CloseButton onClick={onClose} />
-      <div className="max-h-[85vh] w-full max-w-md overflow-y-auto rounded-2xl bg-white p-6 text-center shadow-lg">
+      <div className="max-h-[85vh] overflow-y-auto rounded-2xl bg-white p-6 text-center shadow-lg">
         <h2 className="mb-1 text-xl font-semibold">
           {roundNumber ? `תוצאות מחזור ${roundNumber}` : "תוצאות מחזור"}
         </h2>
@@ -240,6 +241,7 @@ export default function MatchResultsModal({ onClose }: { onClose: () => void }) 
         >
           סגירה
         </button>
+      </div>
       </div>
     </div>
   );

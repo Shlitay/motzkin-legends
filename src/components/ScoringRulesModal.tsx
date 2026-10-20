@@ -87,54 +87,56 @@ export default function ScoringRulesModal({ onClose }: { onClose: () => void }) 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-6">
-      <CloseButton onClick={onClose} />
-      <div className="w-full max-w-sm rounded-2xl bg-white p-8 text-center shadow-lg">
-        <h2 className="mb-6 text-xl font-semibold">כללי ניקוד</h2>
+      <div className="relative w-full max-w-sm">
+        <CloseButton onClick={onClose} />
+        <div className="rounded-2xl bg-white p-8 text-center shadow-lg">
+          <h2 className="mb-6 text-xl font-semibold">כללי ניקוד</h2>
 
-        {loading ? (
-          <p className="text-sm text-muted">טוען...</p>
-        ) : (
-          <>
-            <p className="mb-4 text-xs text-muted">
-              חל רק על המחזורים הבאים — מחזורים שעברו שומרים על הניקוד המקורי שלהם.
-            </p>
+          {loading ? (
+            <p className="text-sm text-muted">טוען...</p>
+          ) : (
+            <>
+              <p className="mb-4 text-xs text-muted">
+                חל רק על המחזורים הבאים — מחזורים שעברו שומרים על הניקוד המקורי שלהם.
+              </p>
 
-            <div className="mb-8 flex flex-col gap-5">
-              <ScoreGroup title="ניצחון בית/חוץ">
-                <PointsInput label="כיוון" value={winTowards} onChange={(v) => setPoints(setWinTowards, v)} />
-                <PointsInput label="פגיעה" value={winHit} onChange={(v) => setPoints(setWinHit, v)} />
-              </ScoreGroup>
-              <ScoreGroup title="הפרש שערים זהה">
-                <PointsInput
-                  label="בונוס"
-                  value={sameDiffBonus}
-                  onChange={(v) => setPoints(setSameDiffBonus, v)}
-                />
-              </ScoreGroup>
-              <ScoreGroup title="תיקו">
-                <PointsInput label="כיוון" value={drawTowards} onChange={(v) => setPoints(setDrawTowards, v)} />
-                <PointsInput label="פגיעה" value={drawHit} onChange={(v) => setPoints(setDrawHit, v)} />
-              </ScoreGroup>
-            </div>
-          </>
-        )}
+              <div className="mb-8 flex flex-col gap-5">
+                <ScoreGroup title="ניצחון בית/חוץ">
+                  <PointsInput label="כיוון" value={winTowards} onChange={(v) => setPoints(setWinTowards, v)} />
+                  <PointsInput label="פגיעה" value={winHit} onChange={(v) => setPoints(setWinHit, v)} />
+                </ScoreGroup>
+                <ScoreGroup title="הפרש שערים זהה">
+                  <PointsInput
+                    label="בונוס"
+                    value={sameDiffBonus}
+                    onChange={(v) => setPoints(setSameDiffBonus, v)}
+                  />
+                </ScoreGroup>
+                <ScoreGroup title="תיקו">
+                  <PointsInput label="כיוון" value={drawTowards} onChange={(v) => setPoints(setDrawTowards, v)} />
+                  <PointsInput label="פגיעה" value={drawHit} onChange={(v) => setPoints(setDrawHit, v)} />
+                </ScoreGroup>
+              </div>
+            </>
+          )}
 
-        {error && <p className="mb-4 text-xs text-danger">{error}</p>}
+          {error && <p className="mb-4 text-xs text-danger">{error}</p>}
 
-        <div className="flex justify-center gap-4">
-          <button
-            onClick={onClose}
-            className="rounded-full border border-neutral-300 px-6 py-2 font-medium hover:bg-neutral-50"
-          >
-            ביטול
-          </button>
-          <button
-            disabled={loading || !filled || saving}
-            onClick={save}
-            className="rounded-full bg-brand px-6 py-2 font-medium text-white enabled:hover:bg-brand-dark disabled:cursor-not-allowed disabled:bg-neutral-300"
-          >
-            {saving ? "שומר..." : "שמירה"}
-          </button>
+          <div className="flex justify-center gap-4">
+            <button
+              onClick={onClose}
+              className="rounded-full border border-neutral-300 px-6 py-2 font-medium hover:bg-neutral-50"
+            >
+              ביטול
+            </button>
+            <button
+              disabled={loading || !filled || saving}
+              onClick={save}
+              className="rounded-full bg-brand px-6 py-2 font-medium text-white enabled:hover:bg-brand-dark disabled:cursor-not-allowed disabled:bg-neutral-300"
+            >
+              {saving ? "שומר..." : "שמירה"}
+            </button>
+          </div>
         </div>
       </div>
     </div>
