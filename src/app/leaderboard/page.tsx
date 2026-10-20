@@ -254,6 +254,7 @@ export default function LeaderboardPage() {
           winnerJackpotLabel={winnerPayout !== null ? `זכה בקופה: ${winnerPayout} ₪` : undefined}
           currentUserId={currentUserId}
           showRankChange={selectedRound.status === "locked"}
+          maxHeightPx={420}
         />
       )}
       <div className="flex w-full max-w-md flex-col items-center gap-3">
@@ -262,9 +263,9 @@ export default function LeaderboardPage() {
           rows={seasonPoints}
           columnLabels={["פגיעה", "כיוון", "מחזורים", "נק'"]}
           onSelect={setSelectedUserId}
-          scrollable
           hideAvatars
           currentUserId={currentUserId}
+          maxHeightPx={300}
         />
       </div>
 
@@ -314,7 +315,7 @@ function LeaderTable({
   columnLabels,
   onSelect,
   winnerJackpotLabel,
-  scrollable,
+  maxHeightPx,
   hideAvatars,
   currentUserId,
   showRankChange = false,
@@ -330,11 +331,13 @@ function LeaderTable({
   // finished — applied to rows[0], which is already the actual rank-1
   // winner (rows arrives pre-sorted by the DB's own tiebroken rank).
   winnerJackpotLabel?: string;
-  // Season table only — caps the card at 300px and scrolls the rest, since
-  // it only grows over the season instead of resetting each round like the
-  // round-points table. That's ~6 rows now that it has no avatars (each row
-  // is ~48px: one text line + py-3), ~5 back when it did (60px).
-  scrollable?: boolean;
+  // Every table is capped + internally scrollable now, with the header
+  // sticky at the top of that same scroll box (not the page) — avoids
+  // the header ever overlapping unrelated page content, which an
+  // earlier page-relative `sticky top-N` version did. 300px (season,
+  // no-avatar 48px rows, ~6 visible) vs 420px (round-points, 60px rows
+  // with avatars, ~7 visible) — tuned per table's own row height.
+  maxHeightPx: number;
   // Season table only — rows show just rank + name + stats.
   hideAvatars?: boolean;
   // Highlights whichever row's userId matches — lets a participant spot
@@ -349,38 +352,40 @@ function LeaderTable({
 }) {
   return (
     <section className="w-full max-w-md overflow-hidden rounded-[28px] bg-surface shadow-[0_1px_2px_rgba(0,0,0,0.04),0_16px_32px_-18px_rgba(0,0,0,0.28)]">
-      <div className="sticky top-20 z-10 flex items-baseline justify-between gap-3 bg-surface px-5 pb-1 pt-5">
-        {title && <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">{title}</h2>}
-        <span
-          className={`ms-auto flex shrink-0 font-medium uppercase tracking-wide text-muted ${
-            columnLabels.length > 1 ? "gap-2 text-[11px]" : "gap-4 text-xs"
-          }`}
-        >
-          {columnLabels.map((label) => (
-            <span key={label} className={statColumnClass(columnLabels.length)}>
-              {label}
-            </span>
+      <div className="overflow-y-auto" style={{ maxHeight: maxHeightPx }}>
+        <div className="sticky top-0 z-10 flex items-baseline justify-between gap-3 bg-surface px-5 pb-1 pt-5">
+          {title && <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">{title}</h2>}
+          <span
+            className={`ms-auto flex shrink-0 font-medium uppercase tracking-wide text-muted ${
+              columnLabels.length > 1 ? "gap-2 text-[11px]" : "gap-4 text-xs"
+            }`}
+          >
+            {columnLabels.map((label) => (
+              <span key={label} className={statColumnClass(columnLabels.length)}>
+                {label}
+              </span>
+            ))}
+          </span>
+        </div>
+        <div className="divide-y divide-neutral-100">
+          {rows.map((r, i) => (
+            <LeaderRow
+              key={r.userId}
+              rank={i + 1}
+              avatar={r.avatar}
+              hideAvatar={hideAvatars}
+              name={r.name}
+              values={r.values}
+              onClick={() => onSelect(r.userId)}
+              crown={i === 0 && !!winnerJackpotLabel}
+              jackpotLabel={i === 0 ? winnerJackpotLabel : undefined}
+              exactCount={r.exactCount}
+              towardsCount={r.towardsCount}
+              isCurrentUser={r.userId === currentUserId}
+              rankChange={showRankChange && i < 3 ? r.rankChange : undefined}
+            />
           ))}
-        </span>
-      </div>
-      <div className={`divide-y divide-neutral-100 ${scrollable ? "max-h-[300px] overflow-y-auto" : ""}`}>
-        {rows.map((r, i) => (
-          <LeaderRow
-            key={r.userId}
-            rank={i + 1}
-            avatar={r.avatar}
-            hideAvatar={hideAvatars}
-            name={r.name}
-            values={r.values}
-            onClick={() => onSelect(r.userId)}
-            crown={i === 0 && !!winnerJackpotLabel}
-            jackpotLabel={i === 0 ? winnerJackpotLabel : undefined}
-            exactCount={r.exactCount}
-            towardsCount={r.towardsCount}
-            isCurrentUser={r.userId === currentUserId}
-            rankChange={showRankChange && i < 3 ? r.rankChange : undefined}
-          />
-        ))}
+        </div>
       </div>
     </section>
   );
