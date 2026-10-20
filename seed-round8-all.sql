@@ -1,19 +1,20 @@
 -- Single-paste convenience version of round 8's full seed: everything
--- migrations 50-52 do, combined into one script (same pattern as
--- seed-round7-all.sql). Those individual files remain the
+-- migrations 50, 51, 52, and 54 do, combined into one script (same
+-- pattern as seed-round7-all.sql). Those individual files remain the
 -- authoritative, individually-documented migration history (see
--- README). Run this one file OR 50+51+52 in order -- never both,
+-- README). Run this one file OR 50+51+52+54 in order -- never both,
 -- since matches has no unique constraint guarding against duplicate
 -- rows on a second run.
 --
 -- Creates round 8 (status 'open', deadline = Saturday's first kickoff)
--- and all 9 matches across 3 days:
+-- and all 10 matches across 3 days:
 --   Sat 24.10 (7): 5 Israeli Premier League + Chelsea-Tottenham +
 --                  Napoli-Roma -- still Israel Daylight Time (IDT,
 --                  UTC+3), converted with -3h.
---   Sun 25.10 (1): Hapoel Petah Tikva-Beitar Jerusalem -- kicks off
---                  20:15, AFTER Israel's DST ends at 2am that morning,
---                  so converted with -2h (IST, UTC+2) instead.
+--   Sun 25.10 (2): Hapoel Petah Tikva-Beitar Jerusalem (20:15) and
+--                  Barcelona-Real Madrid (22:00) -- both kick off
+--                  AFTER Israel's DST ends at 2am that morning, so
+--                  converted with -2h (IST, UTC+2) instead.
 --   Mon 26.10 (1): Maccabi Haifa-Hapoel Beer Sheva -- also IST, -2h.
 -- Adds 2 new teams (Chelsea, Tottenham), linked to Premier League
 -- only. season_id hardcoded directly, not looked up by name, per the
@@ -46,6 +47,7 @@ from rounds r,
   ('מכבי תל אביב',       'הפועל חיפה',          '2026-10-24T16:30:00Z'::timestamptz),
   -- Sunday 25.10 (IST from 2am on, -2h)
   ('הפועל פתח תקווה',    'בית"ר ירושלים',       '2026-10-25T18:15:00Z'::timestamptz),
+  ('ברצלונה',            'ריאל מדריד',          '2026-10-25T20:00:00Z'::timestamptz),
   -- Monday 26.10 (IST, -2h)
   ('מכבי חיפה',          'הפועל באר שבע',       '2026-10-26T17:00:00Z'::timestamptz)
 ) as fixtures(home_team, away_team, kickoff_at)

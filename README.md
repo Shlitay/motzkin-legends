@@ -167,7 +167,9 @@ project has everything applied), run these in the SQL editor in order:
 
 52. `add-round8-day3-match.sql` — adds round 8's 3rd day (added 2026-10-20, same session): Monday 26.10.2026, 1 match (Maccabi Haifa–Hapoel Beer Sheva, both already existing teams). Fully past the DST boundary now, so also `-2h` (IST) like migration 51. Looks up round 8 by `round_number` — must run after migration 50. **Not yet applied.**
 
-53. `seed-round8-all.sql` — single-paste convenience version combining everything migrations 50–52 do (round 8 + all 9 matches across 3 days + the 2 new teams) into one script, same pattern as `seed-round7-all.sql`. **Run this one file OR 50+51+52 in order — never both.** Migrations 50–52 stay as the authoritative, individually-documented history. **Not yet applied.**
+53. `seed-round8-all.sql` — single-paste convenience version combining everything migrations 50–52 and 54 do (round 8 + all 10 matches across 3 days + the 2 new teams) into one script, same pattern as `seed-round7-all.sql`. Updated in place (never applied yet) when migration 54 was added, rather than leaving it stale. **Run this one file OR 50+51+52+54 in order — never both.** Migrations 50–52 and 54 stay as the authoritative, individually-documented history. **Not yet applied.**
+
+54. `add-round8-day2-extra-match.sql` — adds a 2nd match to round 8's Sunday 25.10.2026 (added 2026-10-20, same session): Barcelona–Real Madrid (El Clásico), La Liga. Both teams already exist, no new crests needed. Kickoff (22:00) treated as already Israel-local, same `-2h` (IST) offset as migration 51's Sunday match — Spain's own DST ends this same day too (EU-wide), so the Israel-vs-Spain +1h relationship holds the same before and after. Same round-number lookup pattern — must run after migration 50; independent of 51/52 otherwise. **Not yet applied.**
 
 The first-cut UI for this (an "everyone's predictions" list on `/predictions`) was removed the same day — see the `/leaderboard` feature just below instead, which is what actually shipped.
 
