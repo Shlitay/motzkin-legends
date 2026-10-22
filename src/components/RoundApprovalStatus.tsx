@@ -69,10 +69,23 @@ export default function RoundApprovalStatus() {
       )}
 
       {status === "waiting" && (
-        <p className="flex items-center justify-center gap-2 text-sm font-medium text-draw">
-          <ClockIcon size={18} />
-          הבקשה נשלחה — ממתינים לאישור התשלום מהמנהל.
-        </p>
+        <>
+          <p className="flex items-center justify-center gap-2 text-sm font-medium text-draw">
+            <ClockIcon size={18} />
+            הבקשה נשלחה — ממתינים לאישור התשלום מהמנהל.
+          </p>
+          <p className="mt-2 text-sm text-muted">
+            עדיין לא שלחתם? שלחו {ENTRY_FEE_ILS}₪ ל
+            <a
+              href={PAYBOX_GROUP_LINK}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-brand underline"
+            >
+              פייבוקס
+            </a>
+          </p>
+        </>
       )}
 
       {status === "rejected" && (
