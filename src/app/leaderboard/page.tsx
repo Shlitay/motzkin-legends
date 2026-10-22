@@ -40,8 +40,11 @@ type RawRoundParticipationRow = {
   correct_result_count: number | null;
   rank: number | null;
   previous_rank: number | null;
+  payment_status: string;
   users: { full_name: string; nickname: string | null; avatar: string | null } | null;
 };
+
+type ApprovedParticipant = { userId: string; name: string; avatar: string };
 
 type SeasonStatsRow = {
   user_id: string;
@@ -66,6 +69,7 @@ export default function LeaderboardPage() {
   const [roundMatches, setRoundMatches] = useState<RoundMatch[]>([]);
   const [now, setNow] = useState(() => new Date());
   const [roundPoints, setRoundPoints] = useState<Row[]>([]);
+  const [approvedParticipants, setApprovedParticipants] = useState<ApprovedParticipant[]>([]);
   const [pastParticipantCount, setPastParticipantCount] = useState<number | null>(null);
   const [seasonPoints, setSeasonPoints] = useState<Row[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
@@ -134,10 +138,24 @@ export default function LeaderboardPage() {
       const { data: rows } = await supabase
         .from("round_participation")
         .select(
-          "user_id, total_points, exact_score_count, correct_result_count, rank, previous_rank, users(full_name, nickname, avatar)"
+          "user_id, total_points, exact_score_count, correct_result_count, rank, previous_rank, payment_status, users(full_name, nickname, avatar)"
         )
         .eq("round_id", selectedRoundId)
         .overrideTypes<RawRoundParticipationRow[], { merge: false }>();
+
+      // Before a round starts there's nothing to rank yet (no matches
+      // played) — showing who's actually approved to play is the useful
+      // thing instead. Same underlying rows as roundPoints below, just
+      // filtered + without any points/rank fields that would all be 0.
+      setApprovedParticipants(
+        (rows ?? [])
+          .filter((r) => r.payment_status === "approved")
+          .map((r) => ({
+            userId: r.user_id,
+            name: r.users?.nickname ?? r.users?.full_name ?? "Unknown",
+            avatar: r.users?.avatar ?? "🙂",
+          }))
+      );
 
       setRoundPoints(
         [...(rows ?? [])]
@@ -239,6 +257,17 @@ export default function LeaderboardPage() {
             <ChevronIcon size={16} />
           </button>
         </div>
+      )}
+
+      {selectedRound && selectedRound.status === "open" && (
+        <LeaderTable
+          title={`משתתפים מאושרים — מחזור ${selectedRound.round_number}`}
+          rows={approvedParticipants.map((p) => ({ ...p, values: [] }))}
+          columnLabels={[]}
+          onSelect={setSelectedUserId}
+          currentUserId={currentUserId}
+          maxHeightPx={420}
+        />
       )}
 
       {selectedRound && selectedRound.status !== "open" && (
