@@ -62,10 +62,13 @@ export default function RoundApprovalStatus() {
       </p>
 
       {status === "approved" && (
-        <p className="flex items-center justify-center gap-2 text-sm font-medium text-brand">
-          <CheckCircleIcon size={18} />
-          אושרתם לשחק במחזור הזה.
-        </p>
+        <>
+          <p className="flex items-center justify-center gap-2 text-sm font-medium text-brand">
+            <CheckCircleIcon size={18} />
+            אושרתם לשחק במחזור הזה.
+          </p>
+          <PayboxReminder />
+        </>
       )}
 
       {status === "waiting" && (
@@ -74,17 +77,7 @@ export default function RoundApprovalStatus() {
             <ClockIcon size={18} />
             הבקשה נשלחה — ממתינים לאישור התשלום מהמנהל.
           </p>
-          <p className="mt-2 text-sm text-muted">
-            עדיין לא שלחתם? שלחו {ENTRY_FEE_ILS}₪ ל
-            <a
-              href={PAYBOX_GROUP_LINK}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-brand underline"
-            >
-              פייבוקס
-            </a>
-          </p>
+          <PayboxReminder />
         </>
       )}
 
@@ -109,5 +102,19 @@ export default function RoundApprovalStatus() {
         </p>
       )}
     </section>
+  );
+}
+
+// Shared between "waiting" and "approved" — approval only means the
+// manager signed off on the request, not that payment was actually
+// confirmed received, so the reminder stays visible either way.
+function PayboxReminder() {
+  return (
+    <p className="mt-2 text-sm text-muted">
+      עדיין לא שלחתם? שלחו {ENTRY_FEE_ILS}₪ ל
+      <a href={PAYBOX_GROUP_LINK} target="_blank" rel="noopener noreferrer" className="text-brand underline">
+        פייבוקס
+      </a>
+    </p>
   );
 }
