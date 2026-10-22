@@ -1,5 +1,6 @@
 "use client";
 
+import { sendGAEvent } from "@next/third-parties/google";
 import { useEffect, useState } from "react";
 import BottomNav from "@/components/BottomNav";
 import { ChevronIcon } from "@/components/icons";
@@ -61,6 +62,14 @@ export default function PredictionsPage() {
   const [standingsOrder, setStandingsOrder] = useState<StandingsEntry[]>([]);
   const [now, setNow] = useState(() => new Date());
   const [viewMode, setViewMode] = useState<"all" | "live" | "ended">("all");
+  // Whether this user already had at least one real prediction saved for
+  // this round the moment it loaded — combined with hasSavedThisVisit
+  // (for a 2nd+ save within the same page load, before a reload could
+  // re-check the DB) to decide whether a save click counts as an update
+  // for the update-predictions-click GA event, not this round's first
+  // submission.
+  const [hadPredictionsAtLoad, setHadPredictionsAtLoad] = useState(false);
+  const [hasSavedThisVisit, setHasSavedThisVisit] = useState(false);
 
   // Drives the not-started -> live transition for whichever match's kickoff
   // just passed while this page is sitting open.
@@ -150,6 +159,8 @@ export default function PredictionsPage() {
 
       setMatches(matchList);
       setEntries(nextEntries);
+      setHadPredictionsAtLoad(predictionRows.length > 0);
+      setHasSavedThisVisit(false);
       setError(null);
       setLoading(false);
     })();
@@ -348,6 +359,15 @@ export default function PredictionsPage() {
       setSaving(false);
       return;
     }
+
+    // Fire only when this is a real *update* — the round's first-ever
+    // submission doesn't count. hadPredictionsAtLoad covers "already had
+    // predictions when the page loaded"; hasSavedThisVisit covers a 2nd+
+    // save within the same visit, before a reload would re-check the DB.
+    if (hadPredictionsAtLoad || hasSavedThisVisit) {
+      sendGAEvent("event", "update-predictions-click");
+    }
+    setHasSavedThisVisit(true);
 
     setSaving(false);
   }
