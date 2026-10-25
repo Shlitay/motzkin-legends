@@ -152,6 +152,24 @@ export function ArrowUpRightIcon({ className, size }: IconProps) {
   );
 }
 
+// Solid filled arrow (no stroke outline of its own) — the white stroke
+// drawn *under* the fill (paintOrder) gives it a thin halo so it stays
+// readable where it overlaps an avatar. Rotate 180deg for "down".
+export function BoldArrowUpIcon({ className, size }: IconProps) {
+  return (
+    <svg width={size ?? 22} height={size ?? 22} viewBox="0 0 24 24" className={className}>
+      <path
+        d="M12 1 22.5 12H16v11H8V12H1.5Z"
+        fill="currentColor"
+        stroke="white"
+        strokeWidth={2.5}
+        strokeLinejoin="round"
+        paintOrder="stroke"
+      />
+    </svg>
+  );
+}
+
 export function BroadcastIcon({ className, size }: IconProps) {
   return (
     <svg {...base} width={size ?? base.width} height={size ?? base.height} className={className}>

@@ -1,5 +1,5 @@
 import RankBadge from "@/components/RankBadge";
-import { ArrowUpRightIcon, CrownIcon, TargetIcon } from "@/components/icons";
+import { ArrowUpRightIcon, BoldArrowUpIcon, CrownIcon, TargetIcon } from "@/components/icons";
 
 type LeaderRowProps = {
   rank: number;
@@ -95,16 +95,12 @@ export default function LeaderRow({
             />
           )}
           {rankChange && (
-            <span
-              className={`absolute -bottom-1 -end-1 flex h-[14px] w-[14px] items-center justify-center rounded-full ${
-                rankChange === "up" ? "bg-brand" : "bg-danger"
+            <BoldArrowUpIcon
+              size={20}
+              className={`absolute -bottom-2 -end-2 ${
+                rankChange === "up" ? "text-brand" : "rotate-180 text-danger"
               }`}
-            >
-              <ArrowUpRightIcon
-                size={8}
-                className={`text-white ${rankChange === "up" ? "-rotate-45" : "rotate-[135deg]"}`}
-              />
-            </span>
+            />
           )}
         </span>
       )}
