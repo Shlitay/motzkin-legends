@@ -18,7 +18,9 @@ export default function BottomNav() {
 
   return (
     <>
-      <nav className="fixed bottom-0 left-0 right-0 border-t border-neutral-200 bg-surface">
+      {/* z-40 like TopBar: above all page content (e.g. the leaderboard's
+          sticky z-10 card headers), below the z-50 modal overlays. */}
+      <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-neutral-200 bg-surface">
         <ul className="mx-auto flex max-w-md justify-around py-2 text-xs">
           {links.map(({ href, label, Icon }) => {
             const active = pathname === href;

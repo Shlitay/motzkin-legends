@@ -62,9 +62,8 @@ export default function TopBar({
   );
 
   return (
-    // Fixed + z-40 keeps this above all normal page content (nothing else
-    // in the app goes above z-0 except the fixed BottomNav at the very
-    // bottom of the screen, which never overlaps this). Deliberately kept
+    // Fixed + z-40 keeps this above all normal page content (the fixed
+    // BottomNav shares z-40 but never overlaps this). Deliberately kept
     // *below* z-50, which every modal overlay (ProfileModal, ScoringRules,
     // NewsStrip, ParticipantModal) uses — a header above the modal layer
     // would poke through a modal's dimmed backdrop instead of being
