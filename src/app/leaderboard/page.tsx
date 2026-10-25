@@ -294,7 +294,7 @@ export default function LeaderboardPage() {
           onSelect={setSelectedUserId}
           hideAvatars
           currentUserId={currentUserId}
-          maxHeightPx={300}
+          maxHeightPx={520}
         />
       </div>
 
@@ -363,8 +363,8 @@ function LeaderTable({
   // Every table is capped + internally scrollable now, with the header
   // sticky at the top of that same scroll box (not the page) — avoids
   // the header ever overlapping unrelated page content, which an
-  // earlier page-relative `sticky top-N` version did. 300px (season,
-  // no-avatar 48px rows, ~6 visible) vs 420px (round-points, 60px rows
+  // earlier page-relative `sticky top-N` version did. 520px (season,
+  // no-avatar 48px rows + ~40px header, exactly 10 visible) vs 420px (round-points, 60px rows
   // with avatars, ~7 visible) — tuned per table's own row height.
   maxHeightPx: number;
   // Season table only — rows show just rank + name + stats.
