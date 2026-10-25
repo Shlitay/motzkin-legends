@@ -111,8 +111,11 @@ export default function LeaderboardPage() {
       const seasonRows = stats ?? [];
       // Season table columns, in display order: hits, towards, rounds
       // played, total points (last = primary stat, and the sort key).
+      // Users who never played a round (signed up, never approved) are
+      // left out entirely rather than listed with all zeros.
       setSeasonPoints(
         seasonRows
+          .filter((s) => s.rounds_played > 0)
           .map((s) => ({
             userId: s.user_id,
             name: s.display_name,
