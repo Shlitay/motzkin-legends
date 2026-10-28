@@ -13,7 +13,7 @@ import EndedMatchWithParticipants from "@/components/predictions/EndedMatchWithP
 import MatchRow from "@/components/predictions/MatchRow";
 import MatchViewToggle from "@/components/predictions/MatchViewToggle";
 import { createClient } from "@/lib/supabase/client";
-import { formatIsraelDeadline, israelDateKey } from "@/lib/israelTime";
+import { formatIsraelDayLabel, formatIsraelDeadline, israelDateKey } from "@/lib/israelTime";
 import { lockExpiredRounds } from "@/lib/lockExpiredRounds";
 import { matchStatus, type MatchStatus } from "@/lib/matchStatus";
 
@@ -457,8 +457,18 @@ export default function PredictionsPage() {
           // real per-match gate (see its own comment above).
           const readOnly = !predictionsOpen || isDayLocked(m);
           const status = matchStatus(m.kickoff_at, m.is_final, now);
+          // Before the round starts, nothing is live/ended yet, so
+          // displayedMatches is plain kickoff order — a divider before
+          // each day's first match splits it into Sat/Sun/Mon groups.
+          // Once the round starts, the live/upcoming/ended sort takes over
+          // and these go away.
+          const showDayDivider =
+            isOpenRound &&
+            (i === 0 ||
+              israelDateKey(displayedMatches[i - 1].kickoff_at) !== israelDateKey(m.kickoff_at));
           return (
             <div key={m.id}>
+              {showDayDivider && <SectionDivider label={formatIsraelDayLabel(m.kickoff_at)} />}
               {/* firstEndedIndex is an index into sortedMatches — only
                   meaningful (and only ever hit) in the "all" view, since
                   the "live" view's matches are never "ended". */}

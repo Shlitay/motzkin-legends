@@ -68,3 +68,31 @@ export function israelDateKey(iso: string) {
   const get = (type: string) => parts.find((p) => p.type === type)?.value ?? "";
   return `${get("year")}-${get("month")}-${get("day")}`;
 }
+
+const HEBREW_WEEKDAYS: Record<string, string> = {
+  Sun: "ראשון",
+  Mon: "שני",
+  Tue: "שלישי",
+  Wed: "רביעי",
+  Thu: "חמישי",
+  Fri: "שישי",
+  Sat: "שבת",
+};
+
+// "יום שבת · 31.10", Israel-local — the per-day divider label on
+// /predictions while a round is still open for predictions, so a round
+// spanning several days reads as separate Sat/Sun/Mon groups.
+export function formatIsraelDayLabel(iso: string) {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: ISRAEL_TZ,
+    weekday: "short",
+    day: "numeric",
+    month: "numeric",
+  }).formatToParts(new Date(iso));
+
+  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? "";
+  // day/month can come back zero-padded ("01"), same as formatIsraelDeadline.
+  const day = get("day").replace(/^0/, "");
+  const month = get("month").replace(/^0/, "");
+  return `יום ${HEBREW_WEEKDAYS[get("weekday")]} · ${day}.${month}`;
+}
