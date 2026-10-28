@@ -9,6 +9,7 @@ import ProfileModal from "@/components/ProfileModal";
 import RoundApprovalStatus from "@/components/RoundApprovalStatus";
 import RoundCountdown from "@/components/RoundCountdown";
 import TopBar from "@/components/TopBar";
+import RoundIntroPopup from "@/components/RoundIntroPopup";
 import { createClient } from "@/lib/supabase/client";
 import { getCurrentRound } from "@/lib/currentRound";
 
@@ -66,6 +67,7 @@ export default function RulesPage() {
   return (
     <main className="flex min-h-screen flex-col items-center gap-5 px-6 pb-24 pt-20">
       <TopBar />
+      <RoundIntroPopup />
       <NewsTicker />
       <RoundApprovalStatus />
       <RoundCountdown />

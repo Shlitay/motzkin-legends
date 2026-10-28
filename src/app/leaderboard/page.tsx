@@ -10,6 +10,7 @@ import ParticipantModal from "@/components/ParticipantModal";
 import RoundApprovalStatus from "@/components/RoundApprovalStatus";
 import RoundCountdown from "@/components/RoundCountdown";
 import TopBar from "@/components/TopBar";
+import RoundIntroPopup from "@/components/RoundIntroPopup";
 import { createClient } from "@/lib/supabase/client";
 import { lockExpiredRounds } from "@/lib/lockExpiredRounds";
 import { matchStatus, type MatchStatus } from "@/lib/matchStatus";
@@ -235,6 +236,7 @@ export default function LeaderboardPage() {
   return (
     <main className="flex min-h-screen flex-col items-center gap-[22.4px] px-6 pb-24 pt-20">
       <TopBar />
+      <RoundIntroPopup />
       <NewsTicker />
       <RoundApprovalStatus />
       <RoundCountdown />

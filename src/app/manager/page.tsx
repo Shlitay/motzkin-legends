@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import RoundIntroModal from "@/components/RoundIntroModal";
 import MatchResultsModal from "@/components/MatchResultsModal";
 import NewsTicker from "@/components/NewsTicker";
 import ScoringRulesModal from "@/components/ScoringRulesModal";
@@ -33,6 +34,7 @@ export default function ManagerDashboard() {
   const [waiting, setWaiting] = useState<Participant[]>([]);
   const [approved, setApproved] = useState<Participant[]>([]);
   const [showScoringRules, setShowScoringRules] = useState(false);
+  const [showRoundIntro, setShowRoundIntro] = useState(false);
   const [showMatchResults, setShowMatchResults] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [resetting, setResetting] = useState(false);
@@ -240,12 +242,14 @@ export default function ManagerDashboard() {
         </div>
       )}
 
-      <div className="grid w-full max-w-lg grid-cols-2 gap-4">
+      <div className="grid w-full max-w-lg grid-cols-3 gap-4">
         <ManagerActionButton onClick={() => setShowMatchResults(true)}>תוצאות מחזור</ManagerActionButton>
         <ManagerActionButton onClick={() => setShowScoringRules(true)}>כללי ניקוד</ManagerActionButton>
+        <ManagerActionButton onClick={() => setShowRoundIntro(true)}>הודעת מחזור</ManagerActionButton>
       </div>
 
       {showScoringRules && <ScoringRulesModal onClose={() => setShowScoringRules(false)} />}
+      {showRoundIntro && <RoundIntroModal onClose={() => setShowRoundIntro(false)} />}
       {showMatchResults && <MatchResultsModal onClose={() => setShowMatchResults(false)} />}
     </main>
   );

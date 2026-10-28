@@ -9,6 +9,7 @@ import RoundApprovalStatus from "@/components/RoundApprovalStatus";
 import RoundCountdown from "@/components/RoundCountdown";
 import SectionDivider from "@/components/SectionDivider";
 import TopBar from "@/components/TopBar";
+import RoundIntroPopup from "@/components/RoundIntroPopup";
 import EndedMatchWithParticipants from "@/components/predictions/EndedMatchWithParticipants";
 import MatchRow from "@/components/predictions/MatchRow";
 import MatchViewToggle from "@/components/predictions/MatchViewToggle";
@@ -401,6 +402,7 @@ export default function PredictionsPage() {
   return (
     <main className="flex min-h-screen flex-col items-center gap-6 px-6 pb-24 pt-20">
       <TopBar />
+      <RoundIntroPopup />
       <NewsTicker />
       <RoundApprovalStatus />
       <RoundCountdown />
