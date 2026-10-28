@@ -3,26 +3,37 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { getCurrentRound } from "@/lib/currentRound";
+import { ENTRY_FEE_ILS } from "@/components/JackpotBadge";
 
 const SEPARATOR = "   •   ";
 
+type WinnerRow = {
+  users: { full_name: string | null; nickname: string | null } | null;
+};
+
+// Every item is automatic, computed from live data — no manager-editable
+// slots (the old news_strip table + /manager "רצועת חדשות" modal were
+// replaced 2026-10-28; the table itself is left in place, just unread).
 export default function NewsTicker() {
   const [supabase] = useState(() => createClient());
-  const [text, setText] = useState<string | null>(null);
+  const [items, setItems] = useState<string[]>([]);
 
   useEffect(() => {
     (async () => {
-      const [{ data: strip }, round] = await Promise.all([
-        supabase.from("news_strip").select("slot_1, slot_2, slot_3").eq("id", 1).maybeSingle(),
+      const [round, { data: lastFinished }] = await Promise.all([
         getCurrentRound(supabase),
+        supabase
+          .from("rounds")
+          .select("id, round_number")
+          .eq("status", "finished")
+          .order("round_number", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
       ]);
 
-      const items = [strip?.slot_1, strip?.slot_2, strip?.slot_3].filter(
-        (s): s is string => !!s && s.trim() !== ""
-      );
+      const next: string[] = [];
 
-      // Item 4 is fully automatic — not a manager-editable slot — the count
-      // of approved participants for whichever round is currently open.
+      // 1. Approved participants for the current round.
       if (round) {
         const { count } = await supabase
           .from("round_participation")
@@ -31,24 +42,67 @@ export default function NewsTicker() {
           .eq("payment_status", "approved");
 
         if (count !== null) {
-          // Trailing ‏ (RLM) forces the separator right after this
-          // item to resolve against RTL context. Without it, a digit
-          // (round_number, "weak LTR" in bidi terms) sitting right next
-          // to the all-neutral "   •   " separator falls back to the
-          // container's dir="ltr" for that neutral run, squishing the
-          // bullet up against the digit with no visible gap.
-          items.push(`כרגע יש ${count} משתתפים מאושרים למחזור ${round.round_number}‏`);
+          next.push(`כרגע יש ${count} משתתפים מאושרים למחזור ${round.round_number}`);
         }
       }
 
-      // Trailing separator too, so the wrap-around point (where the two
-      // duplicated copies meet) reads exactly like every other item
-      // boundary — otherwise the loop has a visible seam.
-      if (items.length > 0) setText(items.join(SEPARATOR) + SEPARATOR);
+      // 2. Last finished round's winner + payout. Same rules as
+      // /leaderboard's crown badge: rank 1 by the DB's own tiebroken rank,
+      // pot = round_participant_count (security-definer, immune to the
+      // "reset approved participants" action) × entry fee, minus one entry
+      // fee refunded to 2nd place.
+      if (lastFinished) {
+        const [{ data: winner }, { data: participantCount }] = await Promise.all([
+          supabase
+            .from("round_participation")
+            .select("users(full_name, nickname)")
+            .eq("round_id", lastFinished.id)
+            .eq("rank", 1)
+            .limit(1)
+            .maybeSingle()
+            .overrideTypes<WinnerRow, { merge: false }>(),
+          supabase.rpc("round_participant_count", { p_round_id: lastFinished.id }),
+        ]);
+
+        const name = winner?.users?.nickname ?? winner?.users?.full_name;
+        if (name && participantCount) {
+          const payout = participantCount * ENTRY_FEE_ILS - ENTRY_FEE_ILS;
+          next.push(`${name} זכה בקופה של מחזור ${lastFinished.round_number} – ${payout} ₪`);
+        }
+      }
+
+      // 3. Match count for the current round.
+      if (round) {
+        const { count } = await supabase
+          .from("matches")
+          .select("id", { count: "exact", head: true })
+          .eq("round_id", round.id);
+
+        if (count) next.push(`במחזור ${round.round_number} יש ${count} משחקים`);
+      }
+
+      setItems(next);
     })();
   }, [supabase]);
 
-  if (!text) return null;
+  if (items.length === 0) return null;
+
+  // Each item is its own dir="rtl" span, which bidi-isolates it: a
+  // winner's Latin-script nickname or a trailing digit can't reorder or
+  // squish against the neighboring separator (the older single-string
+  // version needed a trailing RLM per digit-ending item for this). The
+  // trailing separator makes the wrap-around point (where the two
+  // duplicated copies meet) read like every other item boundary.
+  const strip = (
+    <span>
+      {items.map((item, i) => (
+        <span key={i}>
+          <span dir="rtl">{item}</span>
+          {SEPARATOR}
+        </span>
+      ))}
+    </span>
+  );
 
   return (
     // dir="ltr" is required, not stylistic: under the page's global RTL, a
@@ -63,8 +117,8 @@ export default function NewsTicker() {
     // correctly regardless of the container's base direction).
     <div className="w-full overflow-hidden border-y border-neutral-200 bg-legend/15 py-1.5" dir="ltr">
       <div className="animate-marquee flex w-max whitespace-nowrap text-sm font-medium text-legend-contrast">
-        <span>{text}</span>
-        <span>{text}</span>
+        {strip}
+        {strip}
       </div>
     </div>
   );

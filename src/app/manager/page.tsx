@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import MatchResultsModal from "@/components/MatchResultsModal";
-import NewsStripModal from "@/components/NewsStripModal";
 import NewsTicker from "@/components/NewsTicker";
 import ScoringRulesModal from "@/components/ScoringRulesModal";
 import TopBar from "@/components/TopBar";
@@ -34,7 +33,6 @@ export default function ManagerDashboard() {
   const [waiting, setWaiting] = useState<Participant[]>([]);
   const [approved, setApproved] = useState<Participant[]>([]);
   const [showScoringRules, setShowScoringRules] = useState(false);
-  const [showNewsStrip, setShowNewsStrip] = useState(false);
   const [showMatchResults, setShowMatchResults] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [resetting, setResetting] = useState(false);
@@ -242,14 +240,12 @@ export default function ManagerDashboard() {
         </div>
       )}
 
-      <div className="grid w-full max-w-lg grid-cols-3 gap-4">
+      <div className="grid w-full max-w-lg grid-cols-2 gap-4">
         <ManagerActionButton onClick={() => setShowMatchResults(true)}>תוצאות מחזור</ManagerActionButton>
         <ManagerActionButton onClick={() => setShowScoringRules(true)}>כללי ניקוד</ManagerActionButton>
-        <ManagerActionButton onClick={() => setShowNewsStrip(true)}>רצועת חדשות</ManagerActionButton>
       </div>
 
       {showScoringRules && <ScoringRulesModal onClose={() => setShowScoringRules(false)} />}
-      {showNewsStrip && <NewsStripModal onClose={() => setShowNewsStrip(false)} />}
       {showMatchResults && <MatchResultsModal onClose={() => setShowMatchResults(false)} />}
     </main>
   );
