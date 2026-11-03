@@ -6,11 +6,19 @@
 -- Creates round 10 (status 'open', deadline = first kickoff) and its
 -- matches. All times IST (UTC+2, -2h):
 --   Sat 7.11 (5): 5 Israeli Premier League
--- Source: user-provided 365scores screenshot, 2026-11-03.
+--   Sun 8.11 (2): Hapoel Beer Sheva-Hapoel Tel Aviv, Atletico Madrid-
+--                 Barcelona
+-- Source: user-provided 365scores screenshots, 2026-11-03.
 --
--- No new teams. predictions_open_at intentionally left unset, per
+-- No new teams. Links Atletico Madrid to La Liga (was Champions League
+-- only). predictions_open_at intentionally left unset, per
 -- migration 34. season_id hardcoded directly, per the seed-round6.sql
 -- lesson.
+
+insert into team_leagues (team_id, league_id)
+select t.id, l.id from teams t join leagues l on l.name = 'La Liga'
+where t.name = 'אתלטיקו מדריד'
+on conflict do nothing;
 
 insert into rounds (season_id, round_number, deadline_at, status)
 values ('eca4b656-e9d8-497c-9a0e-eb20ad165ef1', 10, '2026-11-07T13:00:00Z'::timestamptz, 'open');
@@ -24,6 +32,9 @@ from rounds r,
   ('מכבי חיפה',          'מכבי נתניה',         '2026-11-07T15:30:00Z'::timestamptz),
   ('הפועל ירושלים',      'בני סכנין',          '2026-11-07T16:00:00Z'::timestamptz),
   ('הפועל קריית שמונה',  'הפועל חיפה',         '2026-11-07T16:00:00Z'::timestamptz),
-  ('עירוני טבריה',       'בית"ר ירושלים',      '2026-11-07T17:30:00Z'::timestamptz)
+  ('עירוני טבריה',       'בית"ר ירושלים',      '2026-11-07T17:30:00Z'::timestamptz),
+  -- Sunday 8.11
+  ('הפועל באר שבע',      'הפועל תל אביב',      '2026-11-08T18:30:00Z'::timestamptz),
+  ('אתלטיקו מדריד',      'ברצלונה',            '2026-11-08T20:00:00Z'::timestamptz)
 ) as fixtures(home_team, away_team, kickoff_at)
 where r.round_number = 10;
