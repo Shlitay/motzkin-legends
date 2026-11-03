@@ -6,12 +6,14 @@
 -- Creates round 10 (status 'open', deadline = first kickoff) and its
 -- matches. All times IST (UTC+2, -2h):
 --   Sat 7.11 (6): 5 Israeli Premier League + Valencia-Real Madrid
---   Sun 8.11 (4): Napoli-Lazio, Hapoel Beer Sheva-Hapoel Tel Aviv,
---                 Lens-Marseille, Atletico Madrid-Barcelona
+--   Sun 8.11 (5): Napoli-Lazio, Hapoel Beer Sheva-Hapoel Tel Aviv,
+--                 Hoffenheim-Schalke 04, Lens-Marseille, Atletico
+--                 Madrid-Barcelona
 -- Source: user-provided 365scores screenshots, 2026-11-03.
 --
--- Two new teams: Marseille, with a new Ligue 1 league that Lens is also
--- linked to (was Champions League only), and Valencia. Valencia, Atletico
+-- Four new teams: Hoffenheim and Schalke 04 (Bundesliga), Marseille,
+-- with a new Ligue 1 league that Lens is also linked to (was Champions
+-- League only), and Valencia. Valencia, Atletico
 -- Madrid and Real Madrid are linked to La Liga (re-runnable, harmless if
 -- already linked). predictions_open_at intentionally left unset, per
 -- migration 34. season_id hardcoded directly, per the seed-round6.sql
@@ -22,8 +24,15 @@ on conflict (name) do nothing;
 
 insert into teams (name) values
   ('מארסיי'),  -- Marseille
-  ('ולנסיה')   -- Valencia
+  ('ולנסיה'),  -- Valencia
+  ('הופנהיים'),  -- Hoffenheim
+  ('שאלקה 04')   -- Schalke 04
 on conflict (name) do nothing;
+
+insert into team_leagues (team_id, league_id)
+select t.id, l.id from teams t join leagues l on l.name = 'Bundesliga'
+where t.name in ('הופנהיים', 'שאלקה 04')
+on conflict do nothing;
 
 insert into team_leagues (team_id, league_id)
 select t.id, l.id from teams t join leagues l on l.name = 'Ligue 1'
@@ -52,6 +61,7 @@ from rounds r,
   -- Sunday 8.11
   ('נאפולי',             'לאציו',              '2026-11-08T11:30:00Z'::timestamptz),
   ('הפועל באר שבע',      'הפועל תל אביב',      '2026-11-08T18:30:00Z'::timestamptz),
+  ('הופנהיים',           'שאלקה 04',           '2026-11-08T18:30:00Z'::timestamptz),
   ('לאנס',               'מארסיי',             '2026-11-08T19:45:00Z'::timestamptz),
   ('אתלטיקו מדריד',      'ברצלונה',            '2026-11-08T20:00:00Z'::timestamptz)
 ) as fixtures(home_team, away_team, kickoff_at)
