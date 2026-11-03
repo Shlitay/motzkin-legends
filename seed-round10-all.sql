@@ -1,7 +1,5 @@
--- Single-paste seed for round 10. Fixtures are being added to this file
--- as they come in -- paste it into Supabase only once the round is
--- complete, and only once, since matches has no unique constraint
--- guarding against duplicate rows on a second run.
+-- Single-paste seed for round 10. Run it only once, since matches has no
+-- unique constraint guarding against duplicate rows on a second run.
 --
 -- Creates round 10 (status 'open', deadline = first kickoff) and its
 -- matches. All times IST (UTC+2, -2h):
