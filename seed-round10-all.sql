@@ -5,14 +5,15 @@
 --
 -- Creates round 10 (status 'open', deadline = first kickoff) and its
 -- matches. All times IST (UTC+2, -2h):
---   Sat 7.11 (5): 5 Israeli Premier League
+--   Sat 7.11 (6): 5 Israeli Premier League + Valencia-Real Madrid
 --   Sun 8.11 (4): Napoli-Lazio, Hapoel Beer Sheva-Hapoel Tel Aviv,
 --                 Lens-Marseille, Atletico Madrid-Barcelona
 -- Source: user-provided 365scores screenshots, 2026-11-03.
 --
--- One new team (Marseille) and one new league (Ligue 1), which Lens is
--- also linked to (was Champions League only). Links Atletico Madrid to
--- La Liga (was Champions League only). predictions_open_at intentionally left unset, per
+-- Two new teams: Marseille, with a new Ligue 1 league that Lens is also
+-- linked to (was Champions League only), and Valencia. Valencia, Atletico
+-- Madrid and Real Madrid are linked to La Liga (re-runnable, harmless if
+-- already linked). predictions_open_at intentionally left unset, per
 -- migration 34. season_id hardcoded directly, per the seed-round6.sql
 -- lesson.
 
@@ -20,7 +21,8 @@ insert into leagues (name) values ('Ligue 1')
 on conflict (name) do nothing;
 
 insert into teams (name) values
-  ('מארסיי')  -- Marseille
+  ('מארסיי'),  -- Marseille
+  ('ולנסיה')   -- Valencia
 on conflict (name) do nothing;
 
 insert into team_leagues (team_id, league_id)
@@ -30,7 +32,7 @@ on conflict do nothing;
 
 insert into team_leagues (team_id, league_id)
 select t.id, l.id from teams t join leagues l on l.name = 'La Liga'
-where t.name = 'אתלטיקו מדריד'
+where t.name in ('אתלטיקו מדריד', 'ולנסיה', 'ריאל מדריד')
 on conflict do nothing;
 
 insert into rounds (season_id, round_number, deadline_at, status)
@@ -46,6 +48,7 @@ from rounds r,
   ('הפועל ירושלים',      'בני סכנין',          '2026-11-07T16:00:00Z'::timestamptz),
   ('הפועל קריית שמונה',  'הפועל חיפה',         '2026-11-07T16:00:00Z'::timestamptz),
   ('עירוני טבריה',       'בית"ר ירושלים',      '2026-11-07T17:30:00Z'::timestamptz),
+  ('ולנסיה',             'ריאל מדריד',         '2026-11-07T20:00:00Z'::timestamptz),
   -- Sunday 8.11
   ('נאפולי',             'לאציו',              '2026-11-08T11:30:00Z'::timestamptz),
   ('הפועל באר שבע',      'הפועל תל אביב',      '2026-11-08T18:30:00Z'::timestamptz),
