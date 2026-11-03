@@ -6,8 +6,8 @@
 -- Creates round 10 (status 'open', deadline = first kickoff) and its
 -- matches. All times IST (UTC+2, -2h):
 --   Sat 7.11 (5): 5 Israeli Premier League
---   Sun 8.11 (2): Hapoel Beer Sheva-Hapoel Tel Aviv, Atletico Madrid-
---                 Barcelona
+--   Sun 8.11 (3): Napoli-Lazio, Hapoel Beer Sheva-Hapoel Tel Aviv,
+--                 Atletico Madrid-Barcelona
 -- Source: user-provided 365scores screenshots, 2026-11-03.
 --
 -- No new teams. Links Atletico Madrid to La Liga (was Champions League
@@ -34,6 +34,7 @@ from rounds r,
   ('הפועל קריית שמונה',  'הפועל חיפה',         '2026-11-07T16:00:00Z'::timestamptz),
   ('עירוני טבריה',       'בית"ר ירושלים',      '2026-11-07T17:30:00Z'::timestamptz),
   -- Sunday 8.11
+  ('נאפולי',             'לאציו',              '2026-11-08T11:30:00Z'::timestamptz),
   ('הפועל באר שבע',      'הפועל תל אביב',      '2026-11-08T18:30:00Z'::timestamptz),
   ('אתלטיקו מדריד',      'ברצלונה',            '2026-11-08T20:00:00Z'::timestamptz)
 ) as fixtures(home_team, away_team, kickoff_at)
