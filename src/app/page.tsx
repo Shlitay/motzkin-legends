@@ -47,6 +47,10 @@ export default function LoginPage() {
         <Link href="/manager/login" className="text-xs text-muted underline">
           מנהל/ת המשחק? התחברו כאן
         </Link>
+
+        <Link href="/privacy" className="text-xs text-muted underline">
+          מדיניות פרטיות
+        </Link>
       </div>
     </main>
   );
