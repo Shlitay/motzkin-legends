@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import RoundIntroModal from "@/components/RoundIntroModal";
 import MatchResultsModal from "@/components/MatchResultsModal";
 import NewsTicker from "@/components/NewsTicker";
+import ScoreFeedModal from "@/components/ScoreFeedModal";
 import ScoringRulesModal from "@/components/ScoringRulesModal";
 import TopBar from "@/components/TopBar";
 import { createClient } from "@/lib/supabase/client";
@@ -36,6 +37,7 @@ export default function ManagerDashboard() {
   const [showScoringRules, setShowScoringRules] = useState(false);
   const [showRoundIntro, setShowRoundIntro] = useState(false);
   const [showMatchResults, setShowMatchResults] = useState(false);
+  const [showScoreFeed, setShowScoreFeed] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [resetting, setResetting] = useState(false);
 
@@ -242,15 +244,17 @@ export default function ManagerDashboard() {
         </div>
       )}
 
-      <div className="grid w-full max-w-lg grid-cols-3 gap-4">
+      <div className="grid w-full max-w-lg grid-cols-2 gap-4 sm:grid-cols-4">
         <ManagerActionButton onClick={() => setShowMatchResults(true)}>תוצאות מחזור</ManagerActionButton>
         <ManagerActionButton onClick={() => setShowScoringRules(true)}>כללי ניקוד</ManagerActionButton>
         <ManagerActionButton onClick={() => setShowRoundIntro(true)}>הודעת מחזור</ManagerActionButton>
+        <ManagerActionButton onClick={() => setShowScoreFeed(true)}>עדכון אוטומטי</ManagerActionButton>
       </div>
 
       {showScoringRules && <ScoringRulesModal onClose={() => setShowScoringRules(false)} />}
       {showRoundIntro && <RoundIntroModal onClose={() => setShowRoundIntro(false)} />}
       {showMatchResults && <MatchResultsModal onClose={() => setShowMatchResults(false)} />}
+      {showScoreFeed && <ScoreFeedModal onClose={() => setShowScoreFeed(false)} />}
     </main>
   );
 }
