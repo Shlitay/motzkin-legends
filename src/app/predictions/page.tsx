@@ -16,7 +16,7 @@ import MatchViewToggle from "@/components/predictions/MatchViewToggle";
 import { createClient } from "@/lib/supabase/client";
 import { formatIsraelDayLabel, formatIsraelDeadline, israelDateKey } from "@/lib/israelTime";
 import { lockExpiredRounds } from "@/lib/lockExpiredRounds";
-import { matchStatus, type MatchStatus } from "@/lib/matchStatus";
+import { liveMinuteLabel, matchStatus, type LiveClock, type MatchStatus } from "@/lib/matchStatus";
 
 type ScoreEntry = { home: string; away: string; pointsEarned: number | null };
 
@@ -29,7 +29,10 @@ type DbMatch = {
   away_score: number | null;
   is_final: boolean;
   is_main_event: boolean;
-};
+} & LiveClock;
+
+const MATCH_COLUMNS =
+  "id, home_team, away_team, kickoff_at, home_score, away_score, is_final, is_main_event, live_status, live_minute, live_extra, live_updated_at";
 
 type DbRound = {
   id: string;
@@ -115,7 +118,7 @@ export default function PredictionsPage() {
     (async () => {
       const { data: matchRows, error: matchesError } = await supabase
         .from("matches")
-        .select("id, home_team, away_team, kickoff_at, home_score, away_score, is_final, is_main_event")
+        .select(MATCH_COLUMNS)
         .eq("round_id", selectedRoundId)
         .order("kickoff_at");
 
@@ -166,6 +169,45 @@ export default function PredictionsPage() {
       setLoading(false);
     })();
   }, [supabase, selectedRoundId]);
+
+  // While a match is live, re-read this round's scores, live minutes and
+  // the user's points every minute, so goals from the score feed (and a
+  // match turning final) show up without a page reload. Only the match
+  // rows and points_earned are refreshed: predictions being typed into
+  // editable matches are left alone.
+  const hasLiveMatch = matches.some((m) => matchStatus(m.kickoff_at, m.is_final, now) === "live");
+  useEffect(() => {
+    if (!selectedRoundId || !hasLiveMatch) return;
+
+    const t = setInterval(async () => {
+      const { data: fresh } = await supabase
+        .from("matches")
+        .select(MATCH_COLUMNS)
+        .eq("round_id", selectedRoundId)
+        .order("kickoff_at");
+      if (!fresh) return;
+      setMatches(fresh);
+
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user || fresh.length === 0) return;
+      const { data: points } = await supabase
+        .from("predictions")
+        .select("match_id, points_earned")
+        .eq("user_id", user.id)
+        .in("match_id", fresh.map((m) => m.id));
+      if (!points) return;
+      setEntries((prev) => {
+        const next = { ...prev };
+        points.forEach((p) => {
+          if (next[p.match_id]) next[p.match_id] = { ...next[p.match_id], pointsEarned: p.points_earned };
+        });
+        return next;
+      });
+    }, 60_000);
+    return () => clearInterval(t);
+  }, [supabase, selectedRoundId, hasLiveMatch]);
 
   // Current round standings order — fetched once per round (not once per
   // match expanded) so every locked match's "who predicted what" list can
@@ -493,6 +535,7 @@ export default function PredictionsPage() {
                   kickoffAt={m.kickoff_at}
                   isMainEvent={m.is_main_event}
                   standingsOrder={standingsOrder}
+                  liveMinute={status === "live" ? liveMinuteLabel(m, now) : null}
                 />
               ) : (
                 m.home_score !== null &&

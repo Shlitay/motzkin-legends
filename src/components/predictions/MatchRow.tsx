@@ -9,7 +9,13 @@ import MatchParticipantsToggle from "./MatchParticipantsToggle";
 
 // Ended matches use EndedMatchCard's own outcome label instead of this
 // badge, so it only ever renders for the other two statuses.
-function MatchStatusBadge({ status }: { status: Exclude<MatchStatus, "ended"> }) {
+function MatchStatusBadge({
+  status,
+  liveMinute = null,
+}: {
+  status: Exclude<MatchStatus, "ended">;
+  liveMinute?: string | null;
+}) {
   const config: Record<
     Exclude<MatchStatus, "ended">,
     { label: string; dot: string; bg: string; text: string; border: string }
@@ -23,6 +29,14 @@ function MatchStatusBadge({ status }: { status: Exclude<MatchStatus, "ended"> })
     <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${c.bg} ${c.text} ${c.border}`}>
       <span className={`h-1.5 w-1.5 rounded-full ${c.dot}`} />
       {c.label}
+      {liveMinute && (
+        <>
+          <span aria-hidden>·</span>
+          <span dir="ltr" className="font-semibold">
+            {liveMinute}
+          </span>
+        </>
+      )}
     </span>
   );
 }
@@ -97,6 +111,7 @@ export default function MatchRow({
   kickoffAt,
   isMainEvent = false,
   standingsOrder = [],
+  liveMinute = null,
 }: {
   matchId: string;
   homeTeam: string;
@@ -116,6 +131,8 @@ export default function MatchRow({
   // to show "who predicted what" in the same order as /leaderboard's
   // round-points table, not fetched again per match.
   standingsOrder?: { userId: string; name: string; avatar: string }[];
+  // Live match minute label from liveMinuteLabel(), e.g. "67'".
+  liveMinute?: string | null;
 }) {
   const homeNum = home === "" ? null : Number(home);
   const awayNum = away === "" ? null : Number(away);
@@ -158,7 +175,7 @@ export default function MatchRow({
         </div>
       ) : (
         <div className="mb-2 flex justify-center">
-          <MatchStatusBadge status={status} />
+          <MatchStatusBadge status={status} liveMinute={liveMinute} />
         </div>
       )}
       <div className="flex items-center gap-2">
