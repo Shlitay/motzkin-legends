@@ -4,7 +4,8 @@
 -- Creates round 11 (status 'open', deadline = first kickoff) and its
 -- matches. All times IST (UTC+2, -2h):
 --   Sat 28.11 (5): Israeli Premier League
---   Sun 29.11 (3): Arsenal-Man City, Dortmund-Leverkusen, Lyon-Monaco
+--   Sun 29.11 (4): Arsenal-Man City, Dortmund-Leverkusen, Lyon-Monaco,
+--                  Como-Juventus
 --   Mon 30.11 (2): Maccabi Netanya-Hapoel Beer Sheva, Espanyol-Getafe
 -- Source: user-provided screenshots, 2026-11-09. Left team is home (LTR).
 --
@@ -46,6 +47,8 @@ insert into team_api_ids (team_name, api_team_id, api_name) values
   ('מונאקו',          91,  'Monaco'),
   ('דורטמונד',        165, 'Borussia Dortmund'),
   ('באייר לברקוזן',   168, 'Bayer Leverkusen'),
+  ('קומו',            895, 'Como'),
+  ('יובנטוס',         496, 'Juventus'),
   ('אספניול',         540, 'Espanyol'),
   ('חטאפה',           546, 'Getafe')
 on conflict (team_name) do nothing;
@@ -67,6 +70,7 @@ from rounds r,
   ('ארסנל',             'מנצ׳סטר סיטי',       '2026-11-29T16:30:00Z'::timestamptz),
   ('דורטמונד',          'באייר לברקוזן',      '2026-11-29T18:30:00Z'::timestamptz),
   ('ליון',              'מונאקו',             '2026-11-29T19:45:00Z'::timestamptz),
+  ('קומו',              'יובנטוס',            '2026-11-29T19:45:00Z'::timestamptz),
   -- Monday 30.11
   ('מכבי נתניה',        'הפועל באר שבע',      '2026-11-30T18:00:00Z'::timestamptz),
   ('אספניול',           'חטאפה',              '2026-11-30T20:00:00Z'::timestamptz)
