@@ -96,6 +96,14 @@ export default function ScoreFeedModal({ onClose }: { onClose: () => void }) {
   const todayUtc = new Date().toISOString().slice(0, 10);
   const requestsToday = state && state.requests_day === todayUtc ? state.requests_today : 0;
 
+  // The feed only clears last_error after its next successful check, which
+  // can be days away between rounds. A cap error stops being true as soon
+  // as the counter resets, so don't keep showing it.
+  const lastError =
+    state?.last_error === "daily request cap reached" && requestsToday < state.daily_cap
+      ? null
+      : (state?.last_error ?? null);
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-6">
       <div className="relative w-full max-w-sm">
@@ -127,9 +135,9 @@ export default function ScoreFeedModal({ onClose }: { onClose: () => void }) {
                   <p className="rounded-lg bg-neutral-50 px-3 py-2 text-xs text-ink">{state.last_update_summary}</p>
                 )}
                 <Row label="בקשות היום" value={`${requestsToday} / ${state.daily_cap}`} />
-                {state.last_error && (
+                {lastError && (
                   <p className="rounded-lg bg-danger/10 px-3 py-2 text-xs text-danger">
-                    <span dir="ltr">{state.last_error}</span> ({formatTime(state.last_error_at)})
+                    <span dir="ltr">{lastError}</span> ({formatTime(state.last_error_at)})
                   </p>
                 )}
               </dl>
