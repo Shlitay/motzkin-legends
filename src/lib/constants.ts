@@ -86,6 +86,10 @@ export const TEAM_LOGOS: Record<string, string> = {
   "שאלקה 04": "/team-logos/schalke-04.png",
   "טוונטה": "/team-logos/twente.png",
   "אייאקס": "/team-logos/ajax.png",
+  // Round 11 additions, 2026-11-09.
+  "ליון": "/team-logos/lyon.png",
+  "מונאקו": "/team-logos/monaco.png",
+  "באייר לברקוזן": "/team-logos/bayer-leverkusen.png",
 };
 
 // Shortened display forms for full team names that wrap to two lines in
@@ -108,6 +112,7 @@ export const TEAM_SHORT_NAMES: Record<string, string> = {
   "מנצ׳סטר סיטי": "מנצ' סיטי",
   "אתלטיקו מדריד": "אתלטיקו",
   "באיירן מינכן": "באיירן",
+  "באייר לברקוזן": "לברקוזן",
   "שחטאר דונייצק": "שחטאר",
   "פריז סן ז׳רמן": "PSG",
   "בוקה ג׳וניורס": "בוקה",

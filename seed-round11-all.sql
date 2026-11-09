@@ -1,0 +1,60 @@
+-- Single-paste seed for round 11. Run it only once, since matches has no
+-- unique constraint guarding against duplicate rows on a second run.
+--
+-- Creates round 11 (status 'open', deadline = first kickoff) and its
+-- matches. All times IST (UTC+2, -2h):
+--   Sat 28.11 (5): Israeli Premier League
+--   Sun 29.11 (3): Arsenal-Man City, Dortmund-Leverkusen, Lyon-Monaco
+-- Source: user-provided screenshots, 2026-11-09. Left team is home (LTR).
+--
+-- Three new teams: Lyon and Monaco (Ligue 1), Bayer Leverkusen (Bundesliga).
+-- team_api_ids rows added for this round's teams the score feed didn't know
+-- yet, so its matches link to API-Football automatically. predictions_open_at
+-- intentionally left unset, per migration 34. season_id hardcoded directly,
+-- per the seed-round6.sql lesson.
+
+insert into teams (name) values
+  ('ליון'),            -- Lyon
+  ('מונאקו'),          -- Monaco
+  ('באייר לברקוזן')    -- Bayer Leverkusen
+on conflict (name) do nothing;
+
+insert into team_leagues (team_id, league_id)
+select t.id, l.id from teams t join leagues l on l.name = 'Ligue 1'
+where t.name in ('ליון', 'מונאקו')
+on conflict do nothing;
+
+insert into team_leagues (team_id, league_id)
+select t.id, l.id from teams t join leagues l on l.name = 'Bundesliga'
+where t.name = 'באייר לברקוזן'
+on conflict do nothing;
+
+insert into team_api_ids (team_name, api_team_id, api_name) values
+  ('מכבי תל אביב',    604, 'Maccabi Tel Aviv'),
+  ('ארסנל',           42,  'Arsenal'),
+  ('מנצ׳סטר סיטי',    50,  'Manchester City'),
+  ('ליון',            80,  'Lyon'),
+  ('מונאקו',          91,  'Monaco'),
+  ('דורטמונד',        165, 'Borussia Dortmund'),
+  ('באייר לברקוזן',   168, 'Bayer Leverkusen')
+on conflict (team_name) do nothing;
+
+insert into rounds (season_id, round_number, deadline_at, status)
+values ('eca4b656-e9d8-497c-9a0e-eb20ad165ef1', 11, '2026-11-28T13:00:00Z'::timestamptz, 'open');
+
+insert into matches (round_id, home_team, away_team, kickoff_at)
+select r.id, fixtures.home_team, fixtures.away_team, fixtures.kickoff_at
+from rounds r,
+(values
+  -- Saturday 28.11
+  ('בני סכנין',         'מכבי חיפה',          '2026-11-28T13:00:00Z'::timestamptz),
+  ('הפועל רמת גן',      'הפועל קריית שמונה',  '2026-11-28T15:30:00Z'::timestamptz),
+  ('הפועל חיפה',        'עירוני טבריה',       '2026-11-28T16:00:00Z'::timestamptz),
+  ('מכבי תל אביב',      'הפועל פתח תקווה',    '2026-11-28T17:00:00Z'::timestamptz),
+  ('בית"ר ירושלים',     'הפועל ירושלים',      '2026-11-28T18:00:00Z'::timestamptz),
+  -- Sunday 29.11
+  ('ארסנל',             'מנצ׳סטר סיטי',       '2026-11-29T16:30:00Z'::timestamptz),
+  ('דורטמונד',          'באייר לברקוזן',      '2026-11-29T18:30:00Z'::timestamptz),
+  ('ליון',              'מונאקו',             '2026-11-29T19:45:00Z'::timestamptz)
+) as fixtures(home_team, away_team, kickoff_at)
+where r.round_number = 11;
