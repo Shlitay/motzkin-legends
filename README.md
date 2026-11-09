@@ -183,7 +183,7 @@ project has everything applied), run these in the SQL editor in order:
 65. `score-feed-interval-5min.sql` — score feed checks every 5 minutes instead of 10 (added 2026-11-07). One request per check, so a full match day is about 80–90 requests, just under the 90-a-day cap. **Applied 2026-11-07.**
 66. `score-feed-live-minute.sql` — stores the live match minute from the score feed (added 2026-11-07). New columns `matches.live_status`, `live_minute`, `live_extra`, `live_updated_at`; `score_feed_apply()` redefined to write them. /predictions shows the minute next to "בשידור חי" and refreshes scores every minute while a match is live. **Applied 2026-11-07** (before the code that reads these columns was deployed).
 67. `score-feed-summary-score-order.sql` — fixes the score order in the score feed's summary text on the manager screen, which read reversed in Hebrew (added 2026-11-07). Text only; saved scores were always correct. **Applied 2026-11-07.**
-68. `score-feed-finish-late-matches.sql` — keeps the daily cap from leaving a match unfinished (added 2026-11-09). Unfinished matches stay eligible for 8 hours after kickoff (at most one check every 30 minutes after the first 4), and checks slow to every 10 minutes after 70 requests in a day.
+68. `score-feed-finish-late-matches.sql` — keeps the daily cap from leaving a match unfinished (added 2026-11-09). Unfinished matches stay eligible for 8 hours after kickoff (at most one check every 30 minutes after the first 4), and checks slow to every 10 minutes after 70 requests in a day. **Applied 2026-11-09.**
 
 The first-cut UI for this (an "everyone's predictions" list on `/predictions`) was removed the same day — see the `/leaderboard` feature just below instead, which is what actually shipped.
 
