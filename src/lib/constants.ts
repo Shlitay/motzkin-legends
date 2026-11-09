@@ -90,6 +90,8 @@ export const TEAM_LOGOS: Record<string, string> = {
   "ליון": "/team-logos/lyon.png",
   "מונאקו": "/team-logos/monaco.png",
   "באייר לברקוזן": "/team-logos/bayer-leverkusen.png",
+  "אספניול": "/team-logos/espanyol.png",
+  "חטאפה": "/team-logos/getafe.png",
 };
 
 // Shortened display forms for full team names that wrap to two lines in

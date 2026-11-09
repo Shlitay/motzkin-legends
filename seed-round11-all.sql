@@ -5,9 +5,11 @@
 -- matches. All times IST (UTC+2, -2h):
 --   Sat 28.11 (5): Israeli Premier League
 --   Sun 29.11 (3): Arsenal-Man City, Dortmund-Leverkusen, Lyon-Monaco
+--   Mon 30.11 (2): Maccabi Netanya-Hapoel Beer Sheva, Espanyol-Getafe
 -- Source: user-provided screenshots, 2026-11-09. Left team is home (LTR).
 --
--- Three new teams: Lyon and Monaco (Ligue 1), Bayer Leverkusen (Bundesliga).
+-- Five new teams: Lyon and Monaco (Ligue 1), Bayer Leverkusen (Bundesliga),
+-- Espanyol and Getafe (La Liga).
 -- team_api_ids rows added for this round's teams the score feed didn't know
 -- yet, so its matches link to API-Football automatically. predictions_open_at
 -- intentionally left unset, per migration 34. season_id hardcoded directly,
@@ -16,7 +18,9 @@
 insert into teams (name) values
   ('ליון'),            -- Lyon
   ('מונאקו'),          -- Monaco
-  ('באייר לברקוזן')    -- Bayer Leverkusen
+  ('באייר לברקוזן'),   -- Bayer Leverkusen
+  ('אספניול'),         -- Espanyol
+  ('חטאפה')            -- Getafe
 on conflict (name) do nothing;
 
 insert into team_leagues (team_id, league_id)
@@ -29,6 +33,11 @@ select t.id, l.id from teams t join leagues l on l.name = 'Bundesliga'
 where t.name = 'באייר לברקוזן'
 on conflict do nothing;
 
+insert into team_leagues (team_id, league_id)
+select t.id, l.id from teams t join leagues l on l.name = 'La Liga'
+where t.name in ('אספניול', 'חטאפה')
+on conflict do nothing;
+
 insert into team_api_ids (team_name, api_team_id, api_name) values
   ('מכבי תל אביב',    604, 'Maccabi Tel Aviv'),
   ('ארסנל',           42,  'Arsenal'),
@@ -36,7 +45,9 @@ insert into team_api_ids (team_name, api_team_id, api_name) values
   ('ליון',            80,  'Lyon'),
   ('מונאקו',          91,  'Monaco'),
   ('דורטמונד',        165, 'Borussia Dortmund'),
-  ('באייר לברקוזן',   168, 'Bayer Leverkusen')
+  ('באייר לברקוזן',   168, 'Bayer Leverkusen'),
+  ('אספניול',         540, 'Espanyol'),
+  ('חטאפה',           546, 'Getafe')
 on conflict (team_name) do nothing;
 
 insert into rounds (season_id, round_number, deadline_at, status)
@@ -55,6 +66,9 @@ from rounds r,
   -- Sunday 29.11
   ('ארסנל',             'מנצ׳סטר סיטי',       '2026-11-29T16:30:00Z'::timestamptz),
   ('דורטמונד',          'באייר לברקוזן',      '2026-11-29T18:30:00Z'::timestamptz),
-  ('ליון',              'מונאקו',             '2026-11-29T19:45:00Z'::timestamptz)
+  ('ליון',              'מונאקו',             '2026-11-29T19:45:00Z'::timestamptz),
+  -- Monday 30.11
+  ('מכבי נתניה',        'הפועל באר שבע',      '2026-11-30T18:00:00Z'::timestamptz),
+  ('אספניול',           'חטאפה',              '2026-11-30T20:00:00Z'::timestamptz)
 ) as fixtures(home_team, away_team, kickoff_at)
 where r.round_number = 11;
