@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Avatar from "@/components/Avatar";
 import BottomNav from "@/components/BottomNav";
+import LoadingScreen from "@/components/LoadingScreen";
 import ParticipantModal from "@/components/ParticipantModal";
 import RoundApprovalStatus from "@/components/RoundApprovalStatus";
 import RoundIntroPopup from "@/components/RoundIntroPopup";
@@ -238,6 +239,8 @@ export default function LeaderboardPage() {
   const [seasonRows, setSeasonRows] = useState<SeasonRow[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  // Until the first round's standings arrive, show the logo loader.
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 30_000);
@@ -262,6 +265,7 @@ export default function LeaderboardPage() {
       setRounds(roundList);
       const openRound = roundList.find((r) => r.status === "open") ?? roundList[roundList.length - 1];
       if (openRound) setSelectedRoundId(openRound.id);
+      else setLoaded(true);
 
       const { data: stats } = await supabase
         .from("season_stats")
@@ -341,6 +345,7 @@ export default function LeaderboardPage() {
       // round's statuses back to 'waiting'.
       const { data: count } = await supabase.rpc("round_participant_count", { p_round_id: selectedRoundId });
       setParticipantCount(count ?? 0);
+      setLoaded(true);
     })();
   }, [supabase, selectedRoundId]);
 
@@ -362,6 +367,9 @@ export default function LeaderboardPage() {
       <TopBar />
       <RoundIntroPopup />
 
+      {!loaded ? (
+        <LoadingScreen />
+      ) : (
       <div className="flex w-full max-w-md flex-col gap-3.5 pt-4">
         <RoundApprovalStatus />
 
@@ -587,6 +595,7 @@ export default function LeaderboardPage() {
           </>
         )}
       </div>
+      )}
 
       {selectedUserId && (
         <ParticipantModal userId={selectedUserId} round={selectedRound} onClose={() => setSelectedUserId(null)} />

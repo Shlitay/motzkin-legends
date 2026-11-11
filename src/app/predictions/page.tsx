@@ -3,6 +3,7 @@
 import { sendGAEvent } from "@next/third-parties/google";
 import { useEffect, useState } from "react";
 import BottomNav from "@/components/BottomNav";
+import LoadingScreen from "@/components/LoadingScreen";
 import { scrollToNextUnpredicted } from "@/components/FloatingCountdown";
 import { ChevronIcon } from "@/components/icons";
 import RoundApprovalStatus, { ApprovalChip } from "@/components/RoundApprovalStatus";
@@ -399,9 +400,9 @@ export default function PredictionsPage() {
 
   if (loading) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center gap-4 px-4 pt-20 text-center">
+      <main className="flex min-h-screen flex-col items-center px-4 pt-[60px]">
         <TopBar />
-        <p className="text-sm text-muted">טוען...</p>
+        <LoadingScreen />
       </main>
     );
   }

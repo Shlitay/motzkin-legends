@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import Avatar from "@/components/Avatar";
+import LoadingScreen from "@/components/LoadingScreen";
 import { ENTRY_FEE_ILS } from "@/components/JackpotBadge";
 import Logo from "@/components/Logo";
 import FeedSection, { useScoreFeed } from "@/components/manager/FeedSection";
@@ -278,9 +279,9 @@ export default function ManagerDashboard() {
 
   if (loading) {
     return (
-      <main className="flex min-h-screen items-center justify-center pt-[60px]">
+      <main className="flex min-h-screen flex-col items-center pt-[60px]">
         {header}
-        <p className="text-sm text-muted">טוען...</p>
+        <LoadingScreen />
       </main>
     );
   }
