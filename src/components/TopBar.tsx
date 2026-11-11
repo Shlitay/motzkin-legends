@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { caveat } from "@/lib/fonts";
-import { OneXTwoIcon } from "@/components/icons";
+import Logo from "@/components/Logo";
 import InviteFriendsButton from "@/components/InviteFriendsButton";
 import JackpotBadge from "@/components/JackpotBadge";
 import { createClient } from "@/lib/supabase/client";
@@ -54,12 +53,7 @@ export default function TopBar({
     };
   }, [usingDefaultAction]);
 
-  const mark = (
-    <>
-      <OneXTwoIcon size={30} />
-      <span className={caveat.className + " text-lg leading-none"}>Motzkin Legends</span>
-    </>
-  );
+  const mark = <Logo />;
 
   return (
     // Fixed + z-40 keeps this above all normal page content (the fixed
@@ -68,23 +62,25 @@ export default function TopBar({
     // NewsStrip, ParticipantModal) uses — a header above the modal layer
     // would poke through a modal's dimmed backdrop instead of being
     // covered by it, breaking that dimming effect.
-    <header className="fixed inset-x-0 top-0 z-40 flex items-center justify-between border-b border-neutral-200 bg-surface px-4 py-3">
+    <header className="fixed inset-x-0 top-0 z-40 flex h-[60px] items-center justify-between bg-pitch-800 px-3.5">
       {href ? (
-        <Link href={href} className="flex flex-col items-center gap-1 text-ink">
+        <Link href={href} aria-label="Prediction Legends – לדף הניחושים">
           {mark}
         </Link>
       ) : (
-        <span className="flex flex-col items-center gap-1 text-ink">{mark}</span>
+        mark
       )}
 
-      <div className="flex items-center gap-2">
+      {/* Donate button from the design is left out until there's a link
+          for it (design/HANDOFF.md, open question 2). */}
+      <div className="flex items-center gap-1.5">
         <JackpotBadge />
         <InviteFriendsButton />
 
         {resolvedAction && isManager && (
           <Link
             href={resolvedAction.href}
-            className="whitespace-nowrap rounded-full border border-neutral-300 bg-surface px-3 py-1.5 text-xs font-medium text-ink shadow-sm hover:bg-neutral-50"
+            className="flex h-10 items-center whitespace-nowrap rounded-full border border-pitch-line bg-pitch-900 px-3 text-xs font-semibold text-chalk hover:bg-pitch-800"
           >
             {resolvedAction.label}
           </Link>

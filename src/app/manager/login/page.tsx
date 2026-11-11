@@ -5,12 +5,12 @@ import Logo from "@/components/Logo";
 export default function ManagerLoginPage() {
   return (
     <main className="flex min-h-screen flex-col items-center text-center">
-      <div className="w-full bg-brand-dark pb-10 pt-14 text-white">
-        <Logo className="text-white" />
+      <div className="w-full bg-pitch-800 pb-10 pt-14">
+        <Logo className="justify-center" />
       </div>
 
       <div className="flex flex-1 flex-col items-center justify-center gap-8 px-6 py-10">
-        <span className="rounded bg-fuchsia-400 px-3 py-1 text-sm font-medium text-white">
+        <span className="border-gold rounded-full px-3 py-1 text-sm font-bold text-pitch-800">
           כניסת מנהל
         </span>
 

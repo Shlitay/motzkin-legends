@@ -1,4 +1,6 @@
-# Motzkin Legends — Prediction League
+# Prediction Legends
+
+_Formerly "Motzkin Legends" — rebranded 2026-11-11, see `design/HANDOFF.md`. The Vercel project and GitHub repo keep their old names._
 
 Private prediction game for a closed friend group. One manager (you) approves
 participants each round after they pay via Paybox; participants predict the
@@ -87,7 +89,7 @@ Every page's `<main>` reserves top padding to clear this fixed header — `pt-28
 **Design system — "Home Pitch" kit** (turf green + trophy gold):
 - Tailwind v4 theme tokens in `src/app/globals.css`
 - Oswald (numeric displays only — scores, ranks, counts) + **Heebo** (body text and headings, Hebrew+Latin) via `next/font/google`; Caveat (handwriting) for the logo signature only. Heebo replaced Work Sans on 2026-08-21 — Work Sans has no Hebrew glyphs at all, so it silently fell back to a mismatched system font once the UI went Hebrew.
-- Logo: "1X2" wordmark (plain text, no border box) + handwritten "Motzkin Legends" — `Logo.tsx` (large, login hero), `TopBar.tsx` (compact, fixed top bar, links back to `/predictions` on every page). Brand name stays in **Latin script** even in the Hebrew UI (decided during the RTL conversion) — the `OneXTwoIcon` SVG in `icons.tsx` has an explicit `direction: ltr` style, since SVG `<text>` inherits the page's `dir` otherwise and clips/misplaces glyphs (hit this for real during the RTL conversion — the "1" disappeared until that fix landed).
+- Logo (pre-2026-11-11 rebrand, replaced by the crowned "2:1" mark in `design/assets/brand/`): "1X2" wordmark (plain text, no border box) + handwritten "Motzkin Legends" — `Logo.tsx` (large, login hero), `TopBar.tsx` (compact, fixed top bar, links back to `/predictions` on every page). Brand name stays in **Latin script** even in the Hebrew UI (decided during the RTL conversion) — the `OneXTwoIcon` SVG in `icons.tsx` has an explicit `direction: ltr` style, since SVG `<text>` inherits the page's `dir` otherwise and clips/misplaces glyphs (hit this for real during the RTL conversion — the "1" disappeared until that fix landed).
 - A living style guide (3 kit alternatives) was built as a Claude Artifact during design — not part of this repo, ask if you want it re-shared
 
 ## Database migrations — run in this order on a fresh Supabase project
@@ -232,6 +234,6 @@ Wording was worked out first in a reviewed glossary (a Claude Artifact, not part
 - Scoring vocabulary: **כיוון** ("towards" — correct result, wrong score) and **פגיעה** ("hit" — exact score). Standard Israeli toto-pool language, matches the existing "1X2" branding.
 - "Jackpot" → **קופה**.
 - Gendered phrasing defaults to **informal plural** for anything addressing the whole group; **masculine singular** only for the one-line manager-specific greeting on `/manager/login` ("ברוך שובך").
-- Brand name **"Motzkin Legends" stays in Latin script** — see the `OneXTwoIcon` note under Design system above for the RTL glyph-clipping bug that caused.
+- Brand name **"Prediction Legends" stays in Latin script** (wordmark is always LTR) — see the `OneXTwoIcon` note under Design system above for the RTL glyph-clipping bug that caused.
 
 **Verification caveat**: only `/` and `/manager/login` were actually visually checked in a browser (screenshotted via Playwright) — every other page requires a real Google-authenticated session, which isn't available in the dev/build environment this was built in. `npx tsc --noEmit` and `next build` both pass, and every English string was swept for with a final grep pass, but `/home`, `/predictions`, `/leaderboard`, `/rules`, `/manager`, and all the modals (Profile, Scoring rules, News strip, Participant popup) still want a real click-through once deployed, especially for RTL layout mirroring (nav icon order, `StatCard`'s `divide-x` stat row, TopBar button side) that wasn't force-verified — it's expected to mirror correctly via the global `dir="rtl"` flip, but wasn't watched happen.

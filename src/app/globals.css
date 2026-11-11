@@ -1,16 +1,29 @@
 @import "tailwindcss";
 
-/* Home Pitch kit — turf green + trophy gold. See the Motzkin Legends style guide. */
+/* Prediction Legends palette — see design/HANDOFF.md §1 "Tokens". */
 @theme {
+  --color-pitch-900: #0b2a17;
+  --color-pitch-800: #123f24;
+  --color-pitch-600: #1b6b3c;
+  --color-pitch-line: #2a5a3c;
+  --color-green-50: #e6f2ea;
+  --color-gold-500: #c9a227;
+  --color-gold-ink: #2a2005;
+  --color-cream: #fff6df;
+  --color-chalk: #f7f5ec;
+  --color-ink: #17231c;
+  --color-muted: #55645a;
+  --color-miss: #d9dad3;
+  --color-line: #e3e3dc;
+
+  /* Older names, mapped onto the new palette until each screen is redone. */
   --color-brand: #1b6b3c;
   --color-brand-dark: #123f24;
   --color-accent: #c9a227;
   --color-legend: #c9a227;
   --color-legend-contrast: #2a2005;
-  --color-bg: #f7f8f2;
+  --color-bg: #f7f5ec;
   --color-surface: #ffffff;
-  --color-ink: #17231c;
-  --color-muted: #55645a;
   --color-danger: #b3261e;
   --color-draw: #c98a34;
 
@@ -18,10 +31,42 @@
   --font-sans: var(--font-heebo), system-ui, sans-serif;
 }
 
+:root {
+  /* Gold is never flat — always this metallic gradient. */
+  --gold: linear-gradient(135deg, #b8901f 0%, #e8c65a 28%, #fff1b8 48%, #e2bd48 68%, #b8901f 100%);
+  --gold-light: linear-gradient(135deg, #f6e3a4 0%, #fff8dc 45%, #f1da92 100%);
+}
+
 body {
-  background: var(--color-bg);
+  background: var(--color-chalk);
   color: var(--color-ink);
   font-family: var(--font-sans);
+}
+
+/* Gold fill (pills, buttons, strips). */
+.bg-gold {
+  background: var(--gold);
+}
+
+.bg-gold-light {
+  background: var(--gold-light);
+}
+
+/* Gold gradient text. */
+.text-gold {
+  background: var(--gold);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Gold border that keeps rounded corners. Set the inner fill with
+   --gold-fill (defaults to white). */
+.border-gold {
+  border: 2px solid transparent;
+  background:
+    linear-gradient(var(--gold-fill, #fff), var(--gold-fill, #fff)) padding-box,
+    var(--gold) border-box;
 }
 
 /* Browsers default <button> to a plain arrow cursor, unlike <a> — every

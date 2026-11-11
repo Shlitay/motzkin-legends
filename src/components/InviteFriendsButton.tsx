@@ -44,7 +44,7 @@ export default function InviteFriendsButton() {
 
     if (navigator.share) {
       try {
-        await navigator.share({ url: link, title: "Motzkin Legends" });
+        await navigator.share({ url: link, title: "Prediction Legends" });
       } catch {
         // User closed the share sheet without picking anything — not an error.
       }
@@ -61,10 +61,10 @@ export default function InviteFriendsButton() {
   return (
     <button
       onClick={share}
-      aria-label="הזמינו חברים"
-      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-neutral-300 bg-surface text-ink shadow-sm hover:bg-neutral-50"
+      aria-label={copied ? "הקישור הועתק" : "שיתוף המשחק עם חבר"}
+      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-pitch-line bg-pitch-900 text-chalk hover:bg-pitch-800"
     >
-      {copied ? <CheckCircleIcon size={16} className="text-brand" /> : <ShareIcon size={16} />}
+      {copied ? <CheckCircleIcon size={18} /> : <ShareIcon size={18} />}
     </button>
   );
 }

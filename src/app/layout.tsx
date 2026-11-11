@@ -4,8 +4,16 @@ import { heebo, oswald } from "@/lib/fonts";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Motzkin Legends",
-  description: "משחק ניחושים פרטי לחברים",
+  title: "Prediction Legends",
+  description: "ליגת הניחושים של החבר׳ה",
+  applicationName: "Prediction Legends",
+  openGraph: {
+    title: "Prediction Legends",
+    description: "נחשו. תפגעו בול. תהיו אגדה. 11 משחקים בכל מחזור, קופה אחת לזוכה.",
+    siteName: "Prediction Legends",
+    locale: "he_IL",
+    type: "website",
+  },
 };
 
 export default function RootLayout({

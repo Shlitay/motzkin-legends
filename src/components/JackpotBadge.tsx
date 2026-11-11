@@ -41,8 +41,9 @@ export default function JackpotBadge() {
   if (amount === null) return null;
 
   return (
-    <span className="shine-badge whitespace-nowrap rounded-full border border-[#8a6a1a]/40 px-4 py-2 text-sm font-extrabold text-white shadow [text-shadow:0_1px_2px_rgba(0,0,0,0.35)] [background:linear-gradient(135deg,#f6e6ab_0%,#d9b74a_35%,#c9a227_65%,#a8811f_100%)]">
-      קופה: {amount} ₪
+    <span className="shine-badge bg-gold whitespace-nowrap rounded-full px-2.5 py-[5px] text-xs font-bold text-gold-ink">
+      {/* Trailing RLM keeps the ₪ next to the number in the RTL layout. */}
+      קופה ₪{amount}‏
     </span>
   );
 }
