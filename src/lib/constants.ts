@@ -103,6 +103,16 @@ export const TEAM_LOGOS: Record<string, string> = {
   "דנמרק": "/team-logos/nt-denmark.png",
   "רומניה": "/team-logos/nt-romania.png",
   "פולין": "/team-logos/nt-poland.png",
+  "בלארוס": "/team-logos/nt-belarus.png",
+  "אלבניה": "/team-logos/nt-albania.png",
+  "ספרד": "/team-logos/nt-spain.png",
+  "אנגליה": "/team-logos/nt-england.png",
+  "קרואטיה": "/team-logos/nt-croatia.png",
+  "צ׳כיה": "/team-logos/nt-czechia.png",
+  "צרפת": "/team-logos/nt-france.png",
+  "טורקיה": "/team-logos/nt-turkey.png",
+  "בלגיה": "/team-logos/nt-belgium.png",
+  "איטליה": "/team-logos/nt-italy.png",
 };
 
 // Shortened display forms for full team names that wrap to two lines in

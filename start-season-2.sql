@@ -7,19 +7,22 @@
 --    getCurrentSeasonId() in src/lib/currentRound.ts use the same rule.
 -- 2) The already-seeded round 11 (28–30.11) moves to season 2 as round 2.
 --    Its matches and any predictions already sent stay attached.
--- 3) Round 1 of season 2: Saturday 14.11, five national-team matches.
+-- 3) Round 1 of season 2: ten national-team matches, Saturday 14.11 (5)
+--    and Sunday 15.11 (5, added later the same day).
 --    Source: user-provided screenshots, 2026-11-11. The team with the "1"
 --    odds (right side in the RTL screenshot) is home. Times IST (UTC+2,
 --    winter time) -> UTC -2h. Deadline = first kickoff. predictions_open_at
 --    left unset (open now), per migration 34.
---    The ten national teams get team_api_ids rows by API-Football name
+--    The twenty national teams get team_api_ids rows by API-Football name
 --    (ids unknown), so the score feed can match them.
 -- 4) season_stats only counts the current season. Redefined from its latest
 --    definition (fix-season-stats-rounds-played-v2.sql); only the join is
 --    new. security_invoker = false is re-applied (from
 --    add-round-participant-count-function.sql).
 --
--- Safe to re-run.
+-- Safe to re-run: every match is inserted only if that exact fixture isn't
+-- in round 1 yet, so re-running after the Sunday matches were added only
+-- adds those.
 
 begin;
 
@@ -51,13 +54,17 @@ on conflict (name) do nothing;
 
 insert into teams (name) values
   ('קוסובו'), ('ישראל'), ('גאורגיה'), ('הונגריה'), ('צפון אירלנד'),
-  ('אוקראינה'), ('פורטוגל'), ('דנמרק'), ('רומניה'), ('פולין')
+  ('אוקראינה'), ('פורטוגל'), ('דנמרק'), ('רומניה'), ('פולין'),
+  ('בלארוס'), ('אלבניה'), ('ספרד'), ('אנגליה'), ('קרואטיה'),
+  ('צ׳כיה'), ('צרפת'), ('טורקיה'), ('בלגיה'), ('איטליה')
 on conflict (name) do nothing;
 
 insert into team_leagues (team_id, league_id)
 select t.id, l.id from teams t join leagues l on l.name = 'National Teams'
 where t.name in ('קוסובו', 'ישראל', 'גאורגיה', 'הונגריה', 'צפון אירלנד',
-                 'אוקראינה', 'פורטוגל', 'דנמרק', 'רומניה', 'פולין')
+                 'אוקראינה', 'פורטוגל', 'דנמרק', 'רומניה', 'פולין',
+                 'בלארוס', 'אלבניה', 'ספרד', 'אנגליה', 'קרואטיה',
+                 'צ׳כיה', 'צרפת', 'טורקיה', 'בלגיה', 'איטליה')
 on conflict do nothing;
 
 insert into team_api_ids (team_name, api_team_id, api_name) values
@@ -70,7 +77,17 @@ insert into team_api_ids (team_name, api_team_id, api_name) values
   ('פורטוגל',      null, 'Portugal'),
   ('דנמרק',        null, 'Denmark'),
   ('רומניה',       null, 'Romania'),
-  ('פולין',        null, 'Poland')
+  ('פולין',        null, 'Poland'),
+  ('בלארוס',       null, 'Belarus'),
+  ('אלבניה',       null, 'Albania'),
+  ('ספרד',         null, 'Spain'),
+  ('אנגליה',       null, 'England'),
+  ('קרואטיה',      null, 'Croatia'),
+  ('צ׳כיה',        null, 'Czech Republic'),
+  ('צרפת',         null, 'France'),
+  ('טורקיה',       null, 'Turkey'),
+  ('בלגיה',        null, 'Belgium'),
+  ('איטליה',       null, 'Italy')
 on conflict (team_name) do nothing;
 
 insert into rounds (season_id, round_number, deadline_at, status)
@@ -88,10 +105,19 @@ cross join (values
   ('גאורגיה',     'הונגריה',  '2026-11-14T17:00:00Z'::timestamptz),
   ('צפון אירלנד', 'אוקראינה', '2026-11-14T19:45:00Z'::timestamptz),
   ('פורטוגל',     'דנמרק',    '2026-11-14T19:45:00Z'::timestamptz),
-  ('רומניה',      'פולין',    '2026-11-14T19:45:00Z'::timestamptz)
+  ('רומניה',      'פולין',    '2026-11-14T19:45:00Z'::timestamptz),
+  -- Sunday 15.11
+  ('בלארוס',      'אלבניה',   '2026-11-15T17:00:00Z'::timestamptz),
+  ('ספרד',        'אנגליה',   '2026-11-15T19:45:00Z'::timestamptz),
+  ('קרואטיה',     'צ׳כיה',    '2026-11-15T19:45:00Z'::timestamptz),
+  ('צרפת',        'טורקיה',   '2026-11-15T19:45:00Z'::timestamptz),
+  ('בלגיה',       'איטליה',   '2026-11-15T19:45:00Z'::timestamptz)
 ) as f(home_team, away_team, kickoff_at)
 where r.round_number = 1
-  and not exists (select 1 from matches m where m.round_id = r.id);
+  and not exists (
+    select 1 from matches m
+    where m.round_id = r.id and m.home_team = f.home_team and m.away_team = f.away_team
+  );
 
 -- 4) season_stats: current season only -----------------------------------------
 create or replace view season_stats as
@@ -135,7 +161,7 @@ alter view season_stats set (security_invoker = false);
 
 commit;
 
--- Check (optional): should list round 1 (5 matches) and round 2 (11 matches)
+-- Check (optional): should list round 1 (10 matches) and round 2 (11 matches)
 -- of עונה 2.
 -- select r.round_number, r.status, count(m.id)
 -- from rounds r join seasons s on s.id = r.season_id and s.name = 'עונה 2'
