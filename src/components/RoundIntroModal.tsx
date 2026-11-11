@@ -127,11 +127,6 @@ export default function RoundIntroModal({ onClose }: { onClose: () => void }) {
                   />
                 </label>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <ColorField label="צבע ראשי (טקסט)" value={mainColor} onChange={setMainColor} />
-                  <ColorField label="צבע משני (רקע)" value={bgColor} onChange={setBgColor} />
-                </div>
-
                 <label className="flex items-center gap-2 text-sm">
                   <input
                     type="checkbox"
@@ -177,32 +172,5 @@ export default function RoundIntroModal({ onClose }: { onClose: () => void }) {
         </div>
       </div>
     </div>
-  );
-}
-
-function ColorField({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-}) {
-  return (
-    <label className="block">
-      <span className="mb-1 block text-xs font-medium text-muted">{label}</span>
-      <div className="flex items-center gap-2 rounded-lg border border-neutral-300 px-2 py-1.5">
-        <input
-          type="color"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className="h-7 w-9 cursor-pointer rounded border-0 bg-transparent p-0"
-        />
-        <span dir="ltr" className="font-mono text-xs text-muted">
-          {value}
-        </span>
-      </div>
-    </label>
   );
 }

@@ -2,208 +2,490 @@
 
 import { useEffect, useState } from "react";
 import BottomNav from "@/components/BottomNav";
-import { CheckCircleIcon, ClockIcon, TargetIcon, WinnerIcon } from "@/components/icons";
 import { ENTRY_FEE_ILS } from "@/components/JackpotBadge";
 import NewsTicker from "@/components/NewsTicker";
 import ProfileModal from "@/components/ProfileModal";
 import RoundApprovalStatus from "@/components/RoundApprovalStatus";
-import TopBar from "@/components/TopBar";
 import RoundIntroPopup from "@/components/RoundIntroPopup";
-import { createClient } from "@/lib/supabase/client";
+import TopBar from "@/components/TopBar";
 import { getCurrentRound } from "@/lib/currentRound";
+import { BIG_POT_THRESHOLD, jackpotSplit } from "@/lib/jackpot";
+import { useScoringRules } from "@/lib/scoring";
+import { createClient } from "@/lib/supabase/client";
+
+const ic = {
+  "aria-hidden": true,
+  width: 18,
+  height: 18,
+  viewBox: "0 0 24 24",
+  fill: "none",
+  stroke: "currentColor",
+  strokeWidth: 2.2,
+  strokeLinecap: "round" as const,
+  strokeLinejoin: "round" as const,
+};
+
+const icons = {
+  book: (
+    <svg {...ic} width={16} height={16}>
+      <path d="M6 3h9l4 4v14H6z" />
+      <path d="M9 12h7M9 16h7M9 8h4" />
+    </svg>
+  ),
+  trophy: (
+    <svg {...ic} width={16} height={16}>
+      <path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z" />
+      <path d="M17 6h3v2a3 3 0 0 1-3 3M7 6H4v2a3 3 0 0 0 3 3" />
+    </svg>
+  ),
+  clock: (
+    <svg {...ic}>
+      <circle cx="12" cy="13" r="8" />
+      <path d="M12 9v4l2.5 1.5M9.5 2.5h5" />
+    </svg>
+  ),
+  target: (
+    <svg {...ic}>
+      <circle cx="12" cy="12" r="8.5" />
+      <circle cx="12" cy="12" r="4.5" />
+      <circle cx="12" cy="12" r="0.8" fill="currentColor" />
+    </svg>
+  ),
+  alarm: (
+    <svg {...ic}>
+      <path d="M12 8v5l3 2" />
+      <circle cx="12" cy="13" r="8" />
+      <path d="M4 4l3 2M20 4l-3 2" />
+    </svg>
+  ),
+  lock: (
+    <svg {...ic} width={13} height={13} strokeWidth={2.6}>
+      <rect x="5" y="11" width="14" height="9" rx="2" />
+      <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+    </svg>
+  ),
+  pencil: (
+    <svg {...ic} width={13} height={13} strokeWidth={2.6}>
+      <path d="M4 20h4L19 9l-4-4L4 16z" />
+    </svg>
+  ),
+  crown: (
+    <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M3 9l4.6 3.6L12 5.5l4.4 7.1L21 9l-1.8 9H4.8z" />
+      <rect x="4.8" y="19.2" width="14.4" height="2" rx="1" />
+    </svg>
+  ),
+  trend: (
+    <svg {...ic} width={16} height={16} strokeWidth={2.6}>
+      <path d="M4 16l6-6 4 4 6-6" />
+      <path d="M14 8h6v6" />
+    </svg>
+  ),
+  x: (
+    <svg {...ic} width={15} height={15} strokeWidth={2.6}>
+      <path d="M6 6l12 12M18 6L6 18" />
+    </svg>
+  ),
+  info: (
+    <svg {...ic} width={16} height={16} className="shrink-0">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 11v5M12 8h.01" />
+    </svg>
+  ),
+};
+
+function Card({ children, gold }: { children: React.ReactNode; gold?: boolean }) {
+  return (
+    <section
+      className={
+        "flex flex-col gap-3 rounded-[20px] p-4 " + (gold ? "border-gold" : "border border-line bg-white")
+      }
+    >
+      {children}
+    </section>
+  );
+}
+
+function CardHead({ icon, children, gold }: { icon: React.ReactNode; children: React.ReactNode; gold?: boolean }) {
+  return (
+    <h2 className="flex items-center gap-2.5 text-[17px] font-extrabold">
+      <span
+        className={
+          "flex h-9 w-9 shrink-0 items-center justify-center rounded-full " +
+          (gold ? "bg-gold text-gold-ink" : "bg-green-50 text-pitch-600")
+        }
+      >
+        {icon}
+      </span>
+      {children}
+    </h2>
+  );
+}
+
+function Pair({ h, a, className = "" }: { h: number | string; a: number | string; className?: string }) {
+  return (
+    <span className={"inline-flex gap-[3px] font-display text-[13px] font-semibold text-ink " + className}>
+      <span>{h}</span>
+      <span>:</span>
+      <span>{a}</span>
+    </span>
+  );
+}
+
+function ScoreRow({
+  bg,
+  iconClass,
+  icon,
+  nameClass,
+  name,
+  ex,
+  points,
+  pointsClass,
+}: {
+  bg: string;
+  iconClass: string;
+  icon: React.ReactNode;
+  nameClass: string;
+  name: string;
+  ex: [number, number, number, number];
+  points: number;
+  pointsClass: string;
+}) {
+  return (
+    <div className={"grid grid-cols-[30px_minmax(0,1fr)_auto] items-center gap-2.5 rounded-[14px] px-3 py-2.5 " + bg}>
+      <span className={"flex h-[30px] w-[30px] items-center justify-center rounded-full " + iconClass}>{icon}</span>
+      <span className="flex flex-col gap-0.5">
+        <span className={"text-sm font-extrabold " + nameClass}>{name}</span>
+        <span className="inline-flex flex-wrap items-center gap-1.5 text-xs font-semibold text-muted">
+          ניחשת <Pair h={ex[0]} a={ex[1]} /> · נגמר <Pair h={ex[2]} a={ex[3]} />
+        </span>
+      </span>
+      <span className={"font-display text-[26px] font-bold leading-none " + pointsClass}>{points}</span>
+    </div>
+  );
+}
 
 export default function RulesPage() {
   const [supabase] = useState(() => createClient());
+  const rules = useScoringRules();
+  const [tab, setTab] = useState<"game" | "win">("game");
+  const [big, setBig] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
-  const [matchCount, setMatchCount] = useState(10);
-  const [winHit, setWinHit] = useState(10);
-  const [winTowards, setWinTowards] = useState(5);
-  const [sameDiffBonus, setSameDiffBonus] = useState(1);
-  const [drawHit, setDrawHit] = useState(10);
-  const [drawTowards, setDrawTowards] = useState(6);
+  const [matchCount, setMatchCount] = useState(11);
+  const [defaultResult, setDefaultResult] = useState<{ h: number; a: number } | null>(null);
 
-  // How many matches a round has has changed before (7 -> 10 as of round
-  // 5) — read the current round's real match count instead of
-  // hardcoding a number that could drift out of date again.
   useEffect(() => {
     (async () => {
       const round = await getCurrentRound(supabase);
-      if (!round) return;
+      if (round) {
+        // Real match count of the current round (it has changed before).
+        const { count } = await supabase
+          .from("matches")
+          .select("id", { count: "exact", head: true })
+          .eq("round_id", round.id);
+        if (count) setMatchCount(count);
 
-      const { count } = await supabase
-        .from("matches")
-        .select("id", { count: "exact", head: true })
-        .eq("round_id", round.id);
+        // The jackpot switch starts on the current pot's bracket.
+        const { count: approved } = await supabase
+          .from("round_participation")
+          .select("id", { count: "exact", head: true })
+          .eq("round_id", round.id)
+          .eq("payment_status", "approved");
+        if (approved !== null) setBig(approved * ENTRY_FEE_ILS > BIG_POT_THRESHOLD);
+      }
 
-      if (count !== null) setMatchCount(count);
-    })();
-  }, [supabase]);
-
-  // Scoring values are manager-configurable (see /manager's "כללי ניקוד"),
-  // so this page reads the live rule instead of hardcoding a number that
-  // could silently drift out of date.
-  useEffect(() => {
-    (async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
       const { data } = await supabase
-        .from("scoring_rules")
-        .select(
-          "win_hit_points, win_towards_points, same_diff_bonus_points, draw_hit_points, draw_towards_points"
-        )
-        .order("effective_from", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (data) {
-        setWinHit(data.win_hit_points);
-        setWinTowards(data.win_towards_points);
-        setSameDiffBonus(data.same_diff_bonus_points);
-        setDrawHit(data.draw_hit_points);
-        setDrawTowards(data.draw_towards_points);
+        .from("users")
+        .select("default_home_score, default_away_score")
+        .eq("id", user.id)
+        .single();
+      if (data && data.default_home_score !== null && data.default_away_score !== null) {
+        setDefaultResult({ h: data.default_home_score, a: data.default_away_score });
       }
     })();
-  }, [supabase]);
+  }, [supabase, showProfile]);
+
+  const fee = ENTRY_FEE_ILS;
+  const smallEx = jackpotSplit(12);
+  const bigEx = jackpotSplit(18);
+
+  const prizes = [
+    {
+      place: 1,
+      title: "מקום ראשון",
+      detail: "כל שאר הקופה",
+      amount: "השאר",
+      bg: "bg-gold-light",
+      medal: "bg-gold text-gold-ink",
+      amountFg: "text-[#6E5200]",
+      dim: false,
+    },
+    {
+      place: 2,
+      title: "מקום שני",
+      detail: big ? "2 סיבובים חינם" : "סיבוב חינם",
+      amount: `₪${big ? 2 * fee : fee}`,
+      bg: "bg-[#F7F7F4]",
+      medal: "bg-[linear-gradient(160deg,#E9ECEF_0%,#FFFFFF_45%,#C9CDD2_100%)] text-[#2E3A44]",
+      amountFg: "text-ink",
+      dim: false,
+    },
+    {
+      place: 3,
+      title: "מקום שלישי",
+      detail: big ? "סיבוב חינם" : "ללא פרס",
+      amount: big ? `₪${fee}` : "—",
+      bg: "bg-[#F7F7F4]",
+      medal: "bg-[linear-gradient(160deg,#E7B48A_0%,#F6DCC4_45%,#B9774A_100%)] text-[#4A2810]",
+      amountFg: big ? "text-ink" : "text-[#8E918A]",
+      dim: !big,
+    },
+  ];
 
   return (
-    <main className="flex min-h-screen flex-col items-center gap-5 px-6 pb-24 pt-20">
+    <main className="flex min-h-screen flex-col items-center px-4 pb-32 pt-[60px]">
       <TopBar />
       <RoundIntroPopup />
-      <NewsTicker />
-      <RoundApprovalStatus />
 
-      <div className="text-center">
-        <h1 className="text-lg font-medium text-ink">חוקי המשחק</h1>
-        <p className="mt-1 text-sm text-muted">כל מה שצריך לדעת לפני שמנחשים</p>
-      </div>
+      <div className="flex w-full max-w-md flex-col gap-3.5 pt-[18px]">
+        <NewsTicker />
+        <RoundApprovalStatus />
 
-      <RuleCard icon={<ClockIcon size={22} />} title="לפני הבעיטה הראשונה">
-        נחשו את התוצאה המדויקת של כל {matchCount} המשחקים במחזור. מותר לשנות ניחוש לכל משחק עד הבעיטה הראשונה של המשחקים באותו היום — ברגע שהמשחק הראשון של היום מתחיל, כל משחקי אותו היום ננעלים, אבל אפשר עדיין לעדכן משחקים בימים הבאים עד שהם מתחילים.
-      </RuleCard>
-
-      <section className="w-full max-w-md overflow-hidden rounded-[28px] bg-surface p-6 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_16px_32px_-18px_rgba(0,0,0,0.28)]">
-        <CardHeader icon={<TargetIcon size={22} />} title="ניקוד" />
-        <div className="mt-4 flex flex-col gap-2.5">
-          {winHit === drawHit ? (
-            <ScoreRow dotClass="bg-brand" bgClass="bg-brand/10" textClass="text-brand" label="פגיעה — ניצחון או תיקו מדויק" points={winHit} />
-          ) : (
-            // Only shown separately if a manager ever sets these two
-            // differently — merged into one row above whenever they match
-            // (the common case, both default to 10), so this never
-            // silently hides a real difference from participants.
-            <>
-              <ScoreRow dotClass="bg-brand" bgClass="bg-brand/10" textClass="text-brand" label="פגיעה — ניצחון מדויק" points={winHit} />
-              <ScoreRow dotClass="bg-brand" bgClass="bg-brand/10" textClass="text-brand" label="פגיעה — תיקו מדויק" points={drawHit} />
-            </>
-          )}
-          <ScoreRow
-            dotClass="bg-draw"
-            bgClass="bg-draw/10"
-            textClass="text-draw"
-            label="כיוון — הפרש שערים זהה"
-            points={winTowards + sameDiffBonus}
-          />
-          <ScoreRow dotClass="bg-draw" bgClass="bg-draw/10" textClass="text-draw" label="כיוון — הפרש שערים שונה" points={winTowards} />
-          <ScoreRow dotClass="bg-draw" bgClass="bg-draw/10" textClass="text-draw" label="כיוון — תיקו לא מדויק" points={drawTowards} />
-          <ScoreRow dotClass="bg-neutral-400" bgClass="bg-neutral-100" textClass="text-neutral-500" label="כיוון לא נכון" points={0} />
+        <div className="flex flex-col gap-1">
+          <h1 className="text-[28px] font-black leading-tight">החוקים</h1>
+          <p className="text-sm text-muted">
+            {tab === "game" ? "כל מה שצריך לדעת לפני שמנחשים" : "מי זוכה ואיך הקופה מתחלקת"}
+          </p>
         </div>
-      </section>
 
-      <section className="w-full max-w-md overflow-hidden rounded-[28px] bg-surface p-6 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_16px_32px_-18px_rgba(0,0,0,0.28)]">
-        <CardHeader icon={<WinnerIcon size={22} />} title="מי זוכה בקופה" />
-        <p className="mt-3 text-sm text-ink">
-          מי שצובר הכי הרבה נקודות במחזור זוכה. שוויון נשבר לפי הסדר הבא:
-        </p>
-        <ol className="mt-4 flex flex-col gap-3">
-          <TiebreakStep n={1}>הכי הרבה נקודות</TiebreakStep>
-          <TiebreakStep n={2}>אם עדיין שוויון — הכי הרבה פגיעות מדויקות</TiebreakStep>
-          <TiebreakStep n={3}>
-            אם עדיין שוויון — מי שצבר יותר נקודות במשחק שסומן כ״⭐ המשחק המרכזי״ של המחזור
-          </TiebreakStep>
-        </ol>
-        <p className="mt-4 rounded-2xl bg-brand/10 px-4 py-3 text-sm font-medium text-ink">
-          המקום השני מקבל בחזרה את דמי ההשתתפות שלו ({ENTRY_FEE_ILS} ₪).
-        </p>
-      </section>
+        <div role="tablist" aria-label="סוג החוקים" className="flex gap-1 rounded-full bg-[#ECECE6] p-1">
+          {(
+            [
+              ["game", "חוקי המשחק", icons.book],
+              ["win", "חלוקת הקופה", icons.trophy],
+            ] as const
+          ).map(([value, label, icon]) => (
+            <button
+              key={value}
+              type="button"
+              role="tab"
+              aria-selected={tab === value}
+              onClick={() => setTab(value)}
+              className={
+                "flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-full text-sm font-extrabold " +
+                (tab === value ? "bg-pitch-800 text-chalk" : "text-muted")
+              }
+            >
+              {icon}
+              {label}
+            </button>
+          ))}
+        </div>
 
-      <RuleCard icon={<CheckCircleIcon size={22} />} title="פספסתם את המועד?">
-        <>
-          הניחוש שהגדרתם כ
-          <button onClick={() => setShowProfile(true)} className="mx-1 text-brand underline">
-            ברירת מחדל בפרופיל
-          </button>
-          יוזן אוטומטית לכל משחק שלא ניחשתם עד תחילתו.
-        </>
-      </RuleCard>
+        {tab === "game" && (
+          <>
+            <Card>
+              <CardHead icon={icons.clock}>עד שריקת הפתיחה</CardHead>
+              <p className="text-sm leading-relaxed text-[#2E3A32]">
+                מנחשים תוצאה מדויקת לכל <b>{matchCount} המשחקים</b> במחזור. אפשר לשנות ניחוש עד שהמשחק הראשון של אותו
+                יום מתחיל.
+              </p>
+              <div className="flex gap-2">
+                <div className="flex flex-1 flex-col gap-1 rounded-xl bg-[#F4F4F0] p-2.5">
+                  <span className="inline-flex items-center gap-[5px] text-xs font-extrabold text-[#3F4440]">
+                    {icons.lock}
+                    שבת 20:30
+                  </span>
+                  <span className="text-xs leading-snug text-muted">כל משחקי שבת ננעלים</span>
+                </div>
+                <div className="flex flex-1 flex-col gap-1 rounded-xl bg-green-50 p-2.5">
+                  <span className="inline-flex items-center gap-[5px] text-xs font-extrabold text-[#14512D]">
+                    {icons.pencil}
+                    ראשון ושני
+                  </span>
+                  <span className="text-xs leading-snug text-[#14512D]">עדיין פתוחים לעריכה</span>
+                </div>
+              </div>
+            </Card>
 
-      <p className="max-w-md text-center text-xs text-muted">
-        ערכי הניקוד נקבעים ע&quot;י המנהל ועשויים להשתנות בין מחזורים.
-      </p>
+            <Card>
+              <CardHead icon={icons.target}>ניקוד</CardHead>
+              <ScoreRow
+                bg="bg-gold-light"
+                iconClass="bg-gold text-gold-ink"
+                icon={icons.crown}
+                nameClass="text-[#5C4400]"
+                name="בול: תוצאה מדויקת"
+                ex={[2, 1, 2, 1]}
+                points={rules.winHit}
+                pointsClass="text-[#6E5200]"
+              />
+              <ScoreRow
+                bg="bg-green-50"
+                iconClass="bg-pitch-600 text-white"
+                icon={icons.trend}
+                nameClass="text-[#14512D]"
+                name="כיוון + הפרש שערים זהה"
+                ex={[2, 0, 3, 1]}
+                points={rules.winTowards + rules.sameDiffBonus}
+                pointsClass="text-[#14512D]"
+              />
+              <ScoreRow
+                bg="bg-green-50"
+                iconClass="bg-pitch-600 text-white"
+                icon={icons.trend}
+                nameClass="text-[#14512D]"
+                name="כיוון תיקו (לא מדויק)"
+                ex={[1, 1, 0, 0]}
+                points={rules.drawTowards}
+                pointsClass="text-[#14512D]"
+              />
+              <ScoreRow
+                bg="bg-[#EEF6F0]"
+                iconClass="border-2 border-pitch-600 bg-white text-pitch-600"
+                icon={icons.trend}
+                nameClass="text-[#14512D]"
+                name="כיוון בלבד"
+                ex={[1, 0, 3, 1]}
+                points={rules.winTowards}
+                pointsClass="text-[#14512D]"
+              />
+              <ScoreRow
+                bg="bg-[#F4F4F0]"
+                iconClass="bg-miss text-[#3F4440]"
+                icon={icons.x}
+                nameClass="text-[#3F4440]"
+                name="פספוס"
+                ex={[2, 1, 1, 1]}
+                points={0}
+                pointsClass="text-[#6B6F68]"
+              />
+              {rules.drawHit !== rules.winHit && (
+                <p className="text-xs text-muted">בול על תיקו שווה {rules.drawHit} נקודות.</p>
+              )}
+              <p className="text-xs text-muted">ערכי הניקוד נקבעים ע״י המנהל ועשויים להשתנות בין מחזורים.</p>
+            </Card>
+
+            <Card>
+              <CardHead icon={icons.alarm}>פספסתם את המועד?</CardHead>
+              <p className="text-sm leading-relaxed text-[#2E3A32]">
+                תוצאת ברירת המחדל שלכם נכנסת אוטומטית לכל משחק שלא ניחשתם עד הפתיחה.
+              </p>
+              <div className="flex items-center justify-between rounded-[14px] bg-[#F4F4F0] px-3 py-2">
+                <span className="inline-flex items-center gap-2 text-[13px] font-bold">
+                  ברירת המחדל שלך
+                  {defaultResult ? (
+                    <Pair h={defaultResult.h} a={defaultResult.a} className="rounded-md bg-white px-2 py-px text-base" />
+                  ) : (
+                    <span className="text-muted">לא נקבעה</span>
+                  )}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setShowProfile(true)}
+                  className="inline-flex min-h-9 items-center text-[13px] font-extrabold text-pitch-600 underline-offset-2 hover:underline"
+                >
+                  שינוי בפרופיל
+                </button>
+              </div>
+            </Card>
+          </>
+        )}
+
+        {tab === "win" && (
+          <Card gold>
+            <CardHead icon={icons.crown} gold>
+              מי זוכה בקופה
+            </CardHead>
+            <p className="text-sm leading-relaxed text-[#2E3A32]">
+              מי שצובר הכי הרבה נקודות במחזור לוקח את הקופה. בשוויון, לפי הסדר:
+            </p>
+            <ol className="flex flex-col gap-2.5">
+              {[
+                "הכי הרבה נקודות",
+                "הכי הרבה בולים",
+                <span key="3">
+                  יותר נקודות ב
+                  <span className="bg-gold-light mx-[3px] inline-flex items-center rounded-full px-2 py-px text-xs font-extrabold text-[#5C4400]">
+                    המשחק המרכזי
+                  </span>
+                  של המחזור
+                </span>,
+              ].map((text, i) => (
+                <li key={i} className="flex items-start gap-2.5 text-sm leading-normal">
+                  <span className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full bg-pitch-800 font-display text-[13px] font-semibold text-chalk">
+                    {i + 1}
+                  </span>
+                  {text}
+                </li>
+              ))}
+            </ol>
+
+            <div className="flex flex-col gap-3 border-t border-[#ECECE6] pt-3.5">
+              <h3 className="text-[15px] font-black">חלוקת הקופה</h3>
+              <div role="radiogroup" aria-label="גודל הקופה" className="flex gap-1 rounded-full bg-[#ECECE6] p-1">
+                {[false, true].map((isBig) => (
+                  <button
+                    key={String(isBig)}
+                    type="button"
+                    role="radio"
+                    aria-checked={big === isBig}
+                    onClick={() => setBig(isBig)}
+                    className={
+                      "min-h-10 flex-1 rounded-full text-[13px] font-extrabold " +
+                      (big === isBig ? "bg-pitch-800 text-chalk" : "text-muted")
+                    }
+                  >
+                    {isBig ? `קופה מעל ₪${BIG_POT_THRESHOLD}` : `קופה עד ₪${BIG_POT_THRESHOLD}`}
+                  </button>
+                ))}
+              </div>
+              <div className="flex flex-col gap-2">
+                {prizes.map((p) => (
+                  <div
+                    key={p.place}
+                    className={"flex items-center gap-3 rounded-[14px] px-3 py-2.5 " + p.bg + (p.dim ? " opacity-55" : "")}
+                  >
+                    <span
+                      className={
+                        "flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-full font-display text-[17px] font-bold " +
+                        p.medal
+                      }
+                    >
+                      {p.place}
+                    </span>
+                    <span className="flex flex-1 flex-col gap-px">
+                      <span className="text-sm font-extrabold">{p.title}</span>
+                      <span className="text-xs text-muted">{p.detail}</span>
+                    </span>
+                    <span className={"font-display text-xl font-bold " + p.amountFg}>{p.amount}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="flex items-center gap-2 rounded-xl bg-[#F4F4F0] px-3 py-[9px] text-xs leading-normal text-[#3F4B43]">
+                {icons.info}
+                <span>
+                  {big
+                    ? `לדוגמה: קופה של ₪${bigEx.pot} (18 משתתפים): ₪${bigEx.first} לראשון, ₪${bigEx.second} לשני, ₪${bigEx.third} לשלישי`
+                    : `לדוגמה: קופה של ₪${smallEx.pot} (12 משתתפים): ₪${smallEx.first} לראשון, ₪${smallEx.second} לשני`}
+                </span>
+              </div>
+              <span className="text-xs text-muted">
+                ״סיבוב חינם״ = החזר של דמי השתתפות אחד, ‎{fee} ש״ח. קופה של בדיוק ₪{BIG_POT_THRESHOLD} נחשבת ״עד ₪
+                {BIG_POT_THRESHOLD}״.
+              </span>
+            </div>
+          </Card>
+        )}
+      </div>
 
       {showProfile && <ProfileModal onClose={() => setShowProfile(false)} />}
 
       <BottomNav />
     </main>
-  );
-}
-
-function CardHeader({ icon, title }: { icon: React.ReactNode; title: string }) {
-  return (
-    <div className="flex items-center gap-2.5">
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand/10 text-brand">
-        {icon}
-      </span>
-      <h2 className="text-base font-bold text-ink">{title}</h2>
-    </div>
-  );
-}
-
-function RuleCard({
-  icon,
-  title,
-  children,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="w-full max-w-md overflow-hidden rounded-[28px] bg-surface p-6 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_16px_32px_-18px_rgba(0,0,0,0.28)]">
-      <CardHeader icon={icon} title={title} />
-      <p className="mt-3 text-sm leading-relaxed text-ink">{children}</p>
-    </section>
-  );
-}
-
-function ScoreRow({
-  dotClass,
-  bgClass,
-  textClass,
-  label,
-  points,
-}: {
-  dotClass: string;
-  bgClass: string;
-  textClass: string;
-  label: string;
-  points: number;
-}) {
-  return (
-    <div className={`flex items-center justify-between rounded-2xl px-4 py-3 ${bgClass}`}>
-      <span className="flex items-center gap-2 text-sm font-medium text-ink">
-        <span className={`h-2 w-2 shrink-0 rounded-full ${dotClass}`} />
-        {label}
-      </span>
-      <span className={`font-display text-lg font-bold tabular-nums ${textClass}`}>{points}</span>
-    </div>
-  );
-}
-
-function TiebreakStep({ n, children }: { n: number; children: React.ReactNode }) {
-  return (
-    <li className="flex items-start gap-3">
-      <span className="font-display flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand text-xs font-bold text-white">
-        {n}
-      </span>
-      <span className="text-sm leading-relaxed text-ink">{children}</span>
-    </li>
   );
 }
