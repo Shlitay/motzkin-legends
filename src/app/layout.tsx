@@ -1,19 +1,30 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Analytics from "@/components/Analytics";
+import { InstallCatcher } from "@/components/InstallPrompt";
 import { heebo, oswald } from "@/lib/fonts";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  // Absolute base for the share image (opengraph-image.jpg) — WhatsApp and
+  // friends need a full URL.
+  metadataBase: new URL("https://motzkin-legends.vercel.app"),
   title: "Prediction Legends",
   description: "ליגת הניחושים של החבר׳ה",
   applicationName: "Prediction Legends",
   openGraph: {
-    title: "Prediction Legends",
+    title: "Prediction Legends — ליגת הניחושים של החבר׳ה",
     description: "נחשו. תפגעו בול. תהיו אגדה. 11 משחקים בכל מחזור, קופה אחת לזוכה.",
     siteName: "Prediction Legends",
     locale: "he_IL",
     type: "website",
   },
+  twitter: { card: "summary_large_image" },
+  // Home-screen app on iPhone (icon: apple-icon.png).
+  appleWebApp: { capable: true, title: "Legends", statusBarStyle: "black" },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#123F24",
 };
 
 export default function RootLayout({
@@ -33,7 +44,10 @@ export default function RootLayout({
           crossOrigin="anonymous"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <InstallCatcher />
+      </body>
       <Analytics />
     </html>
   );

@@ -7,6 +7,7 @@ import LoadingScreen from "@/components/LoadingScreen";
 import { scrollToNextUnpredicted } from "@/components/FloatingCountdown";
 import { ChevronIcon } from "@/components/icons";
 import RoundApprovalStatus, { ApprovalChip } from "@/components/RoundApprovalStatus";
+import InstallPrompt, { shouldOfferInstall } from "@/components/InstallPrompt";
 import RoundIntroPopup from "@/components/RoundIntroPopup";
 import TopBar from "@/components/TopBar";
 import MatchCard, { type ScorePair } from "@/components/predictions/MatchCard";
@@ -84,6 +85,7 @@ export default function PredictionsPage() {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [justSaved, setJustSaved] = useState(false);
+  const [showInstall, setShowInstall] = useState(false);
 
   const [userId, setUserId] = useState<string | null>(null);
   const [rounds, setRounds] = useState<DbRound[]>([]);
@@ -390,12 +392,16 @@ export default function PredictionsPage() {
       return next;
     });
 
-    if (hadPredictionsAtLoad || hasSavedThisVisit) {
+    const firstSave = !hadPredictionsAtLoad && !hasSavedThisVisit;
+    if (!firstSave) {
       sendGAEvent("event", "update-predictions-click");
     }
     setHasSavedThisVisit(true);
     setSaving(false);
     setJustSaved(true);
+    // First time this round's predictions are sent: offer to save the game
+    // to the home screen (unless installed or "don't show again").
+    if (firstSave && shouldOfferInstall()) setShowInstall(true);
   }
 
   if (loading) {
@@ -426,6 +432,7 @@ export default function PredictionsPage() {
     <main className="flex min-h-screen flex-col items-center px-4 pb-32 pt-[60px]">
       <TopBar />
       <RoundIntroPopup />
+      {showInstall && <InstallPrompt onClose={() => setShowInstall(false)} />}
 
       <div className="flex w-full max-w-md flex-col gap-3 pt-4">
 
