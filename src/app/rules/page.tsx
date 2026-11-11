@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import BottomNav from "@/components/BottomNav";
 import { ENTRY_FEE_ILS } from "@/components/JackpotBadge";
@@ -479,6 +480,10 @@ export default function RulesPage() {
             </div>
           </Card>
         )}
+
+        <Link href="/privacy" className="mx-auto inline-flex min-h-9 items-center text-xs text-muted underline">
+          מדיניות פרטיות
+        </Link>
       </div>
 
       {showProfile && <ProfileModal onClose={() => setShowProfile(false)} />}
