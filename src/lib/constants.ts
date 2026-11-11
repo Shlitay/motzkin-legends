@@ -92,7 +92,7 @@ export const TEAM_LOGOS: Record<string, string> = {
   "באייר לברקוזן": "/team-logos/bayer-leverkusen.png",
   "אספניול": "/team-logos/espanyol.png",
   "חטאפה": "/team-logos/getafe.png",
-  // National teams (season 2, round 1 — 14.11.2026). Flags from flagcdn.com.
+  // National teams (season 2, round 1 — 14–16.11.2026). Crests from football-logos.cc, 256x256.
   "קוסובו": "/team-logos/nt-kosovo.png",
   "ישראל": "/team-logos/nt-israel.png",
   "צפון אירלנד": "/team-logos/nt-northern-ireland.png",
