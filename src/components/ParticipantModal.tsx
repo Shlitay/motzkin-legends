@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import Avatar from "@/components/Avatar";
 import { TEAM_LOGOS, shortTeamName } from "@/lib/constants";
+import { getCurrentSeasonId } from "@/lib/currentRound";
 import { outcomeKind } from "@/lib/scoring";
 
 // Identity + season totals, from season_stats.
@@ -123,7 +124,7 @@ export default function ParticipantModal({
       // nested inside an embed, not the outer query.
       const { data: allParticipation } = await supabase
         .from("round_participation")
-        .select("rank, total_points, exact_score_count, correct_result_count, rounds(round_number)")
+        .select("rank, total_points, exact_score_count, correct_result_count, rounds(round_number, season_id)")
         .eq("user_id", userId)
         .overrideTypes<
           {
@@ -131,12 +132,14 @@ export default function ParticipantModal({
             total_points: number | null;
             exact_score_count: number | null;
             correct_result_count: number | null;
-            rounds: { round_number: number } | null;
+            rounds: { round_number: number; season_id: string | null } | null;
           }[],
           { merge: false }
         >();
 
+      const seasonId = await getCurrentSeasonId(supabase);
       const participation = (allParticipation ?? [])
+        .filter((p) => !seasonId || p.rounds?.season_id === seasonId)
         .filter((p) => {
           if (round == null) return true;
           const roundNumber = p.rounds?.round_number ?? Infinity;

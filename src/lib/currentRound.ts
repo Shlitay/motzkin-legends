@@ -1,5 +1,7 @@
 import { createClient } from "@/lib/supabase/client";
 
+type Supabase = ReturnType<typeof createClient>;
+
 export type CurrentRound = {
   id: string;
   round_number: number;
@@ -7,21 +9,42 @@ export type CurrentRound = {
   status: string;
 };
 
-// The latest round overall — deliberately not filtered to status =
-// 'open'. A round locks at its own deadline_at (kickoff), which is
-// exactly when it's still the one everyone cares about (results coming
-// in, standings updating) — so scoping to 'open' makes every one of
-// these lookups go blank the moment a round actually locks. Found via a
-// real production bug on 2026-08-23 once round 1 genuinely locked.
-export async function getCurrentRound(
-  supabase: ReturnType<typeof createClient>
-): Promise<CurrentRound | null> {
-  const { data } = await supabase
-    .from("rounds")
-    .select("id, round_number, deadline_at, status")
-    .order("round_number", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+// The season being played: the one with the latest start_date (same rule as
+// current_season_id() in start-season-2.sql). Earlier seasons stay in the
+// database but the app only shows the current one. Cached per page load.
+let seasonPromise: Promise<string | null> | null = null;
 
-  return data ?? null;
+export function getCurrentSeasonId(supabase: Supabase): Promise<string | null> {
+  if (!seasonPromise) {
+    seasonPromise = (async () => {
+      const { data } = await supabase
+        .from("seasons")
+        .select("id")
+        .order("start_date", { ascending: false, nullsFirst: false })
+        .limit(1)
+        .maybeSingle();
+      return data?.id ?? null;
+    })().catch(() => {
+      seasonPromise = null;
+      return null;
+    });
+  }
+  return seasonPromise;
+}
+
+// The round everyone cares about right now: the current season's earliest
+// round that isn't finished yet (a later round can already be seeded and
+// open for predictions while an earlier one is still being played). Once
+// every round is finished, the latest one. Deliberately not "status = open"
+// — a round locks at its first kickoff, exactly when it's still the one
+// that matters (production bug, 2026-08-23).
+export async function getCurrentRound(supabase: Supabase): Promise<CurrentRound | null> {
+  const seasonId = await getCurrentSeasonId(supabase);
+
+  let query = supabase.from("rounds").select("id, round_number, deadline_at, status");
+  if (seasonId) query = query.eq("season_id", seasonId);
+  const { data } = await query.order("round_number", { ascending: true });
+
+  const rounds = data ?? [];
+  return rounds.find((r) => r.status !== "finished") ?? rounds[rounds.length - 1] ?? null;
 }

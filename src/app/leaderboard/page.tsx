@@ -9,6 +9,7 @@ import RoundApprovalStatus from "@/components/RoundApprovalStatus";
 import RoundIntroPopup from "@/components/RoundIntroPopup";
 import TopBar from "@/components/TopBar";
 import { jackpotSplit } from "@/lib/jackpot";
+import { getCurrentSeasonId } from "@/lib/currentRound";
 import { lockExpiredRounds } from "@/lib/lockExpiredRounds";
 import { matchStatus, type MatchStatus } from "@/lib/matchStatus";
 import { createClient } from "@/lib/supabase/client";
@@ -257,13 +258,14 @@ export default function LeaderboardPage() {
       } = await supabase.auth.getUser();
       setCurrentUserId(user?.id ?? null);
 
-      const { data } = await supabase
-        .from("rounds")
-        .select("id, round_number, deadline_at, status")
-        .order("round_number", { ascending: true });
+      // Current season only; default to its current (earliest unfinished) round.
+      const seasonId = await getCurrentSeasonId(supabase);
+      let roundsQuery = supabase.from("rounds").select("id, round_number, deadline_at, status");
+      if (seasonId) roundsQuery = roundsQuery.eq("season_id", seasonId);
+      const { data } = await roundsQuery.order("round_number", { ascending: true });
       const roundList = data ?? [];
       setRounds(roundList);
-      const openRound = roundList.find((r) => r.status === "open") ?? roundList[roundList.length - 1];
+      const openRound = roundList.find((r) => r.status !== "finished") ?? roundList[roundList.length - 1];
       if (openRound) setSelectedRoundId(openRound.id);
       else setLoaded(true);
 

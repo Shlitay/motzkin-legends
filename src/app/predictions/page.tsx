@@ -14,6 +14,7 @@ import MatchCard, { type ScorePair } from "@/components/predictions/MatchCard";
 import type { StandingsEntry } from "@/components/predictions/MatchParticipantsList";
 import { createClient } from "@/lib/supabase/client";
 import { formatIsraelDayLabel, formatIsraelDeadline, israelDateKey } from "@/lib/israelTime";
+import { getCurrentSeasonId } from "@/lib/currentRound";
 import { lockExpiredRounds } from "@/lib/lockExpiredRounds";
 import { liveMinuteLabel, matchStatus, type LiveClock } from "@/lib/matchStatus";
 import { useScoringRules } from "@/lib/scoring";
@@ -113,11 +114,12 @@ export default function PredictionsPage() {
     (async () => {
       await lockExpiredRounds(supabase);
 
+      // Current season only (earlier seasons stay in the DB, hidden).
+      const seasonId = await getCurrentSeasonId(supabase);
+      let roundsQuery = supabase.from("rounds").select("id, round_number, deadline_at, status, predictions_open_at");
+      if (seasonId) roundsQuery = roundsQuery.eq("season_id", seasonId);
       const [{ data, error: roundsError }, { data: auth }] = await Promise.all([
-        supabase
-          .from("rounds")
-          .select("id, round_number, deadline_at, status, predictions_open_at")
-          .order("round_number", { ascending: true }),
+        roundsQuery.order("round_number", { ascending: true }),
         supabase.auth.getUser(),
       ]);
       setUserId(auth.user?.id ?? null);
@@ -130,8 +132,10 @@ export default function PredictionsPage() {
 
       const roundList = data ?? [];
       setRounds(roundList);
-      const openRound = roundList.find((r) => r.status === "open") ?? roundList[roundList.length - 1];
-      if (openRound) setSelectedRoundId(openRound.id);
+      // Default to the current round: the earliest one not finished yet
+      // (a later round can already be open while this one is being played).
+      const current = roundList.find((r) => r.status !== "finished") ?? roundList[roundList.length - 1];
+      if (current) setSelectedRoundId(current.id);
       else setLoading(false);
     })();
   }, [supabase]);
