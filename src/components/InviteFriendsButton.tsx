@@ -16,6 +16,10 @@ function inviteUtmParams(fullName: string) {
   return new URLSearchParams({ utm_source: "shareBtn", utm_medium });
 }
 
+// Message sent with the link (owner's wording, 2026-11-11). Most apps put
+// it right above the link; the copy-link fallback includes it too.
+const SHARE_TEXT = "בואו לנסות להיות הזוכים בליגת הניחושים!";
+
 export default function InviteFriendsButton() {
   const [supabase] = useState(() => createClient());
   const [link, setLink] = useState<string | null>(null);
@@ -44,14 +48,14 @@ export default function InviteFriendsButton() {
 
     if (navigator.share) {
       try {
-        await navigator.share({ url: link, title: "Prediction Legends" });
+        await navigator.share({ title: "Prediction Legends", text: SHARE_TEXT, url: link });
       } catch {
         // User closed the share sheet without picking anything — not an error.
       }
       return;
     }
 
-    await navigator.clipboard.writeText(link);
+    await navigator.clipboard.writeText(`${SHARE_TEXT}\n${link}`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }
