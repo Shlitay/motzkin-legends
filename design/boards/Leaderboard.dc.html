@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>Leaderboard – round</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&amp;family=Oswald:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#1B6B3C}a:hover{color:#123F24}
+.osw{font-family:Oswald,'Arial Narrow',sans-serif}
+.goldtext{background:linear-gradient(135deg,#B8901F 0%,#E8C65A 28%,#FFF1B8 48%,#E2BD48 68%,#B8901F 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.seg{display:flex;background:#ECECE6;border-radius:999px;padding:4px;gap:4px}
+.segb{flex:1;min-height:38px;border:0;border-radius:999px;font:inherit;font-size:14px;font-weight:800;background:transparent;color:#55645A}
+.rbtn{width:40px;height:40px;border-radius:50%;border:1px solid #E3E3DC;background:#FFFFFF;display:flex;align-items:center;justify-content:center;padding:0}
+.chip{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:700}
+.dot{width:7px;height:7px;border-radius:50%;display:inline-block}
+.pod{display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;min-width:0}
+.podav{border-radius:50%;display:flex;align-items:center;justify-content:center;background:#FFFFFF;box-sizing:border-box}
+.podname{font-size:13px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.podblock{width:100%;border-radius:14px 14px 0 0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:10px;gap:2px;box-sizing:border-box}
+.podpts{font-family:Oswald,'Arial Narrow',sans-serif;font-size:26px;font-weight:700;line-height:1}
+.podrank{font-family:Oswald,'Arial Narrow',sans-serif;font-size:13px;font-weight:600}
+.row{display:grid;grid-template-columns:26px 36px minmax(0,1fr) auto 46px;align-items:center;gap:10px;min-height:56px;padding:0 12px;border-bottom:1px solid #F0F0EA}
+.rank{font-family:Oswald,'Arial Narrow',sans-serif;font-size:15px;font-weight:600;color:#6B6F68;text-align:center;display:flex;flex-direction:column;align-items:center;line-height:1}
+.av{width:36px;height:36px;border-radius:50%;background:#F1F1EC;display:flex;align-items:center;justify-content:center;font-size:19px}
+.name{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hits{display:inline-flex;gap:8px;font-family:Oswald,'Arial Narrow',sans-serif;font-size:13px;font-weight:600}
+.hit{display:inline-flex;align-items:center;gap:3px}
+.pts{font-family:Oswald,'Arial Narrow',sans-serif;font-size:20px;font-weight:700;text-align:left}
+.nav{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:700;text-decoration:none;min-width:64px;min-height:44px;justify-content:center}
+@keyframes pl-pulse{0%,100%{opacity:1}50%{opacity:.25}}
+.pulse{animation:pl-pulse 1.4s ease-in-out infinite}
+@media (prefers-reduced-motion: reduce){.pulse{animation:none}}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 1500px; box-sizing: border-box; background: #F7F5EC; color: #17231C; font-family: Heebo, system-ui, sans-serif; display: flex; flex-direction: column;">
+
+  <header style="height: 60px; flex-shrink: 0; background: #123F24; display: flex; align-items: center; justify-content: space-between; padding: 0 16px;">
+    <div dir="ltr" style="display: flex; align-items: center; gap: 8px;">
+      <svg role="img" aria-label="Prediction Legends" width="38" height="38" viewBox="0 0 96 96" style="direction: ltr;"><defs><linearGradient id="hdrlea1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#A47A14"></stop><stop offset=".35" stop-color="#F3D36B"></stop><stop offset=".5" stop-color="#FFF3C4"></stop><stop offset=".65" stop-color="#E0BB45"></stop><stop offset="1" stop-color="#A47A14"></stop></linearGradient></defs><rect x="4" y="12" width="88" height="80" rx="20" fill="#0B2A17" stroke="url(#hdrlea1)" stroke-width="3"></rect><rect x="14" y="30" width="28" height="48" rx="6" fill="#F7F3E3"></rect><rect x="54" y="30" width="28" height="48" rx="6" fill="url(#hdrlea1)"></rect><text x="28" y="67" text-anchor="middle" font-family="Oswald, Arial Narrow, sans-serif" font-weight="700" font-size="32" fill="#123F24">2</text><text x="68" y="67" text-anchor="middle" font-family="Oswald, Arial Narrow, sans-serif" font-weight="700" font-size="32" fill="#2A2005">1</text><circle cx="48" cy="46" r="2.8" fill="#F7F3E3"></circle><circle cx="48" cy="62" r="2.8" fill="#F7F3E3"></circle><path d="M33 21 L30.5 7.5 L40 13.5 L48 3.5 L56 13.5 L65.5 7.5 L63 21 Z" fill="url(#hdrlea1)" stroke="#123F24" stroke-width="2.5" stroke-linejoin="round"></path><circle cx="30.5" cy="6" r="2.4" fill="url(#hdrlea1)" stroke="#123F24" stroke-width="1.5"></circle><circle cx="48" cy="3" r="2.4" fill="url(#hdrlea1)" stroke="#123F24" stroke-width="1.5"></circle><circle cx="65.5" cy="6" r="2.4" fill="url(#hdrlea1)" stroke="#123F24" stroke-width="1.5"></circle><path d="M48 10.5 L48.85 12.83 L51.33 12.92 L49.38 14.45 L50.06 16.83 L48 15.45 L45.94 16.83 L46.62 14.45 L44.67 12.92 L47.15 12.83 Z" fill="#123F24"></path></svg>
+      <div style="display: flex; flex-direction: column; line-height: 1;"><span class="osw goldtext" style="font-size: 8px; font-weight: 600; letter-spacing: .38em;">PREDICTION</span><span class="osw" style="font-size: 19px; font-weight: 700; color: #F7F5EC;">LEGENDS</span></div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 6px;"><span style="font-size: 12px; font-weight: 800; background: linear-gradient(135deg, #B8901F 0%, #E8C65A 28%, #FFF1B8 48%, #E2BD48 68%, #B8901F 100%); color: #2A2005; border-radius: 999px; padding: 5px 10px;">קופה ₪[סכום]</span><button type="button" aria-label="שיתוף המשחק עם חבר" style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; border: 1px solid #2A5A3C; background: #0B2A17; padding: 0; flex-shrink: 0;"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F7F5EC" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.6"></circle><circle cx="6" cy="12" r="2.6"></circle><circle cx="18" cy="19" r="2.6"></circle><path d="M8.3 10.8l7.4-4.4M8.3 13.2l7.4 4.4"></path></svg></button><button type="button" aria-label="תרומה למשחק" style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; border: 1px solid #2A5A3C; background: #0B2A17; padding: 0; flex-shrink: 0;"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24"><defs><linearGradient id="dnlead" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#B8901F"></stop><stop offset=".5" stop-color="#FFF1B8"></stop><stop offset="1" stop-color="#C9A227"></stop></linearGradient></defs><path d="M12 20.5s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.6a4.3 4.3 0 0 1 7.5 2.7c0 5.6-7.5 10.2-7.5 10.2z" fill="url(#dnlead)"></path><text x="12" y="16" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="900" fill="#2A2005">$</text></svg></button></div>
+  </header>
+
+  <main style="flex: 1; padding: 16px 16px 16px; display: flex; flex-direction: column; gap: 14px;">
+    <div style="display: flex; align-items: center; justify-content: space-between;">
+      <h1 style="margin: 0; font-size: 26px; font-weight: 900;">טבלת הליגה</h1>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <button class="rbtn" type="button" aria-label="מחזור קודם"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#17231C" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></button>
+        <span style="font-size: 15px; font-weight: 800;">מחזור 12</span>
+        <button class="rbtn" type="button" aria-label="מחזור הבא" disabled style="opacity: .4;"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#17231C" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg></button>
+      </div>
+    </div>
+
+    <div class="seg" role="tablist">
+      <button class="segb" type="button" role="tab" aria-selected="true" style="background: #123F24; color: #F7F5EC;">המחזור</button>
+      <a class="segb" href="Season.dc.html" role="tab" aria-selected="false" style="display: flex; align-items: center; justify-content: center; text-decoration: none;">העונה</a>
+    </div>
+
+    <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+      <span class="chip" style="background: #EFEFEA; color: #3F4440;"><span class="dot" style="background: #8E918A;"></span>4 הסתיימו</span>
+      <span class="chip" style="background: #E6F2EA; color: #14512D;"><span class="dot pulse" style="background: #1B6B3C;"></span>2 בשידור חי</span>
+      <span class="chip" style="background: #FFFFFF; border: 1px solid #E3E3DC; color: #55645A;">5 טרם החלו</span>
+    </div>
+
+    <!-- podium -->
+    <section aria-label="שלושת המובילים" style="background: #123F24; border-radius: 22px; padding: 18px 14px 0; display: flex; flex-direction: column; gap: 12px; overflow: hidden;">
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <span style="font-size: 13px; font-weight: 800; color: #CFE0D4;">מובילים כרגע</span>
+        <span style="display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 700; color: #9CCAAE;"><span class="dot pulse" style="background: #6FCF97;"></span>מתעדכן חי</span>
+      </div>
+      <div style="display: flex; align-items: flex-end; gap: 10px;">
+        <!-- 2nd -->
+        <div class="pod">
+          <div class="podav" style="width: 54px; height: 54px; font-size: 27px; border: 3px solid #C9CDD2;"><img src="../assets/avatars/avatar-04.svg" alt="" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block;"></div>
+          <span class="podname" style="color: #F7F5EC;">דניאל</span>
+          <div class="podblock" style="height: 92px; background: linear-gradient(160deg, #E9ECEF 0%, #FFFFFF 45%, #C9CDD2 100%);">
+            <span class="podrank" style="color: #55606B;">2</span>
+            <span class="podpts" style="color: #2E3A44;">47</span>
+          </div>
+        </div>
+        <!-- 1st -->
+        <div class="pod">
+          <svg aria-hidden="true" width="34" height="26" viewBox="0 0 24 18"><defs><linearGradient id="lbCrown" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#A47A14"></stop><stop offset=".35" stop-color="#F3D36B"></stop><stop offset=".5" stop-color="#FFF3C4"></stop><stop offset=".65" stop-color="#E0BB45"></stop><stop offset="1" stop-color="#A47A14"></stop></linearGradient></defs><g fill="url(#lbCrown)"><path d="M3 6l4.6 3.6L12 2.5l4.4 7.1L21 6l-1.8 9H4.8z"></path><circle cx="3" cy="5" r="1.6"></circle><circle cx="12" cy="1.8" r="1.7"></circle><circle cx="21" cy="5" r="1.6"></circle></g></svg>
+          <div class="podav" style="width: 66px; height: 66px; font-size: 33px; border: 3px solid transparent; background: linear-gradient(#FFFFFF, #FFFFFF) padding-box, linear-gradient(135deg, #B8901F 0%, #E8C65A 28%, #FFF1B8 48%, #E2BD48 68%, #B8901F 100%) border-box;"><img src="../assets/avatars/avatar-01.svg" alt="" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block;"></div>
+          <span class="podname" style="color: #F7F5EC;">נועם</span>
+          <div class="podblock" style="height: 122px; background: linear-gradient(135deg, #B8901F 0%, #E8C65A 28%, #FFF1B8 48%, #E2BD48 68%, #B8901F 100%);">
+            <span class="podrank" style="color: #5C4400;">1</span>
+            <span class="podpts" style="color: #2A2005; font-size: 32px;">54</span>
+          </div>
+        </div>
+        <!-- 3rd (you) -->
+        <div class="pod">
+          <div class="podav" style="width: 54px; height: 54px; font-size: 27px; border: 3px solid #C98A5A;"><img src="../assets/avatars/avatar-06.svg" alt="" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block;"></div>
+          <span class="podname" style="color: #F7F5EC;">עומרי <span style="font-size: 11px; font-weight: 800; background: #F7F5EC; color: #123F24; border-radius: 999px; padding: 1px 6px;">אתה</span></span>
+          <div class="podblock" style="height: 72px; background: linear-gradient(160deg, #E7B48A 0%, #F6DCC4 45%, #B9774A 100%);">
+            <span class="podrank" style="color: #6B3A17;">3</span>
+            <span class="podpts" style="color: #4A2810;">42</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- list 4–15 -->
+    <section style="background: #FFFFFF; border: 1px solid #E3E3DC; border-radius: 20px; overflow: hidden;">
+      <div style="display: grid; grid-template-columns: 26px 36px minmax(0,1fr) auto 46px; gap: 10px; padding: 10px 12px; font-size: 11px; font-weight: 800; color: #55645A; background: #FAFAF7; border-bottom: 1px solid #ECECE6;">
+        <span style="text-align: center;">#</span><span></span><span>משתתף</span><span>בול · כיוון</span><span style="text-align: left;">נק׳</span>
+      </div>
+      <sc-for list="{{rows}}" as="r" hint-placeholder-count="12">
+        <a class="row" href="#" style="text-decoration: none; color: #17231C;">
+          <span class="rank">{{r.rank}}<span style="font-size: 10px; color: {{r.moveColor}};">{{r.move}}</span></span>
+          <span class="av" style="overflow: hidden;"><img src="{{r.avatar}}" alt="" style="width: 100%; height: 100%; object-fit: cover; display: block;"></span>
+          <span class="name">{{r.name}}</span>
+          <span class="hits">
+            <span class="hit" style="color: #6E5200;"><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9l4.6 3.6L12 5.5l4.4 7.1L21 9l-1.8 9H4.8z"></path><rect x="4.8" y="19.2" width="14.4" height="2" rx="1"></rect></svg>{{r.ex}}</span>
+            <span class="hit" style="color: #1B6B3C;"><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16l6-6 4 4 6-6"></path></svg>{{r.dr}}</span>
+          </span>
+          <span class="pts">{{r.pts}}</span>
+        </a>
+      </sc-for>
+    </section>
+    <p style="margin: 0; text-align: center; font-size: 12px; color: #55645A;">לחיצה על משתתף פותחת את הניחושים והסטטיסטיקה שלו</p>
+  </main>
+
+  <nav aria-label="ניווט ראשי" style="height: 68px; flex-shrink: 0; background: #FFFFFF; border-top: 1px solid #E3E3DC; display: flex; align-items: center; justify-content: space-around;">
+    <a class="nav" href="Screen.dc.html" style="color: #6B6F68;"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="7" height="14" rx="2"></rect><rect x="14" y="5" width="7" height="14" rx="2"></rect></svg>ניחושים</a>
+    <a class="nav" href="#" aria-current="page" style="color: #123F24;"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"></path><path d="M17 6h3v2a3 3 0 0 1-3 3M7 6H4v2a3 3 0 0 0 3 3"></path></svg>טבלה</a>
+    <a class="nav" href="Rules.dc.html" style="color: #6B6F68;"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"></path><path d="M9 12h7M9 16h7M9 8h4"></path></svg>חוקים</a>
+    <a class="nav" href="Profile.dc.html" aria-label="הפרופיל שלי" style="color: #6B6F68;"><span aria-hidden="true" style="width: 24px; height: 24px; box-sizing: border-box; border-radius: 50%; border: 2px solid transparent; background: linear-gradient(#F1F1EC, #F1F1EC) padding-box, linear-gradient(135deg, #B8901F 0%, #E8C65A 28%, #FFF1B8 48%, #E2BD48 68%, #B8901F 100%) border-box; display: flex; align-items: center; justify-content: center; font-size: 13px; line-height: 1;"><img src="../assets/avatars/avatar-06.svg" alt="" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block;"></span>פרופיל</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1500}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const data = [
+      ['יונתן', '../assets/avatars/avatar-08.svg', 2, 4, 40, 'up'],
+      ['אורי', '../assets/avatars/avatar-11.svg', 1, 6, 37, ''],
+      ['רועי', '../assets/avatars/avatar-14.svg', 2, 3, 35, 'down'],
+      ['גיא', '../assets/avatars/avatar-18.svg', 1, 4, 31, ''],
+      ['עידו', '../assets/avatars/avatar-21.svg', 1, 4, 30, 'up'],
+      ['תומר', '../assets/avatars/avatar-24.svg', 0, 5, 28, ''],
+      ['אלון', '../assets/avatars/avatar-28.svg', 1, 3, 26, 'down'],
+      ['ניר', '../assets/avatars/avatar-16.svg', 0, 4, 22, ''],
+      ['שגיא', '../assets/avatars/avatar-26.svg', 1, 2, 21, ''],
+      ['אסף', '../assets/avatars/avatar-11.svg', 0, 3, 17, 'down'],
+      ['מתן', '../assets/avatars/avatar-14.svg', 0, 3, 15, ''],
+      ['איתי', '../assets/avatars/avatar-18.svg', 0, 2, 11, '']
+    ];
+    const rows = data.map((d, i) => ({
+      rank: i + 4, name: d[0], avatar: d[1], ex: d[2], dr: d[3], pts: d[4],
+      move: d[5] === 'up' ? '▲' : d[5] === 'down' ? '▼' : '',
+      moveColor: d[5] === 'up' ? '#1B6B3C' : '#B3261E'
+    }));
+    return { rows };
+  }
+}
+</script>
+</body>
+</html>

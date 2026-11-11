@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>New round popup</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&amp;family=Oswald:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#1B6B3C}a:hover{color:#123F24}
+.osw{font-family:Oswald,'Arial Narrow',sans-serif}
+.goldtext{background:linear-gradient(135deg,#B8901F 0%,#E8C65A 28%,#FFF1B8 48%,#E2BD48 68%,#B8901F 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.fact{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:9px 4px;border-radius:12px;background:rgba(255,255,255,.07);border:1px solid #2A5A3C}
+.factn{font-family:Oswald,'Arial Narrow',sans-serif;font-size:20px;font-weight:700;line-height:1;color:#F7F5EC}
+.factl{font-size:11px;font-weight:700;color:#B9D3C1;text-align:center}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 844px; box-sizing: border-box; background: #F7F5EC; color: #17231C; font-family: Heebo, system-ui, sans-serif; position: relative; overflow: hidden;">
+
+  <!-- page behind -->
+  <div aria-hidden="true" style="position: absolute; inset: 0; display: flex; flex-direction: column;">
+    <div style="height: 60px; background: #123F24;"></div>
+    <div style="padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+      <div style="height: 28px; width: 120px; border-radius: 8px; background: #E3E3DC;"></div>
+      <div style="height: 46px; border-radius: 14px; background: #FFFFFF; border: 1px solid #E3E3DC;"></div>
+      <div style="height: 200px; border-radius: 18px; background: #FFFFFF; border: 1px solid #E3E3DC;"></div>
+      <div style="height: 200px; border-radius: 18px; background: #FFFFFF; border: 1px solid #E3E3DC;"></div>
+      <div style="height: 200px; border-radius: 18px; background: #FFFFFF; border: 1px solid #E3E3DC;"></div>
+    </div>
+  </div>
+  <div aria-hidden="true" style="position: absolute; inset: 0; background: rgba(11,42,23,.62);"></div>
+
+  <!-- popup -->
+  <section role="dialog" aria-label="מחזור 12 נפתח" style="position: absolute; top: 74px; left: 18px; right: 18px; border-radius: 26px; overflow: hidden; box-shadow: 0 24px 60px rgba(0,0,0,.45); border: 2px solid transparent; background: linear-gradient(#FFFFFF, #FFFFFF) padding-box, linear-gradient(135deg, #B8901F 0%, #E8C65A 28%, #FFF1B8 48%, #E2BD48 68%, #B8901F 100%) border-box;">
+
+    <!-- top: round banner -->
+    <div style="position: relative; background: #123F24; padding: 22px 18px 26px; display: flex; flex-direction: column; align-items: center; gap: 12px; overflow: hidden;">
+      <svg aria-hidden="true" width="354" height="230" viewBox="0 0 354 230" style="position: absolute; inset: 0;"><g fill="none" stroke="#1B6B3C" stroke-width="1.5"><circle cx="177" cy="230" r="90"></circle><line x1="0" y1="230" x2="354" y2="230"></line></g></svg>
+      <button type="button" aria-label="סגירה" style="position: absolute; top: 12px; left: 12px; width: 40px; height: 40px; border-radius: 50%; border: 1px solid #2A5A3C; background: #0B2A17; display: flex; align-items: center; justify-content: center; padding: 0;"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F7F5EC" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+
+      <svg aria-hidden="true" width="42" height="30" viewBox="0 0 24 17" style="position: relative;"><defs><linearGradient id="riCrown" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#A47A14"></stop><stop offset=".35" stop-color="#F3D36B"></stop><stop offset=".5" stop-color="#FFF3C4"></stop><stop offset=".65" stop-color="#E0BB45"></stop><stop offset="1" stop-color="#A47A14"></stop></linearGradient></defs><g fill="url(#riCrown)"><path d="M3 6l4.6 3.6L12 2.5l4.4 7.1L21 6l-1.8 9H4.8z"></path><circle cx="3" cy="5" r="1.6"></circle><circle cx="12" cy="1.8" r="1.7"></circle><circle cx="21" cy="5" r="1.6"></circle></g></svg>
+      <div style="position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px;">
+        <span style="font-size: 13px; font-weight: 800; letter-spacing: .12em; color: #B9D3C1;">מחזור חדש נפתח</span>
+        <span class="osw goldtext" style="font-size: 54px; font-weight: 700; line-height: 1;">מחזור 12</span>
+      </div>
+    </div>
+
+    <!-- manager message -->
+    <div style="padding: 18px 18px 6px; display: flex; flex-direction: column; gap: 10px;">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="width: 30px; height: 30px; border-radius: 50%; background: #E6F2EA; display: flex; align-items: center; justify-content: center;"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1B6B3C" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v2a1 1 0 0 0 1 1h2l5 4V6L6 10H4a1 1 0 0 0-1 1z"></path><path d="M15 9a4 4 0 0 1 0 6M18 6a8 8 0 0 1 0 12"></path></svg></span>
+        <span style="font-size: 12px; font-weight: 800; color: #55645A;">הודעה מהמנהל</span>
+      </div>
+      <h2 style="margin: 0; font-size: 22px; font-weight: 900; line-height: 1.25;">היי לג׳נד!</h2>
+      <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #2E3A32; white-space: pre-line;">מחזור 12 מתחיל בשבת עם דרבי תל אביבי.
+מי שיפגע בול בדרבי, מקבל כבוד לשבוע שלם. בהצלחה לכולם!</p>
+    </div>
+
+    <!-- main event -->
+    <div style="margin: 10px 18px 0; border-radius: 16px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; background: linear-gradient(135deg, #F6E3A4 0%, #FFF8DC 45%, #F1DA92 100%);">
+      <span style="font-size: 11px; font-weight: 800; color: #5C4400; flex-shrink: 0; display: flex; flex-direction: column; line-height: 1.3;">המשחק<br>המרכזי</span>
+      <div style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;">
+        <img src="../assets/crests/hapoel-tel-aviv.png" alt="" style="width: 28px; height: 28px; object-fit: contain;">
+        <span style="font-size: 13px; font-weight: 800;">הפועל ת״א</span>
+        <span style="font-size: 12px; font-weight: 700; color: #6E5200;">נגד</span>
+        <span style="font-size: 13px; font-weight: 800;">מכבי ת״א</span>
+        <img src="../assets/crests/maccabi-tel-aviv.png" alt="" style="width: 28px; height: 28px; object-fit: contain;">
+      </div>
+    </div>
+
+    <!-- actions -->
+    <div style="padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 6px;">
+      <button type="button" style="height: 54px; border: 0; border-radius: 14px; font: inherit; font-size: 16px; font-weight: 900; color: #2A2005; background: linear-gradient(135deg, #B8901F 0%, #E8C65A 28%, #FFF1B8 48%, #E2BD48 68%, #B8901F 100%); display: flex; align-items: center; justify-content: center; gap: 8px;">יאללה לנחש
+        <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg></button>
+      <span style="text-align: center; font-size: 12px; color: #6B6F68;">ההודעה מופיעה פעם אחת בכל מחזור</span>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

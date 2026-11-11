@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>Manager panel</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&amp;family=Oswald:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#1B6B3C}a:hover{color:#123F24}
+.osw{font-family:Oswald,'Arial Narrow',sans-serif}
+.goldtext{background:linear-gradient(135deg,#B8901F 0%,#E8C65A 28%,#FFF1B8 48%,#E2BD48 68%,#B8901F 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sec{background:#FFFFFF;border:1px solid #E3E3DC;border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.shead{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.tog{display:flex;align-items:center;gap:9px;width:100%;min-height:44px;border:0;background:transparent;padding:0;font:inherit;font-size:18px;font-weight:900;color:#17231C;text-align:start;cursor:pointer}
+.sum{font-size:11px;font-weight:800;border-radius:999px;padding:3px 9px;white-space:nowrap}
+.stitle{display:flex;align-items:center;gap:9px;margin:0;font-size:18px;font-weight:900}
+.sec{gap:0}
+.sic{width:34px;height:34px;border-radius:50%;background:#E6F2EA;color:#1B6B3C;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.count{font-family:Oswald,'Arial Narrow',sans-serif;font-size:13px;font-weight:600;border-radius:999px;padding:2px 9px}
+.sub{font-size:12px;font-weight:800;color:#55645A;margin:0}
+.prow{display:flex;align-items:center;gap:10px;min-height:52px}
+.pav{width:38px;height:38px;border-radius:50%;object-fit:cover;flex-shrink:0;display:block}
+.pname{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.pn{font-size:14px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pm{font-size:11px;color:#6B6F68}
+.btn{min-height:40px;border-radius:12px;border:0;font:inherit;font-size:13px;font-weight:800;padding:0 14px}
+.ghost{min-height:40px;border-radius:12px;border:1.5px solid #D9DAD3;background:#FFFFFF;font:inherit;font-size:12px;font-weight:800;color:#3F4440;padding:0 10px}
+.agrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.achip{display:flex;align-items:center;gap:7px;border-radius:12px;background:#F7F5EC;padding:5px 5px 5px 8px;min-height:44px;box-sizing:border-box}
+.aav{width:30px;height:30px;border-radius:50%;object-fit:cover;flex-shrink:0;display:block}
+.an{flex:1;min-width:0;font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.xbtn{width:32px;height:32px;border-radius:50%;border:0;background:transparent;display:flex;align-items:center;justify-content:center;padding:0;flex-shrink:0}
+.match{border:1px solid #ECECE6;border-radius:16px;padding:10px 10px 12px;display:flex;flex-direction:column;gap:8px}
+.mtop{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.pill{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 9px;font-size:11px;font-weight:800}
+.dot{width:7px;height:7px;border-radius:50%;display:inline-block}
+.src{font-size:10px;font-weight:800;border-radius:6px;padding:2px 6px}
+.mrow{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:8px}
+.team{display:flex;align-items:center;gap:6px;min-width:0}
+.crest{width:26px;height:26px;object-fit:contain;flex-shrink:0}
+.tn{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb{width:42px;height:44px;box-sizing:border-box;border-radius:10px;border:1.5px solid #D9DAD3;background:#FFFFFF;text-align:center;font-family:Oswald,'Arial Narrow',sans-serif;font-size:22px;font-weight:700;color:#17231C;outline:none}
+.mainbtn{width:36px;height:36px;border-radius:50%;border:1.5px solid #E3E3DC;background:#FFFFFF;display:flex;align-items:center;justify-content:center;padding:0}
+.kv{display:flex;flex-direction:column;gap:2px;flex:1;border-radius:12px;background:#F7F5EC;padding:9px 10px}
+.kvl{font-size:11px;font-weight:700;color:#55645A}
+.kvv{font-size:14px;font-weight:800}
+.rule{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:52px;border-bottom:1px solid #F0F0EA}
+.rl{display:flex;flex-direction:column;gap:2px}
+.rln{font-size:14px;font-weight:800}
+.rlh{font-size:11px;color:#6B6F68}
+.step{display:flex;align-items:center;border:1.5px solid #D9DAD3;border-radius:12px;overflow:hidden}
+.stb{width:40px;height:40px;border:0;background:#FFFFFF;font:inherit;font-size:20px;font-weight:700;color:#17231C;padding:0}
+.stv{width:40px;text-align:center;font-family:Oswald,'Arial Narrow',sans-serif;font-size:20px;font-weight:700}
+.lbl{font-size:13px;font-weight:800}
+.inp{box-sizing:border-box;border-radius:12px;border:1.5px solid #D9DAD3;background:#FFFFFF;padding:10px 12px;font:inherit;font-size:15px;color:#17231C;width:100%}
+.navchip{display:inline-flex;align-items:center;min-height:36px;border-radius:999px;padding:0 12px;font-size:13px;font-weight:800;text-decoration:none;white-space:nowrap}
+@keyframes pl-pulse{0%,100%{opacity:1}50%{opacity:.25}}
+.pulse{animation:pl-pulse 1.4s ease-in-out infinite}
+@media (prefers-reduced-motion: reduce){.pulse{animation:none}}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; min-height: 1000px; box-sizing: border-box; background: #F7F5EC; color: #17231C; font-family: Heebo, system-ui, sans-serif; display: flex; flex-direction: column;">
+
+  <!-- header -->
+  <header style="height: 60px; flex-shrink: 0; background: #123F24; display: flex; align-items: center; justify-content: space-between; padding: 0 16px;">
+    <div dir="ltr" style="display: flex; align-items: center; gap: 8px;">
+      <svg role="img" aria-label="Prediction Legends" width="38" height="38" viewBox="0 0 96 96"><defs><linearGradient id="mgGold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#A47A14"></stop><stop offset=".35" stop-color="#F3D36B"></stop><stop offset=".5" stop-color="#FFF3C4"></stop><stop offset=".65" stop-color="#E0BB45"></stop><stop offset="1" stop-color="#A47A14"></stop></linearGradient></defs><rect x="4" y="12" width="88" height="80" rx="20" fill="#0B2A17" stroke="url(#mgGold)" stroke-width="3"></rect><rect x="14" y="30" width="28" height="48" rx="6" fill="#F7F3E3"></rect><rect x="54" y="30" width="28" height="48" rx="6" fill="url(#mgGold)"></rect><text x="28" y="67" text-anchor="middle" font-family="Oswald, Arial Narrow, sans-serif" font-weight="700" font-size="32" fill="#123F24">2</text><text x="68" y="67" text-anchor="middle" font-family="Oswald, Arial Narrow, sans-serif" font-weight="700" font-size="32" fill="#2A2005">1</text><circle cx="48" cy="46" r="2.8" fill="#F7F3E3"></circle><circle cx="48" cy="62" r="2.8" fill="#F7F3E3"></circle><path d="M33 21 L30.5 7.5 L40 13.5 L48 3.5 L56 13.5 L65.5 7.5 L63 21 Z" fill="url(#mgGold)" stroke="#123F24" stroke-width="2.5" stroke-linejoin="round"></path><circle cx="30.5" cy="6" r="2.4" fill="url(#mgGold)" stroke="#123F24" stroke-width="1.5"></circle><circle cx="48" cy="3" r="2.4" fill="url(#mgGold)" stroke="#123F24" stroke-width="1.5"></circle><circle cx="65.5" cy="6" r="2.4" fill="url(#mgGold)" stroke="#123F24" stroke-width="1.5"></circle></svg>
+      <div style="display: flex; flex-direction: column; line-height: 1;"><span class="osw goldtext" style="font-size: 8px; font-weight: 600; letter-spacing: .38em;">PREDICTION</span><span class="osw" style="font-size: 19px; font-weight: 700; color: #F7F5EC;">LEGENDS</span></div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <span style="display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 800; color: #E8C65A; border: 1.5px solid #8A6A12; border-radius: 999px; padding: 4px 9px;"><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"></path></svg>מנהל</span>
+      <a href="Screen.dc.html" style="display: inline-flex; align-items: center; gap: 4px; min-height: 40px; font-size: 13px; font-weight: 800; color: #F7F5EC; text-decoration: none;">למשחק<svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg></a>
+    </div>
+  </header>
+
+  <main style="flex: 1; padding: 16px; display: flex; flex-direction: column; gap: 14px;">
+
+    <!-- round overview -->
+    <section style="background: #123F24; border-radius: 22px; padding: 16px; display: flex; flex-direction: column; gap: 14px; color: #F7F5EC;">
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; flex-direction: column; gap: 2px;">
+          <span style="font-size: 12px; font-weight: 700; color: #B9D3C1;">ברוך שובך</span>
+          <h1 class="osw" style="margin: 0; font-size: 34px; font-weight: 700; line-height: 1;">מחזור 12</h1>
+        </div>
+        <span class="pill" style="background: #1B6B3C; color: #FFFFFF;"><span class="dot pulse" style="background: #9CE3B4;"></span>2 משחקים חיים</span>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px;">
+        <div style="border-radius: 12px; background: rgba(255,255,255,.07); border: 1px solid #2A5A3C; padding: 8px 4px; display: flex; flex-direction: column; align-items: center; gap: 2px;"><span class="osw" style="font-size: 22px; font-weight: 700; line-height: 1;">{{approvedCount}}</span><span style="font-size: 10px; font-weight: 700; color: #B9D3C1;">אושרו</span></div>
+        <div style="border-radius: 12px; background: rgba(255,255,255,.07); border: 1px solid #2A5A3C; padding: 8px 4px; display: flex; flex-direction: column; align-items: center; gap: 2px;"><span class="osw" style="font-size: 22px; font-weight: 700; line-height: 1; color: #E8C65A;">{{pendingCount}}</span><span style="font-size: 10px; font-weight: 700; color: #B9D3C1;">ממתינים</span></div>
+        <div style="border-radius: 12px; background: rgba(255,255,255,.07); border: 1px solid #2A5A3C; padding: 8px 4px; display: flex; flex-direction: column; align-items: center; gap: 2px;"><span class="osw goldtext" style="font-size: 22px; font-weight: 700; line-height: 1;">₪{{pot}}</span><span style="font-size: 10px; font-weight: 700; color: #B9D3C1;">קופה</span></div>
+        <div style="border-radius: 12px; background: rgba(255,255,255,.07); border: 1px solid #2A5A3C; padding: 8px 4px; display: flex; flex-direction: column; align-items: center; gap: 2px;"><span class="osw" style="font-size: 22px; font-weight: 700; line-height: 1;">3/11</span><span style="font-size: 10px; font-weight: 700; color: #B9D3C1;">הסתיימו</span></div>
+      </div>
+      <span style="font-size: 11px; color: #9CCAAE;">הקופה מחושבת אוטומטית: ‎{{approvedCount}} מאושרים × ‎20 ש״ח</span>
+    </section>
+
+    <!-- section nav -->
+    <nav aria-label="אזורי הפאנל" style="display: flex; gap: 6px; overflow: hidden; flex-wrap: wrap;">
+      <a class="navchip" href="#participants" onClick="{{open.participants.show}}" style="background: #123F24; color: #F7F5EC;">משתתפים</a>
+      <a class="navchip" href="#results" onClick="{{open.results.show}}" style="background: #FFFFFF; border: 1px solid #E3E3DC; color: #17231C;">תוצאות</a>
+      <a class="navchip" href="#feed" onClick="{{open.feed.show}}" style="background: #FFFFFF; border: 1px solid #E3E3DC; color: #17231C;">עדכון אוטומטי</a>
+      <a class="navchip" href="#scoring" onClick="{{open.scoring.show}}" style="background: #FFFFFF; border: 1px solid #E3E3DC; color: #17231C;">ניקוד</a>
+      <a class="navchip" href="#message" onClick="{{open.message.show}}" style="background: #FFFFFF; border: 1px solid #E3E3DC; color: #17231C;">הודעת מחזור</a>
+    </nav>
+
+    <div style="display: flex; justify-content: flex-end; margin-top: -6px;"><button type="button" onClick="{{toggleAll}}" style="min-height: 36px; border: 0; background: none; font: inherit; font-size: 12px; font-weight: 800; color: #1B6B3C; padding: 0 4px;">{{allLabel}}</button></div>
+
+    <!-- PARTICIPANTS -->
+    <section id="participants" class="sec">
+      <div class="shead">
+        <h2 class="stitle" style="flex: 1; min-width: 0;"><button class="tog" type="button" onClick="{{open.participants.toggle}}" aria-expanded="{{open.participants.on}}" aria-controls="participants-body"><span class="sic"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"></path><circle cx="17" cy="9" r="2.6"></circle><path d="M16.5 14.6c2.6.2 4.4 1.9 5 5.4"></path></svg></span>משתתפי המחזור<span style="margin-inline-start: auto; display: inline-flex; align-items: center; gap: 8px;"><span class="sum" style="background: {{pendingChipBg}}; color: {{pendingChipFg}};">{{pendingSummary}}</span><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#55645A" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; transform: {{open.participants.rot}};"><path d="M6 9l6 6 6-6"></path></svg></span></button></h2>
+      </div>
+      <sc-if value="{{open.participants.on}}" hint-placeholder-val="{{ false }}">
+      <div id="participants-body" style="margin-top: 12px; display: flex; flex-direction: column; gap: 12px;">
+
+      <!-- pending -->
+      <div style="border-radius: 16px; padding: 10px 12px; background: linear-gradient(135deg, #F6E3A4 0%, #FFF8DC 45%, #F1DA92 100%); display: flex; flex-direction: column; gap: 2px;">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <span class="sub" style="color: #5C4400;">ממתינים לאישור</span>
+          <span class="count" style="background: #FFFFFF; color: #5C4400;">{{pendingCount}}</span>
+        </div>
+        <span style="font-size: 11px; color: #6E5200;">אשרו אחרי שהתשלום ב־Paybox התקבל</span>
+        <sc-if value="{{noPending}}" hint-placeholder-val="{{ false }}">
+          <span style="font-size: 13px; font-weight: 700; color: #5C4400; padding: 10px 0;">אין ממתינים. כולם אושרו</span>
+        </sc-if>
+        <sc-for list="{{pending}}" as="p" hint-placeholder-count="3">
+          <div class="prow">
+            <img class="pav" src="{{p.avatar}}" alt="">
+            <span class="pname"><span class="pn">{{p.name}}</span><span class="pm">{{p.meta}}</span></span>
+            <button class="ghost" type="button" onClick="{{p.remove}}" style="background: transparent; border-color: #D9C48A;">הסרה</button>
+            <button class="btn" type="button" onClick="{{p.approve}}" style="background: #1B6B3C; color: #FFFFFF;">אישור</button>
+          </div>
+        </sc-for>
+      </div>
+
+      <!-- approved -->
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 2px;">
+        <span class="sub">אושרו למחזור</span>
+        <span class="count" style="background: #E6F2EA; color: #14512D;">{{approvedCount}}</span>
+      </div>
+      <div class="agrid">
+        <sc-for list="{{approved}}" as="a" hint-placeholder-count="12">
+          <div class="achip">
+            <img class="aav" src="{{a.avatar}}" alt="">
+            <span class="an">{{a.name}}</span>
+            <button class="xbtn" type="button" onClick="{{a.unapprove}}" aria-label="{{a.label}}"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B6F68" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14l-4-4 4-4"></path><path d="M5 10h9a5 5 0 0 1 0 10h-1"></path></svg></button>
+          </div>
+        </sc-for>
+      </div>
+      <span style="font-size: 11px; color: #6B6F68;">החץ מחזיר משתתף להמתנה</span>
+
+      <div style="border-top: 1px dashed #E3C2BE; padding-top: 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+        <div style="display: flex; flex-direction: column; gap: 2px;">
+          <span style="font-size: 13px; font-weight: 800; color: #8C1D18;">איפוס משתתפים מאושרים</span>
+          <span style="font-size: 11px; color: #6B6F68;">לפתיחת מחזור חדש. דורש אישור נוסף</span>
+        </div>
+        <button class="ghost" type="button" style="color: #B3261E; border-color: #E8B4AF;">איפוס</button>
+      </div>
+          </div>
+      </sc-if>
+    </section>
+
+    <!-- RESULTS -->
+    <section id="results" class="sec">
+      <div class="shead">
+        <h2 class="stitle" style="flex: 1; min-width: 0;"><button class="tog" type="button" onClick="{{open.results.toggle}}" aria-expanded="{{open.results.on}}" aria-controls="results-body"><span class="sic"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="7" height="14" rx="2"></rect><rect x="14" y="5" width="7" height="14" rx="2"></rect></svg></span>תוצאות מחזור<span style="margin-inline-start: auto; display: inline-flex; align-items: center; gap: 8px;"><span class="sum" style="background: #EFEFEA; color: #3F4440;">3/11 הסתיימו</span><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#55645A" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; transform: {{open.results.rot}};"><path d="M6 9l6 6 6-6"></path></svg></span></button></h2>
+      </div>
+      <sc-if value="{{open.results.on}}" hint-placeholder-val="{{ false }}">
+      <div id="results-body" style="margin-top: 12px; display: flex; flex-direction: column; gap: 12px;">
+      <div style="display: flex; align-items: center; gap: 8px; font-size: 11px; color: #55645A; flex-wrap: wrap;">
+        <span style="display: inline-flex; align-items: center; gap: 4px;"><span class="src" style="background: #E6F2EA; color: #14512D;">אוטומטי</span>מהעדכון החי</span>
+        <span style="display: inline-flex; align-items: center; gap: 4px;"><span class="src" style="background: #FBF3D9; color: #5C4400;">ידני</span>נערך על ידך</span>
+        <span style="display: inline-flex; align-items: center; gap: 4px;"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="#A47A14"><path d="M3 9l4.6 3.6L12 5.5l4.4 7.1L21 9l-1.8 9H4.8z"></path></svg>המשחק המרכזי</span>
+      </div>
+      <sc-for list="{{matches}}" as="m" hint-placeholder-count="11">
+        <div class="match" style="{{m.boxStyle}}">
+          <div class="mtop">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span class="pill" style="background: {{m.pillBg}}; color: {{m.pillFg}};"><span class="dot" style="background: {{m.dotBg}};"></span>{{m.status}}</span>
+              <span class="src" style="background: {{m.srcBg}}; color: {{m.srcFg}};">{{m.src}}</span>
+            </div>
+            <button class="mainbtn" type="button" onClick="{{m.toggleMain}}" aria-pressed="{{m.main}}" aria-label="{{m.mainLabel}}" style="{{m.mainStyle}}"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="{{m.crownFill}}"><path d="M3 9l4.6 3.6L12 5.5l4.4 7.1L21 9l-1.8 9H4.8z"></path><rect x="4.8" y="19.2" width="14.4" height="2" rx="1"></rect></svg></button>
+          </div>
+          <div class="mrow">
+            <div class="team"><img class="crest" src="{{m.hc}}" alt=""><span class="tn">{{m.home}}</span></div>
+            <div style="display: flex; align-items: center; gap: 5px;" dir="ltr">
+              <input class="sb" inputmode="numeric" maxlength="2" value="{{m.a}}" placeholder="–" disabled="{{m.locked}}" aria-label="{{m.awayLabel}}" style="{{m.inStyle}}">
+              <span class="osw" style="font-size: 18px; color: #A3A39B;">:</span>
+              <input class="sb" inputmode="numeric" maxlength="2" value="{{m.h}}" placeholder="–" disabled="{{m.locked}}" aria-label="{{m.homeLabel}}" style="{{m.inStyle}}">
+            </div>
+            <div class="team" style="justify-content: flex-end;"><span class="tn">{{m.away}}</span><img class="crest" src="{{m.ac}}" alt=""></div>
+          </div>
+        </div>
+      </sc-for>
+      <button class="btn" type="button" style="min-height: 50px; background: #123F24; color: #F7F5EC; font-size: 15px;">שמירת תוצאות</button>
+          </div>
+      </sc-if>
+    </section>
+
+    <!-- FEED -->
+    <section id="feed" class="sec">
+      <div class="shead">
+        <h2 class="stitle" style="flex: 1; min-width: 0;"><button class="tog" type="button" onClick="{{open.feed.toggle}}" aria-expanded="{{open.feed.on}}" aria-controls="feed-body"><span class="sic"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"></path><path d="M21 4v5h-5"></path></svg></span>עדכון תוצאות אוטומטי<span style="margin-inline-start: auto; display: inline-flex; align-items: center; gap: 8px;"><span class="sum" style="background: {{feedBg}}; color: {{feedFg}};">{{feedStatus}}</span><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#55645A" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; transform: {{open.feed.rot}};"><path d="M6 9l6 6 6-6"></path></svg></span></button></h2>
+        <button type="button" role="switch" aria-checked="{{feedOn}}" aria-label="עדכון אוטומטי" onClick="{{toggleFeed}}" style="width: 56px; height: 32px; border-radius: 999px; border: 0; padding: 3px; display: flex; justify-content: {{feedJustify}}; background: {{feedTrack}}; flex-shrink: 0;"><span style="width: 26px; height: 26px; border-radius: 50%; background: #FFFFFF; box-shadow: 0 1px 3px rgba(0,0,0,.3);"></span></button>
+      </div>
+      <sc-if value="{{open.feed.on}}" hint-placeholder-val="{{ false }}">
+      <div id="feed-body" style="margin-top: 12px; display: flex; flex-direction: column; gap: 12px;">
+      <div style="display: flex; align-items: center; gap: 8px; border-radius: 12px; padding: 10px 12px; background: {{feedBg}};">
+        <span class="dot {{feedPulse}}" style="background: {{feedDot}}; width: 9px; height: 9px;"></span>
+        <span style="font-size: 14px; font-weight: 800; color: {{feedFg}};">{{feedStatus}}</span>
+        <span style="font-size: 12px; color: {{feedFg}}; margin-inline-start: auto;">{{feedHint}}</span>
+      </div>
+      <div style="display: flex; gap: 6px;">
+        <div class="kv"><span class="kvl">עדכון אחרון</span><span class="kvv">לפני 2 דק׳</span></div>
+        <div class="kv"><span class="kvl">בדיקה אחרונה</span><span class="kvv">לפני 30 שנ׳</span></div>
+        <div class="kv"><span class="kvl">בקשות היום</span><span class="kvv osw" style="font-size: 18px;">38</span></div>
+      </div>
+      <span style="font-size: 11px; color: #6B6F68;">תוצאה שערכתם ידנית לא תידרס על ידי העדכון האוטומטי.</span>
+          </div>
+      </sc-if>
+    </section>
+
+    <!-- SCORING -->
+    <section id="scoring" class="sec">
+      <div class="shead">
+        <h2 class="stitle" style="flex: 1; min-width: 0;"><button class="tog" type="button" onClick="{{open.scoring.toggle}}" aria-expanded="{{open.scoring.on}}" aria-controls="scoring-body"><span class="sic"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="5"></circle><circle cx="12" cy="12" r="1.5" fill="currentColor"></circle></svg></span>כללי ניקוד<span style="margin-inline-start: auto; display: inline-flex; align-items: center; gap: 8px;"><span class="sum osw" style="background: #EFEFEA; color: #3F4440; font-size: 12px;">{{scoringSummary}}</span><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#55645A" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; transform: {{open.scoring.rot}};"><path d="M6 9l6 6 6-6"></path></svg></span></button></h2>
+      </div>
+      <sc-if value="{{open.scoring.on}}" hint-placeholder-val="{{ false }}">
+      <div id="scoring-body" style="margin-top: 12px; display: flex; flex-direction: column; gap: 12px;">
+      <span class="sub">ניצחון בית / חוץ</span>
+      <div>
+        <sc-for list="{{rulesWin}}" as="r" hint-placeholder-count="2">
+          <div class="rule">
+            <span class="rl"><span class="rln" style="color: {{r.color}};">{{r.label}}</span><span class="rlh">{{r.hint}}</span></span>
+            <div class="step"><button class="stb" type="button" onClick="{{r.dec}}" aria-label="{{r.decLabel}}">−</button><span class="stv">{{r.v}}</span><button class="stb" type="button" onClick="{{r.inc}}" aria-label="{{r.incLabel}}">+</button></div>
+          </div>
+        </sc-for>
+      </div>
+      <span class="sub">תיקו</span>
+      <div>
+        <sc-for list="{{rulesDraw}}" as="r" hint-placeholder-count="2">
+          <div class="rule">
+            <span class="rl"><span class="rln" style="color: {{r.color}};">{{r.label}}</span><span class="rlh">{{r.hint}}</span></span>
+            <div class="step"><button class="stb" type="button" onClick="{{r.dec}}" aria-label="{{r.decLabel}}">−</button><span class="stv">{{r.v}}</span><button class="stb" type="button" onClick="{{r.inc}}" aria-label="{{r.incLabel}}">+</button></div>
+          </div>
+        </sc-for>
+      </div>
+      <span class="sub">בונוס</span>
+      <div>
+        <sc-for list="{{rulesBonus}}" as="r" hint-placeholder-count="1">
+          <div class="rule" style="border-bottom: 0;">
+            <span class="rl"><span class="rln" style="color: {{r.color}};">{{r.label}}</span><span class="rlh">{{r.hint}}</span></span>
+            <div class="step"><button class="stb" type="button" onClick="{{r.dec}}" aria-label="{{r.decLabel}}">−</button><span class="stv">{{r.v}}</span><button class="stb" type="button" onClick="{{r.inc}}" aria-label="{{r.incLabel}}">+</button></div>
+          </div>
+        </sc-for>
+      </div>
+      <button class="btn" type="button" style="min-height: 50px; background: #123F24; color: #F7F5EC; font-size: 15px;">שמירת ניקוד</button>
+          </div>
+      </sc-if>
+    </section>
+
+    <!-- ROUND MESSAGE -->
+    <section id="message" class="sec">
+      <div class="shead">
+        <h2 class="stitle" style="flex: 1; min-width: 0;"><button class="tog" type="button" onClick="{{open.message.toggle}}" aria-expanded="{{open.message.on}}" aria-controls="message-body"><span class="sic"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v2a1 1 0 0 0 1 1h2l5 4V6L6 10H4a1 1 0 0 0-1 1z"></path><path d="M15 9a4 4 0 0 1 0 6M18 6a8 8 0 0 1 0 12"></path></svg></span>הודעת מחזור<span style="margin-inline-start: auto; display: inline-flex; align-items: center; gap: 8px;"><span class="sum" style="background: #E6F2EA; color: #14512D;">נראתה ע״י 9/12</span><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#55645A" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; transform: {{open.message.rot}};"><path d="M6 9l6 6 6-6"></path></svg></span></button></h2>
+      </div>
+      <sc-if value="{{open.message.on}}" hint-placeholder-val="{{ false }}">
+      <div id="message-body" style="margin-top: 12px; display: flex; flex-direction: column; gap: 12px;">
+      <span style="font-size: 12px; color: #55645A;">מוצגת פעם אחת לכל משתתף, בכניסה הראשונה למחזור.</span>
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <label class="lbl" for="mtitle">כותרת</label>
+        <input id="mtitle" class="inp" value="היי לג׳נד!">
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <label class="lbl" for="mbody">טקסט</label>
+        <textarea id="mbody" class="inp" rows="4" style="resize: none; line-height: 1.55;">מחזור 12 מתחיל בשבת עם דרבי תל אביבי.
+מי שיפגע בול בדרבי, מקבל כבוד לשבוע שלם. בהצלחה לכולם!</textarea>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <a href="RoundIntro.dc.html" class="ghost" style="flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 50px; text-decoration: none; font-size: 14px;"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"></path><circle cx="12" cy="12" r="3"></circle></svg>תצוגה מקדימה</a>
+        <button class="btn" type="button" style="flex: 1; min-height: 50px; background: #123F24; color: #F7F5EC; font-size: 15px;">שמירה</button>
+      </div>
+          </div>
+      </sc-if>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1000}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    const av = (id) => '/_blob/' + id;
+    this.av = {
+      a0: av('15e57032268f8d1c20b2faf015b2692e'), a1: av('8b42a8019faacf021ec5c49aa9e3247e'), a2: av('f6aea8a5471cdf66090d0cece2216386'),
+      a3: av('e7209fd8f65ac9970ef6325510169bc6'), a4: av('c6e5ec052222332027c3c0431afe7ba2'), a5: av('4c457f2987e11d249c518fea9f52f586'),
+      a6: av('0b8f79bdcff5b43251f7d44e01d81f1b'), a7: av('b1f3a54787ce1cd2ffcb03c30259ea89'), a8: av('a541ee697b8307b49026454ac4293182'),
+      a9: av('8d3c8075a7ad00a5bd2f1b36bb248e4e'), a10: av('8c56814054217f9d8934913661ab3057'), a11: av('29820f1c00fac246c0a5f0ab69a214b7'),
+      n0: av('0943c66aada78b9b4758b9ff104e70f4'), n1: av('04b6c1728fc39e4c511385cd3e63f01f'), n5: av('55c03eb05243c087ab4cb3a9e2910b00')
+    };
+    const A = this.av;
+    this.state = {
+      people: [
+        { id: 1, name: 'נועם', avatar: A.a0, ok: true }, { id: 2, name: 'דניאל', avatar: A.a1, ok: true },
+        { id: 3, name: 'עומרי', avatar: A.a4, ok: true }, { id: 4, name: 'יונתן', avatar: A.a2, ok: true },
+        { id: 5, name: 'אורי', avatar: A.a3, ok: true }, { id: 6, name: 'רועי', avatar: A.a5, ok: true },
+        { id: 7, name: 'גיא', avatar: A.a6, ok: true }, { id: 8, name: 'עידו', avatar: A.a7, ok: true },
+        { id: 9, name: 'תומר', avatar: A.a8, ok: true }, { id: 10, name: 'אלון', avatar: A.a9, ok: true },
+        { id: 11, name: 'ניר', avatar: A.a10, ok: true }, { id: 12, name: 'שגיא', avatar: A.a11, ok: true },
+        { id: 13, name: 'אסף', avatar: A.n0, ok: false, meta: 'נרשם היום · 09:12' },
+        { id: 14, name: 'מתן', avatar: A.n1, ok: false, meta: 'נרשם אתמול · 21:40' },
+        { id: 15, name: 'איתי', avatar: A.n5, ok: false, meta: 'משתתף חדש · נרשם אתמול' }
+      ],
+      open: {},
+      main: 2,
+      feedOn: true,
+      rules: { winHit: 10, winDir: 5, drawHit: 10, drawDir: 6, bonus: 1 }
+    };
+  }
+  renderVals() {
+    const st = this.state;
+    const setPerson = (id, patch) => this.setState({ people: st.people.map((p) => (p.id === id ? Object.assign({}, p, patch) : p)) });
+    const pending = st.people.filter((p) => !p.ok).map((p) => ({
+      name: p.name, avatar: p.avatar, meta: p.meta || '',
+      approve: () => setPerson(p.id, { ok: true }),
+      remove: () => this.setState({ people: st.people.filter((x) => x.id !== p.id) })
+    }));
+    const approved = st.people.filter((p) => p.ok).map((p) => ({
+      name: p.name, avatar: p.avatar, label: 'החזרת ' + p.name + ' להמתנה',
+      unapprove: () => setPerson(p.id, { ok: false, meta: 'הוחזר להמתנה' })
+    }));
+
+    const b = (id) => '/_blob/' + id;
+    const M = [
+      ['מכבי חיפה', 'f36a91a1eb6675ad6af6d07094974f44', 'הפועל ב״ש', 'c08d24147c733564d2c437f98152ec33', 'end', 2, 0, 'auto'],
+      ['הפועל פ״ת', 'c5fc1b797801ce2c9a47d9be714698ad', 'בית״ר י־ם', '42aaba5466d6cd010e177f5739f3e90a', 'end', 1, 1, 'auto'],
+      ['הפועל ת״א', '259d7ed03d5d3081a34ad9beab6eb574', 'מכבי ת״א', '6bd5c74c1e65b3c14243f846280b8f58', 'live', 1, 0, 'auto', '67׳'],
+      ['הפועל י־ם', '34fd7405c35699037b72ace6b4943073', 'מכבי נתניה', '5d41684282d7a5843aa2496e445fee6e', 'live', 0, 2, 'auto', '54׳'],
+      ['ארסנל', '8debda868c7e43c95bbe4ade31bcf1c6', 'צ׳לסי', '1d32ec474a9941831a562774df748bcd', 'end', 2, 2, 'manual'],
+      ['בני סכנין', '1d3f1be4b54cf7aab5edbe4c0b17b22e', 'הפועל חיפה', 'b6357a448ed471d2c68d21637aba1947', 'pre', '', '', '', 'שבת 20:30'],
+      ['ק. שמונה', '0078d7ceb1d8f6676bb0276fcca38007', 'עירוני טבריה', '40b4ff731185bdd6e4c31eac56c0a90f', 'pre', '', '', '', 'ראשון 19:00'],
+      ['מכבי פ״ת', '8b7bb4391c8fcbba0b8130b8464537ba', 'הפועל ר״ג', '56ae24668eb55a57033af45f182324bf', 'pre', '', '', '', 'ראשון 20:00'],
+      ['ריאל מדריד', '56b27ff3723e6604a43f1299b82f8597', 'ברצלונה', '38b211259549ba6864e6ead148db052d', 'pre', '', '', '', 'ראשון 22:00'],
+      ['אינטר', 'ece74ecf13b296adb2aadb7826ff7264', 'יובנטוס', '1592487dbb614711861336c1be9748c5', 'pre', '', '', '', 'שני 21:45'],
+      ['באיירן', 'e0fe71e1517e7a0d6a97e6eabc3f57e5', 'דורטמונד', '0ba3ec47534a4a93fde41ca5a125502a', 'pre', '', '', '', 'שני 21:30']
+    ];
+    const pill = {
+      end: { bg: '#EFEFEA', fg: '#3F4440', dot: '#8E918A' },
+      live: { bg: '#E6F2EA', fg: '#14512D', dot: '#1B6B3C' },
+      pre: { bg: '#FFFFFF', fg: '#55645A', dot: '#C9CBC4' }
+    };
+    const matches = M.map((m, i) => {
+      const s = m[4]; const p = pill[s]; const isMain = st.main === i;
+      const manual = m[7] === 'manual';
+      return {
+        home: m[0], hc: b(m[1]), away: m[2], ac: b(m[3]),
+        h: m[5], a: m[6],
+        status: s === 'end' ? 'הסתיים' : s === 'live' ? 'חי · ' + m[8] : m[8],
+        pillBg: p.bg, pillFg: p.fg, dotBg: p.dot,
+        src: s === 'pre' ? '' : (manual ? 'ידני' : 'אוטומטי'),
+        srcBg: s === 'pre' ? 'transparent' : (manual ? '#FBF3D9' : '#E6F2EA'),
+        srcFg: manual ? '#5C4400' : '#14512D',
+        locked: s === 'pre',
+        inStyle: s === 'pre' ? 'background: #F4F4F0; border-style: dashed;' : (manual ? 'border-color: #C9A227; background: #FFFDF5;' : (s === 'live' ? 'border-color: #9CCAAE;' : '')),
+        main: isMain,
+        mainLabel: isMain ? 'המשחק המרכזי של המחזור' : 'סימון כמשחק המרכזי',
+        mainStyle: isMain ? 'border: 0; background: linear-gradient(135deg, #B8901F 0%, #E8C65A 28%, #FFF1B8 48%, #E2BD48 68%, #B8901F 100%);' : '',
+        crownFill: isMain ? '#2A2005' : '#C9CBC4',
+        boxStyle: isMain ? 'border: 2px solid transparent; background: linear-gradient(#FFFFFF, #FFFFFF) padding-box, linear-gradient(135deg, #B8901F 0%, #E8C65A 28%, #FFF1B8 48%, #E2BD48 68%, #B8901F 100%) border-box;' : '',
+        homeLabel: 'שערים ל' + m[0], awayLabel: 'שערים ל' + m[2],
+        toggleMain: () => this.setState({ main: i })
+      };
+    });
+
+    const r = st.rules;
+    const mk = (key, label, hint, color) => ({
+      label: label, hint: hint, color: color, v: r[key],
+      decLabel: 'הורדת ' + label, incLabel: 'העלאת ' + label,
+      dec: () => this.setState({ rules: Object.assign({}, r, { [key]: Math.max(0, r[key] - 1) }) }),
+      inc: () => this.setState({ rules: Object.assign({}, r, { [key]: r[key] + 1 }) })
+    });
+    const on = st.feedOn;
+    const ids = ['participants', 'results', 'feed', 'scoring', 'message'];
+    const op = st.open || {};
+    const open = {};
+    ids.forEach((id) => {
+      const isOn = !!op[id];
+      open[id] = {
+        on: isOn,
+        rot: isOn ? 'rotate(180deg)' : 'none',
+        toggle: () => this.setState({ open: Object.assign({}, op, { [id]: !isOn }) }),
+        show: () => this.setState({ open: Object.assign({}, op, { [id]: true }) })
+      };
+    });
+    const allOpen = ids.every((id) => op[id]);
+    const pc = pending.length;
+    return {
+      open: open,
+      allLabel: allOpen ? 'לסגור הכול' : 'לפתוח הכול',
+      toggleAll: () => { const n = {}; ids.forEach((id) => { n[id] = !allOpen; }); this.setState({ open: n }); },
+      pendingSummary: pc ? pc + ' ממתינים' : 'כולם אושרו',
+      pendingChipBg: pc ? 'linear-gradient(135deg, #F6E3A4 0%, #FFF8DC 45%, #F1DA92 100%)' : '#E6F2EA',
+      pendingChipFg: pc ? '#5C4400' : '#14512D',
+      scoringSummary: r.winHit + ' · ' + r.winDir + ' · ' + r.drawDir + ' · +' + r.bonus,
+      pending: pending, approved: approved,
+      pendingCount: pending.length, approvedCount: approved.length, noPending: pending.length === 0,
+      pot: approved.length * 20,
+      matches: matches,
+      rulesWin: [mk('winHit', 'בול', 'תוצאה מדויקת', '#6E5200'), mk('winDir', 'כיוון', 'ניחשת מי מנצחת', '#14512D')],
+      rulesDraw: [mk('drawHit', 'בול', 'תיקו מדויק', '#6E5200'), mk('drawDir', 'כיוון', 'ניחשת תיקו, לא מדויק', '#14512D')],
+      rulesBonus: [mk('bonus', 'הפרש שערים זהה', 'נוסף לכיוון בניצחון', '#14512D')],
+      feedOn: on,
+      toggleFeed: () => this.setState({ feedOn: !on }),
+      feedTrack: on ? '#1B6B3C' : '#C9CBC4',
+      feedJustify: on ? 'flex-end' : 'flex-start',
+      feedBg: on ? '#E6F2EA' : '#F4F4F0',
+      feedFg: on ? '#14512D' : '#3F4440',
+      feedDot: on ? '#1B6B3C' : '#8E918A',
+      feedPulse: on ? 'pulse' : '',
+      feedStatus: on ? 'פעיל' : 'מושהה',
+      feedHint: on ? 'בודק כל דקה במהלך משחקים' : 'התוצאות מתעדכנות רק ידנית'
+    };
+  }
+}
+</script>
+</body>
+</html>

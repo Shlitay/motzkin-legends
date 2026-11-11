@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>Profile sheet</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&amp;family=Oswald:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#1B6B3C}a:hover{color:#123F24}
+.osw{font-family:Oswald,'Arial Narrow',sans-serif}
+.goldtext{background:linear-gradient(135deg,#B8901F 0%,#E8C65A 28%,#FFF1B8 48%,#E2BD48 68%,#B8901F 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.stat{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 4px;border-radius:14px;background:#FFFFFF;border:1px solid #E3E3DC}
+.statn{font-family:Oswald,'Arial Narrow',sans-serif;font-size:24px;font-weight:700;line-height:1}
+.statl{font-size:11px;font-weight:700;color:#55645A;text-align:center}
+.flabel{font-size:13px;font-weight:800;color:#17231C}
+.fhint{font-size:12px;color:#55645A}
+.pcell{display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0}
+.powner{font-size:10px;font-weight:700;color:#6B6F68;height:13px;line-height:13px;max-width:44px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.av{width:42px;height:42px;flex-shrink:0;border-radius:50%;border:0;background:#F1F1EC;font-size:21px;display:flex;align-items:center;justify-content:center;padding:0}
+.sbox{width:52px;height:58px;box-sizing:border-box;border-radius:12px;border:2px solid #1B6B3C;background:#FFFFFF;text-align:center;font-family:Oswald,'Arial Narrow',sans-serif;font-size:30px;font-weight:700;color:#17231C;outline:none}
+.nav{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:700;text-decoration:none;min-width:64px;min-height:44px;justify-content:center}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 844px; box-sizing: border-box; background: #F7F5EC; color: #17231C; font-family: Heebo, system-ui, sans-serif; position: relative; overflow: hidden;">
+
+  <!-- page behind (predictions) -->
+  <div aria-hidden="true" style="position: absolute; inset: 0; display: flex; flex-direction: column;">
+    <div style="height: 60px; background: #123F24;"></div>
+    <div style="padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+      <div style="height: 28px; width: 120px; border-radius: 8px; background: #E3E3DC;"></div>
+      <div style="height: 46px; border-radius: 14px; background: #FFFFFF; border: 1px solid #E3E3DC;"></div>
+      <div style="height: 190px; border-radius: 18px; background: #FFFFFF; border: 1px solid #E3E3DC;"></div>
+      <div style="height: 190px; border-radius: 18px; background: #FFFFFF; border: 1px solid #E3E3DC;"></div>
+    </div>
+  </div>
+  <div aria-hidden="true" style="position: absolute; inset: 0; background: rgba(11,42,23,.55);"></div>
+
+  <!-- sheet -->
+  <section role="dialog" aria-label="הפרופיל שלי" style="position: absolute; left: 0; right: 0; bottom: 0; height: 742px; box-sizing: border-box; background: #F7F5EC; border-radius: 26px 26px 0 0; padding: 10px 16px 16px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 -10px 30px rgba(0,0,0,.25);">
+    <div style="display: flex; justify-content: center;"><span style="width: 40px; height: 5px; border-radius: 999px; background: #D9DAD3;"></span></div>
+
+    <!-- identity -->
+    <div style="display: flex; align-items: center; gap: 14px; position: relative;">
+      <div style="position: relative; width: 72px; height: 72px; flex-shrink: 0;">
+        <div style="width: 72px; height: 72px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 38px; border: 3px solid transparent; background: linear-gradient(#FFFFFF, #FFFFFF) padding-box, linear-gradient(135deg, #B8901F 0%, #E8C65A 28%, #FFF1B8 48%, #E2BD48 68%, #B8901F 100%) border-box; box-sizing: border-box;"><img src="../assets/avatars/avatar-06.svg" alt="" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block;"></div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0;">
+        <span style="font-size: 21px; font-weight: 900;">עומרי</span>
+        <span style="font-size: 13px; color: #55645A;">עומר לוי · מחובר עם Google</span>
+        <span style="align-self: flex-start; margin-top: 4px; display: inline-flex; align-items: center; gap: 5px; background: #E6F2EA; color: #14512D; border-radius: 999px; padding: 3px 9px; font-size: 11px; font-weight: 800;"><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>מאושר למחזור 12</span>
+      </div>
+      <button type="button" aria-label="סגירה" style="position: absolute; top: -4px; left: 0; width: 40px; height: 40px; border-radius: 50%; border: 0; background: #ECECE6; display: flex; align-items: center; justify-content: center;"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3F4440" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+    </div>
+
+    <!-- stats -->
+    <div style="display: flex; gap: 8px;">
+      <div class="stat" style="border: 2px solid transparent; background: linear-gradient(#FFFFFF, #FFFFFF) padding-box, linear-gradient(135deg, #B8901F 0%, #E8C65A 28%, #FFF1B8 48%, #E2BD48 68%, #B8901F 100%) border-box;"><span class="statn">3</span><span class="statl">מקום במחזור</span></div>
+      <div class="stat"><span class="statn">42</span><span class="statl">נקודות במחזור</span></div>
+      <div class="stat"><span class="statn" style="display: inline-flex; align-items: center; gap: 3px;"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24"><defs><linearGradient id="pfGold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#A47A14"></stop><stop offset=".5" stop-color="#F3D36B"></stop><stop offset="1" stop-color="#A47A14"></stop></linearGradient></defs><g fill="url(#pfGold)"><path d="M3 9l4.6 3.6L12 5.5l4.4 7.1L21 9l-1.8 9H4.8z"></path><rect x="4.8" y="19.2" width="14.4" height="2" rx="1"></rect></g></svg>2</span><span class="statl">בולים</span></div>
+      <div class="stat"><span class="statn" style="color: #1B6B3C;">4</span><span class="statl">בכיוון</span></div>
+    </div>
+
+    <!-- nickname -->
+    <div style="display: flex; flex-direction: column; gap: 6px;">
+      <label for="nick" class="flabel">כינוי</label>
+      <input id="nick" value="עומרי" style="height: 46px; box-sizing: border-box; border-radius: 12px; border: 1.5px solid #D9DAD3; background: #FFFFFF; padding: 0 12px; font: inherit; font-size: 15px; font-weight: 600; color: #17231C;">
+      <span class="fhint">מופיע בטבלה במקום השם המלא</span>
+    </div>
+
+    <!-- avatar -->
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      <div style="display: flex; align-items: baseline; justify-content: space-between;"><span class="flabel">אווטאר</span><button type="button" style="background: none; border: 0; font: inherit; font-size: 12px; font-weight: 800; color: #1B6B3C; min-height: 32px;">כל ה־30 אווטארים</button></div>
+      <div style="display: flex; gap: 8px; overflow: hidden;">
+        <div class="pcell"><button class="av" type="button" aria-label="אווטאר 6, הבחירה שלך" aria-pressed="true" style="background: #E6F2EA; box-shadow: 0 0 0 2.5px #1B6B3C;"><img src="../assets/avatars/avatar-06.svg" alt="" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block;"></button><span class="powner" style="color: #14512D;">אתה</span></div>
+        <div class="pcell"><button class="av" type="button" aria-label="אווטאר 5"><img src="../assets/avatars/avatar-05.svg" alt="" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block;"></button><span class="powner"></span></div>
+        <div class="pcell"><button class="av" type="button" aria-label="אווטאר 7"><img src="../assets/avatars/avatar-07.svg" alt="" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block;"></button><span class="powner"></span></div>
+        <div class="pcell"><button class="av" type="button" disabled aria-label="אווטאר 8, תפוס על ידי יונתן" style="opacity: .35; filter: grayscale(1);"><img src="../assets/avatars/avatar-08.svg" alt="" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block;"></button><span class="powner">יונתן</span></div>
+        <div class="pcell"><button class="av" type="button" disabled aria-label="אווטאר 4, תפוס על ידי דניאל" style="opacity: .35; filter: grayscale(1);"><img src="../assets/avatars/avatar-04.svg" alt="" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block;"></button><span class="powner">דניאל</span></div>
+        <div class="pcell"><button class="av" type="button" aria-label="אווטאר 9"><img src="../assets/avatars/avatar-09.svg" alt="" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block;"></button><span class="powner"></span></div>
+        <div class="pcell"><button class="av" type="button" aria-label="אווטאר 10"><img src="../assets/avatars/avatar-10.svg" alt="" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block;"></button><span class="powner"></span></div>
+      </div>
+    </div>
+
+    <!-- default result -->
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; background: #FFFFFF; border: 1px solid #E3E3DC; border-radius: 16px; padding: 12px 14px;">
+      <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0;">
+        <span class="flabel">תוצאת ברירת מחדל</span>
+        <span class="fhint" style="line-height: 1.45;">נכנסת אוטומטית למשחק שלא ניחשתם עד הפתיחה</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+        <input class="sbox" inputmode="numeric" maxlength="1" value="1" aria-label="ברירת מחדל: שערים לקבוצת הבית">
+        <span class="osw" style="font-size: 22px; color: #A3A39B;">:</span>
+        <input class="sbox" inputmode="numeric" maxlength="1" value="1" aria-label="ברירת מחדל: שערים לקבוצת החוץ">
+      </div>
+    </div>
+
+    <div style="margin-top: auto; display: flex; flex-direction: column; gap: 6px;">
+      <button type="button" style="height: 52px; border: 0; border-radius: 14px; background: #123F24; color: #F7F5EC; font: inherit; font-size: 16px; font-weight: 800;">שמירה</button>
+      <button type="button" style="height: 44px; border: 0; background: none; font: inherit; font-size: 14px; font-weight: 700; color: #B3261E;">התנתקות</button>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

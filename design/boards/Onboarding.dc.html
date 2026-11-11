@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>First login setup</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&amp;family=Oswald:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#1B6B3C}a:hover{color:#123F24}
+.osw{font-family:Oswald,'Arial Narrow',sans-serif}
+.goldtext{background:linear-gradient(135deg,#B8901F 0%,#E8C65A 28%,#FFF1B8 48%,#E2BD48 68%,#B8901F 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sec{background:#FFFFFF;border:1px solid #E3E3DC;border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.sectitle{display:flex;align-items:center;gap:8px;font-size:17px;font-weight:800;margin:0}
+.secnum{width:24px;height:24px;border-radius:50%;background:#123F24;color:#F7F5EC;display:inline-flex;align-items:center;justify-content:center;font-family:Oswald,'Arial Narrow',sans-serif;font-size:13px;font-weight:600}
+.secsub{margin:0;font-size:13px;line-height:1.5;color:#55645A}
+.cell{display:flex;flex-direction:column;align-items:center;gap:2px}
+.owner{font-size:10px;font-weight:700;height:13px;line-height:13px;max-width:54px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.av{cursor:pointer;width:46px;height:46px;border-radius:50%;border:0;background:#F1F1EC;font-size:22px;display:flex;align-items:center;justify-content:center;padding:0}
+.big{width:64px;height:72px;box-sizing:border-box;border-radius:14px;border:2px solid #1B6B3C;background:#FFFFFF;text-align:center;font-family:Oswald,'Arial Narrow',sans-serif;font-size:38px;font-weight:700;color:#17231C;outline:none}
+.lbl{font-size:12px;font-weight:700;color:#55645A}
+.preset{min-height:36px;border-radius:999px;border:1.5px solid #D9DAD3;background:#FFFFFF;font:inherit;font-size:13px;font-weight:700;padding:0 12px;display:inline-flex;align-items:center;gap:3px}
+.psc{display:inline-flex;gap:3px;font-family:Oswald,'Arial Narrow',sans-serif;font-weight:600;font-size:14px}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 1180px; box-sizing: border-box; background: #F7F5EC; color: #17231C; font-family: Heebo, system-ui, sans-serif; display: flex; flex-direction: column;">
+
+  <header style="height: 60px; flex-shrink: 0; background: #123F24; display: flex; align-items: center; justify-content: center;">
+    <div dir="ltr" style="display: flex; align-items: center; gap: 8px;">
+      <svg role="img" aria-label="Prediction Legends" width="38" height="38" viewBox="0 0 96 96" style="direction: ltr;"><defs><linearGradient id="hdronb1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#A47A14"></stop><stop offset=".35" stop-color="#F3D36B"></stop><stop offset=".5" stop-color="#FFF3C4"></stop><stop offset=".65" stop-color="#E0BB45"></stop><stop offset="1" stop-color="#A47A14"></stop></linearGradient></defs><rect x="4" y="12" width="88" height="80" rx="20" fill="#0B2A17" stroke="url(#hdronb1)" stroke-width="3"></rect><rect x="14" y="30" width="28" height="48" rx="6" fill="#F7F3E3"></rect><rect x="54" y="30" width="28" height="48" rx="6" fill="url(#hdronb1)"></rect><text x="28" y="67" text-anchor="middle" font-family="Oswald, Arial Narrow, sans-serif" font-weight="700" font-size="32" fill="#123F24">2</text><text x="68" y="67" text-anchor="middle" font-family="Oswald, Arial Narrow, sans-serif" font-weight="700" font-size="32" fill="#2A2005">1</text><circle cx="48" cy="46" r="2.8" fill="#F7F3E3"></circle><circle cx="48" cy="62" r="2.8" fill="#F7F3E3"></circle><path d="M33 21 L30.5 7.5 L40 13.5 L48 3.5 L56 13.5 L65.5 7.5 L63 21 Z" fill="url(#hdronb1)" stroke="#123F24" stroke-width="2.5" stroke-linejoin="round"></path><circle cx="30.5" cy="6" r="2.4" fill="url(#hdronb1)" stroke="#123F24" stroke-width="1.5"></circle><circle cx="48" cy="3" r="2.4" fill="url(#hdronb1)" stroke="#123F24" stroke-width="1.5"></circle><circle cx="65.5" cy="6" r="2.4" fill="url(#hdronb1)" stroke="#123F24" stroke-width="1.5"></circle><path d="M48 10.5 L48.85 12.83 L51.33 12.92 L49.38 14.45 L50.06 16.83 L48 15.45 L45.94 16.83 L46.62 14.45 L44.67 12.92 L47.15 12.83 Z" fill="#123F24"></path></svg>
+      <div style="display: flex; flex-direction: column; line-height: 1;"><span class="osw goldtext" style="font-size: 8px; font-weight: 600; letter-spacing: .38em;">PREDICTION</span><span class="osw" style="font-size: 19px; font-weight: 700; color: #F7F5EC;">LEGENDS</span></div>
+    </div>
+  </header>
+
+  <main style="flex: 1; padding: 20px 16px 16px; display: flex; flex-direction: column; gap: 14px;">
+    <div style="display: flex; flex-direction: column; gap: 6px;">
+      <span style="align-self: flex-start; font-size: 12px; font-weight: 800; background: #E6F2EA; color: #14512D; border-radius: 999px; padding: 4px 10px;">הגדרה חד־פעמית · 2 צעדים</span>
+      <h1 style="margin: 0; font-size: 26px; font-weight: 900; line-height: 1.2;">רגע לפני שנכנסים למגרש</h1>
+      <p style="margin: 0; font-size: 14px; color: #55645A;">אפשר לשנות הכול אחר כך מהפרופיל.</p>
+    </div>
+
+    <!-- avatar -->
+    <section class="sec">
+      <h2 class="sectitle"><span class="secnum">1</span>בחרו אווטאר</h2>
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+        <p class="secsub">כל אווטאר שייך לשחקן אחד בלבד. <b style="color: #14512D;">{{freeCount}} פנויים</b> מתוך 30.</p>
+        <button type="button" onClick="{{shuffle}}" style="flex-shrink: 0; display: inline-flex; align-items: center; gap: 5px; min-height: 34px; border-radius: 999px; border: 1.5px solid #D9DAD3; background: #FFFFFF; font: inherit; font-size: 12px; font-weight: 800; color: #17231C; padding: 0 10px;"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"></rect><circle cx="9" cy="9" r="1.2" fill="currentColor"></circle><circle cx="15" cy="15" r="1.2" fill="currentColor"></circle><circle cx="15" cy="9" r="1.2" fill="currentColor"></circle><circle cx="9" cy="15" r="1.2" fill="currentColor"></circle></svg>הגרלה</button>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px 4px; justify-items: center;">
+        <sc-for list="{{avatars}}" as="a" hint-placeholder-count="30">
+          <div class="cell">
+            <button class="av" type="button" disabled="{{a.taken}}" aria-pressed="{{a.selected}}" aria-label="{{a.label}}" onClick="{{a.pick}}" style="{{a.style}}"><img src="{{a.url}}" alt="" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block;"></button>
+            <span class="owner" style="color: {{a.ownerColor}};">{{a.owner}}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display: flex; gap: 14px; font-size: 11px; font-weight: 700; color: #55645A;">
+        <span style="display: inline-flex; align-items: center; gap: 5px;"><span style="width: 12px; height: 12px; border-radius: 50%; box-shadow: 0 0 0 2px #1B6B3C; background: #E6F2EA;"></span>הבחירה שלך</span>
+        <span style="display: inline-flex; align-items: center; gap: 5px;"><span style="width: 12px; height: 12px; border-radius: 50%; background: #D9DAD3;"></span>תפוס (עם שם השחקן)</span>
+      </div>
+    </section>
+
+    <!-- default result -->
+    <section class="sec" style="border: 2px solid transparent; background: linear-gradient(#FFFFFF, #FFFFFF) padding-box, linear-gradient(135deg, #B8901F 0%, #E8C65A 28%, #FFF1B8 48%, #E2BD48 68%, #B8901F 100%) border-box;">
+      <h2 class="sectitle"><span class="secnum">2</span>תוצאת ברירת מחדל</h2>
+      <p class="secsub">שכחתם לנחש משחק עד שריקת הפתיחה? התוצאה הזו נכנסת אוטומטית, כדי שלא תצאו מהמחזור עם אפס.</p>
+
+      <div style="display: flex; align-items: flex-end; justify-content: center; gap: 12px; padding: 4px 0;">
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+          <span class="lbl">קבוצת בית</span>
+          <input class="big" inputmode="numeric" maxlength="1" value="1" aria-label="שערים לקבוצת הבית">
+        </div>
+        <span class="osw" style="font-size: 30px; font-weight: 500; color: #A3A39B; padding-bottom: 16px;">:</span>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+          <span class="lbl">קבוצת חוץ</span>
+          <input class="big" inputmode="numeric" maxlength="1" value="1" aria-label="שערים לקבוצת החוץ">
+        </div>
+      </div>
+
+      <div style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;">
+        <button class="preset" type="button" style="border-color: #1B6B3C; background: #E6F2EA; color: #14512D;"><span class="psc"><span>1</span><span>:</span><span>1</span></span></button>
+        <button class="preset" type="button"><span class="psc"><span>1</span><span>:</span><span>0</span></span></button>
+        <button class="preset" type="button"><span class="psc"><span>2</span><span>:</span><span>1</span></span></button>
+        <button class="preset" type="button"><span class="psc"><span>0</span><span>:</span><span>0</span></span></button>
+        <button class="preset" type="button"><span class="psc"><span>1</span><span>:</span><span>2</span></span></button>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 10px; background: #FAFAF7; border: 1px dashed #D9DAD3; border-radius: 12px; padding: 10px 12px;">
+        <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#55645A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"></path><path d="M9 12l2 2 4-4"></path></svg>
+        <span style="font-size: 12px; line-height: 1.5; color: #3F4B43;">ניחוש שהוזן אוטומטית יסומן בכרטיס המשחק בתגית <b style="background: #EFEFEA; border-radius: 6px; padding: 1px 6px;">ברירת מחדל</b></span>
+      </div>
+    </section>
+
+    <button type="button" style="margin-top: auto; height: 54px; border: 0; border-radius: 14px; background: #123F24; color: #F7F5EC; font: inherit; font-size: 16px; font-weight: 800;">שמירה ומעבר לניחושים</button>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1180}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const LIB = [{"u": "../assets/avatars/avatar-01.svg", "o": "נועם"}, {"u": "../assets/avatars/avatar-02.svg", "o": ""}, {"u": "../assets/avatars/avatar-03.svg", "o": ""}, {"u": "../assets/avatars/avatar-04.svg", "o": "דניאל"}, {"u": "../assets/avatars/avatar-05.svg", "o": ""}, {"u": "../assets/avatars/avatar-06.svg", "o": ""}, {"u": "../assets/avatars/avatar-07.svg", "o": ""}, {"u": "../assets/avatars/avatar-08.svg", "o": "יונתן"}, {"u": "../assets/avatars/avatar-09.svg", "o": ""}, {"u": "../assets/avatars/avatar-10.svg", "o": ""}, {"u": "../assets/avatars/avatar-11.svg", "o": "אורי"}, {"u": "../assets/avatars/avatar-12.svg", "o": ""}, {"u": "../assets/avatars/avatar-13.svg", "o": ""}, {"u": "../assets/avatars/avatar-14.svg", "o": "רועי"}, {"u": "../assets/avatars/avatar-15.svg", "o": ""}, {"u": "../assets/avatars/avatar-16.svg", "o": ""}, {"u": "../assets/avatars/avatar-17.svg", "o": ""}, {"u": "../assets/avatars/avatar-18.svg", "o": "גיא"}, {"u": "../assets/avatars/avatar-19.svg", "o": ""}, {"u": "../assets/avatars/avatar-20.svg", "o": ""}, {"u": "../assets/avatars/avatar-21.svg", "o": "עידו"}, {"u": "../assets/avatars/avatar-22.svg", "o": ""}, {"u": "../assets/avatars/avatar-23.svg", "o": ""}, {"u": "../assets/avatars/avatar-24.svg", "o": "תומר"}, {"u": "../assets/avatars/avatar-25.svg", "o": ""}, {"u": "../assets/avatars/avatar-26.svg", "o": ""}, {"u": "../assets/avatars/avatar-27.svg", "o": ""}, {"u": "../assets/avatars/avatar-28.svg", "o": "אלון"}, {"u": "../assets/avatars/avatar-29.svg", "o": ""}, {"u": "../assets/avatars/avatar-30.svg", "o": ""}];
+    const st = this.state || {};
+    const sel = st.sel != null ? st.sel : 5;
+    const free = [];
+    LIB.forEach((a, i) => { if (!a.o) free.push(i); });
+    const avatars = LIB.map((a, i) => {
+      const taken = !!a.o;
+      const selected = i === sel;
+      return {
+        url: a.u,
+        taken: taken,
+        selected: selected,
+        owner: taken ? a.o : (selected ? 'אתה' : ''),
+        ownerColor: selected ? '#14512D' : '#6B6F68',
+        label: taken ? 'אווטאר ' + (i + 1) + ', תפוס על ידי ' + a.o : 'אווטאר ' + (i + 1),
+        style: selected ? 'background: #E6F2EA; box-shadow: 0 0 0 2.5px #1B6B3C;' : (taken ? 'opacity: .35; filter: grayscale(1); cursor: not-allowed;' : ''),
+        pick: () => { if (!taken) this.setState({ sel: i }); }
+      };
+    });
+    const shuffle = () => {
+      const others = free.filter((i) => i !== sel);
+      this.setState({ sel: others[Math.floor(Math.random() * others.length)] });
+    };
+    return { avatars: avatars, freeCount: free.length, shuffle: shuffle };
+  }
+}
+</script>
+</body>
+</html>

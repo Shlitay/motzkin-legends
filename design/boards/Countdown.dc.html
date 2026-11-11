@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>Countdown button states</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&amp;family=Oswald:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#1B6B3C}a:hover{color:#123F24}
+.st{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 0;border-bottom:1px solid #ECECE6}
+.when{display:flex;flex-direction:column;gap:2px}
+.wt{font-size:14px;font-weight:800}
+.wh{font-size:12px;color:#55645A}
+.fab{position:relative;display:flex;align-items:center;gap:7px;height:40px;box-sizing:border-box;padding:0 12px 0 9px;border-radius:999px;border:1.5px solid transparent;font:inherit;cursor:pointer;flex-shrink:0;box-shadow:0 7px 18px rgba(11,42,23,.3)}
+.fab::after{content:"";position:absolute;inset:-4px}
+.fabic{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.fablbl{display:flex;flex-direction:column;align-items:flex-start;line-height:1.05}
+.fabcap{font-size:9px;font-weight:800}
+.fabt{font-family:Oswald,'Arial Narrow',sans-serif;font-size:15px;font-weight:700;letter-spacing:.02em}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 640px; box-sizing: border-box; padding: 24px 20px; background: #FFFFFF; color: #17231C; font-family: Heebo, system-ui, sans-serif; display: flex; flex-direction: column; gap: 4px;">
+  <h1 style="margin: 0; font-size: 22px; font-weight: 900;">כפתור ספירה לאחור</h1>
+  <p style="margin: 0 0 6px; font-size: 13px; line-height: 1.5; color: #55645A;">צף מעל הסרגל התחתון בכל המסכים, רק עד שריקת הפתיחה של המשחק הראשון במחזור. לחיצה גוללת למשחק הבא שעוד לא ניחשתם.</p>
+
+  <div class="st">
+    <span class="when"><span class="wt">יותר מיום</span><span class="wh">שעות:דקות, גם מעל 24 שעות</span></span>
+    <span class="fab" style="background: linear-gradient(#123F24, #123F24) padding-box, linear-gradient(135deg, #B8901F 0%, #E8C65A 28%, #FFF1B8 48%, #E2BD48 68%, #B8901F 100%) border-box;">
+      <span class="fabic" style="background: linear-gradient(135deg, #B8901F 0%, #E8C65A 28%, #FFF1B8 48%, #E2BD48 68%, #B8901F 100%); color: #2A2005;"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13.5" r="7.5"></circle><path d="M12 9.5v4l2.5 1.6"></path><path d="M9.5 2.5h5M12 2.5v3.5M18.6 6.4l1.4-1.4"></path></svg></span>
+      <span class="fablbl"><span class="fabt" dir="ltr" style="color: #F7F5EC;">52:12</span></span>
+    </span>
+  </div>
+
+  <div class="st">
+    <span class="when"><span class="wt">פחות מיום</span><span class="wh">שעות:דקות</span></span>
+    <span class="fab" style="background: linear-gradient(#123F24, #123F24) padding-box, linear-gradient(135deg, #B8901F 0%, #E8C65A 28%, #FFF1B8 48%, #E2BD48 68%, #B8901F 100%) border-box;">
+      <span class="fabic" style="background: linear-gradient(135deg, #B8901F 0%, #E8C65A 28%, #FFF1B8 48%, #E2BD48 68%, #B8901F 100%); color: #2A2005;"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13.5" r="7.5"></circle><path d="M12 9.5v4l2.5 1.6"></path><path d="M9.5 2.5h5M12 2.5v3.5M18.6 6.4l1.4-1.4"></path></svg></span>
+      <span class="fablbl"><span class="fabt" dir="ltr" style="color: #F7F5EC;">04:12</span></span>
+    </span>
+  </div>
+
+  <div class="st">
+    <span class="when"><span class="wt">שעה אחרונה</span><span class="wh">שעות:דקות, בזהב לתשומת לב</span></span>
+    <span class="fab" style="background: linear-gradient(135deg, #B8901F 0%, #E8C65A 28%, #FFF1B8 48%, #E2BD48 68%, #B8901F 100%); border-color: #8A6A12;">
+      <span class="fabic" style="background: #2A2005; color: #FFE9A8;"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13.5" r="7.5"></circle><path d="M12 9.5v4l2.5 1.6"></path><path d="M9.5 2.5h5M12 2.5v3.5M18.6 6.4l1.4-1.4"></path></svg></span>
+      <span class="fablbl"><span class="fabt" dir="ltr" style="color: #2A2005;">00:12</span></span>
+    </span>
+  </div>
+
+  <div class="st" style="border-bottom: 0;">
+    <span class="when"><span class="wt">המחזור התחיל</span><span class="wh">הכפתור נעלם</span></span>
+    <span style="display: flex; align-items: center; justify-content: center; width: 130px; height: 40px; border-radius: 999px; border: 2px dashed #D9DAD3; font-size: 12px; font-weight: 700; color: #6B6F68;">לא מוצג</span>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":640}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,164 @@
+{
+  "generator": "@dicebear/core + @dicebear/collection (croodles)",
+  "options": {
+    "radius": 50,
+    "backgroundColor": [
+      "fbf3d9",
+      "e6f2ea",
+      "f1f1ec"
+    ]
+  },
+  "license": "Croodles by vijay verma, CC BY 4.0, credit required",
+  "avatars": [
+    {
+      "id": "avatar-01",
+      "style": "croodles",
+      "seed": "Noam"
+    },
+    {
+      "id": "avatar-02",
+      "style": "croodles",
+      "seed": "legend0"
+    },
+    {
+      "id": "avatar-03",
+      "style": "croodles",
+      "seed": "legend1"
+    },
+    {
+      "id": "avatar-04",
+      "style": "croodles",
+      "seed": "Daniel"
+    },
+    {
+      "id": "avatar-05",
+      "style": "croodles",
+      "seed": "legend5"
+    },
+    {
+      "id": "avatar-06",
+      "style": "croodles",
+      "seed": "Uri"
+    },
+    {
+      "id": "avatar-07",
+      "style": "croodles",
+      "seed": "legend7"
+    },
+    {
+      "id": "avatar-08",
+      "style": "croodles",
+      "seed": "Omri"
+    },
+    {
+      "id": "avatar-09",
+      "style": "croodles",
+      "seed": "legend9"
+    },
+    {
+      "id": "avatar-10",
+      "style": "croodles",
+      "seed": "legend14"
+    },
+    {
+      "id": "avatar-11",
+      "style": "croodles",
+      "seed": "Yonatan"
+    },
+    {
+      "id": "avatar-12",
+      "style": "croodles",
+      "seed": "legend18"
+    },
+    {
+      "id": "avatar-13",
+      "style": "croodles",
+      "seed": "legend19"
+    },
+    {
+      "id": "avatar-14",
+      "style": "croodles",
+      "seed": "Roy"
+    },
+    {
+      "id": "avatar-15",
+      "style": "croodles",
+      "seed": "legend24"
+    },
+    {
+      "id": "avatar-16",
+      "style": "croodles",
+      "seed": "Nir"
+    },
+    {
+      "id": "avatar-17",
+      "style": "croodles",
+      "seed": "legend26"
+    },
+    {
+      "id": "avatar-18",
+      "style": "croodles",
+      "seed": "Guy"
+    },
+    {
+      "id": "avatar-19",
+      "style": "croodles",
+      "seed": "legend27"
+    },
+    {
+      "id": "avatar-20",
+      "style": "croodles",
+      "seed": "legend28"
+    },
+    {
+      "id": "avatar-21",
+      "style": "croodles",
+      "seed": "Ido"
+    },
+    {
+      "id": "avatar-22",
+      "style": "croodles",
+      "seed": "legend29"
+    },
+    {
+      "id": "avatar-23",
+      "style": "croodles",
+      "seed": "legend32"
+    },
+    {
+      "id": "avatar-24",
+      "style": "croodles",
+      "seed": "Tomer"
+    },
+    {
+      "id": "avatar-25",
+      "style": "croodles",
+      "seed": "legend35"
+    },
+    {
+      "id": "avatar-26",
+      "style": "croodles",
+      "seed": "Sagi"
+    },
+    {
+      "id": "avatar-27",
+      "style": "croodles",
+      "seed": "legend43"
+    },
+    {
+      "id": "avatar-28",
+      "style": "croodles",
+      "seed": "Alon"
+    },
+    {
+      "id": "avatar-29",
+      "style": "croodles",
+      "seed": "legend48"
+    },
+    {
+      "id": "avatar-30",
+      "style": "croodles",
+      "seed": "legend56"
+    }
+  ]
+}

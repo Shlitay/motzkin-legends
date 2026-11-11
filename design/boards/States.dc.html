@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>Prediction card states</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800&amp;family=Oswald:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#1B6B3C}a:hover{color:#123F24}
+.card{width:358px;box-sizing:border-box;background:#FFFFFF;border:1px solid #E3E3DC;border-radius:18px;overflow:hidden;box-shadow:0 1px 2px rgba(17,17,17,.05)}
+.meta{display:flex;align-items:center;justify-content:space-between;padding:12px 14px 0}
+.pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:700}
+.when{font-size:12px;font-weight:500;color:#55645A}
+.row{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:8px;padding:14px 12px 14px}
+.team{display:flex;flex-direction:column;align-items:center;gap:6px}
+.crest{width:40px;height:40px;object-fit:contain}
+.tname{font-size:13px;font-weight:700;white-space:nowrap}
+.center{display:flex;flex-direction:column;align-items:center;gap:7px;min-width:124px}
+.score{display:flex;align-items:center;gap:10px;font-family:Oswald,'Arial Narrow',sans-serif;font-size:40px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.colon{font-size:26px;font-weight:500;color:#A3A39B}
+.pick{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#55645A}
+.pickn{display:inline-flex;align-items:center;gap:5px;font-family:Oswald,'Arial Narrow',sans-serif;font-weight:600;font-size:14px;color:#17231C;background:#F1F1EC;border-radius:6px;padding:1px 8px}
+.inputs{display:flex;align-items:center;gap:8px}
+.sbox{width:46px;height:52px;box-sizing:border-box;border-radius:10px;text-align:center;font-family:Oswald,'Arial Narrow',sans-serif;font-size:26px;font-weight:700;color:#17231C;outline:none}
+.sbox::placeholder{color:#C9C3A8}
+.caption{font-size:12px;font-weight:600;color:#55645A}
+.peek{display:flex;justify-content:center;padding:0 0 10px}
+.peekbtn{display:inline-flex;align-items:center;gap:4px;min-height:32px;background:none;border:0;font:inherit;font-size:12px;font-weight:600;color:#1B6B3C;padding:0 8px}
+.strip{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;min-height:44px;box-sizing:border-box;font-size:13px;font-weight:700}
+.olabel{display:inline-flex;align-items:center;gap:6px}
+.pts{display:inline-flex;align-items:baseline;gap:5px}
+.ptsn{font-family:Oswald,'Arial Narrow',sans-serif;font-size:22px;font-weight:700;line-height:1}
+.ptsc{font-size:12px;font-weight:600}
+.dot{width:7px;height:7px;border-radius:50%;display:inline-block}
+@keyframes pl-pulse{0%,100%{opacity:1}50%{opacity:.25}}
+.pulse{animation:pl-pulse 1.4s ease-in-out infinite}
+.slot{display:flex;flex-direction:column;gap:10px}
+.slotcap{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:#3F4B43}
+.num{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:#17231C;color:#FFFFFF;font-family:Oswald,'Arial Narrow',sans-serif;font-size:12px;font-weight:600}
+.rowhead{display:flex;align-items:baseline;gap:12px;margin:0}
+.rowtitle{font-size:20px;font-weight:800;color:#17231C}
+.rowsub{font-size:13px;color:#55645A}
+.paths{margin:0 12px 6px;border:1px solid #ECECE6;border-radius:12px;background:#FAFAF7;padding:9px 10px;display:flex;flex-direction:column;gap:7px}
+.pathshead{font-size:11px;font-weight:800;color:#55645A}
+.path{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px;font-weight:600;color:#17231C}
+.pathwho{display:inline-flex;align-items:center;gap:6px}
+.mini{width:18px;height:18px;object-fit:contain}
+.pathres{display:inline-flex;align-items:center;gap:7px}
+.psc{display:inline-flex;gap:3px;font-family:Oswald,'Arial Narrow',sans-serif;font-weight:600;font-size:13px}
+.chip{border-radius:999px;padding:2px 8px;font-size:11px;font-weight:800;white-space:nowrap}
+.gone{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:#6B6F68}
+@media (prefers-reduced-motion: reduce){.pulse{animation:none}}
+</style>
+</helmet>
+<div dir="rtl" style="width: 1320px; height: 1380px; box-sizing: border-box; padding: 48px 64px; background: #F7F5EC; color: #17231C; font-family: Heebo, system-ui, sans-serif; display: flex; flex-direction: column; gap: 30px;">
+
+  <!-- Header + legend -->
+  <header style="display: flex; align-items: flex-end; justify-content: space-between; gap: 24px;">
+    <div style="display: flex; flex-direction: column; gap: 6px;">
+      <h1 style="margin: 0; font-size: 34px; font-weight: 800;">כרטיס משחק · 8 מצבים</h1>
+      <p style="margin: 0; font-size: 15px; color: #55645A;">כרטיס אחד לכל החיים של משחק: מנחשים, נועלים, עוקבים בשידור חי, מקבלים נקודות.</p>
+      <p style="margin: 0; font-size: 14px; font-weight: 700; color: #3F4B43;">ניקוד: בול 10 · בכיוון 5 · בכיוון עם הפרש מדויק 6 · כיוון תיקו (לא מדויק) 6 · פספוס 0</p>
+    </div>
+    <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end;">
+      <span style="display: inline-flex; align-items: center; gap: 6px; background: linear-gradient(135deg, #F6E3A4 0%, #FFF8DC 45%, #F1DA92 100%); color: #5C4400; border-radius: 999px; padding: 6px 12px; font-size: 13px; font-weight: 700;"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9l4.6 3.6L12 5.5l4.4 7.1L21 9l-1.8 9H4.8z"></path><rect x="4.8" y="19.2" width="14.4" height="2" rx="1"></rect><circle cx="3" cy="8" r="1.6"></circle><circle cx="12" cy="4.2" r="1.7"></circle><circle cx="21" cy="8" r="1.6"></circle></svg>בול = זהב</span>
+      <span style="display: inline-flex; align-items: center; gap: 6px; background: #E6F2EA; color: #14512D; border-radius: 999px; padding: 6px 12px; font-size: 13px; font-weight: 700;"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16l6-6 4 4 6-6"></path><path d="M14 8h6v6"></path></svg>בכיוון = ירוק</span>
+      <span style="display: inline-flex; align-items: center; gap: 6px; background: #ECECE6; color: #3F4440; border-radius: 999px; padding: 6px 12px; font-size: 13px; font-weight: 700;"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>פספוס = אפור</span>
+      <span style="display: inline-flex; align-items: center; gap: 6px; background: #FFFFFF; border: 1.5px dashed #9CCAAE; color: #3F4B43; border-radius: 999px; padding: 5px 12px; font-size: 13px; font-weight: 700;">מקווקו = נקודות זמניות</span>
+      <span style="display: inline-flex; align-items: center; gap: 6px; background: #17231C; color: #FFFFFF; border-radius: 999px; padding: 6px 12px; font-size: 13px; font-weight: 700;">מלא = סופי</span>
+    </div>
+  </header>
+
+  <!-- ROW A: before the round -->
+  <section style="display: flex; flex-direction: column; gap: 14px;">
+    <h2 class="rowhead"><span class="rowtitle">לפני המחזור</span><span class="rowsub">התיבות פתוחות לעריכה עד שריקת הפתיחה של אותו יום</span></h2>
+    <div style="display: grid; grid-template-columns: repeat(3, 358px); gap: 48px;">
+
+      <!-- 1 -->
+      <div class="slot">
+        <span class="slotcap"><span class="num">1</span>עוד לא ניחשת</span>
+        <article class="card">
+          <div class="meta">
+            <span class="pill" style="background: #EFEFEA; color: #55645A;"><span class="dot" style="background: #8E918A;"></span>טרם החל</span>
+            <span class="when">שבת · 20:30</span>
+          </div>
+          <div class="row">
+            <div class="team"><img class="crest" src="../assets/crests/maccabi-haifa.png" alt=""><span class="tname">מכבי חיפה</span></div>
+            <div class="center">
+              <div class="inputs">
+                <input class="sbox" inputmode="numeric" maxlength="1" placeholder="–" aria-label="שערים למכבי חיפה" style="border: 2px dashed #C9A227; background: #FFFDF5;">
+                <span class="colon" style="font-family: Oswald, sans-serif;">:</span>
+                <input class="sbox" inputmode="numeric" maxlength="1" placeholder="–" aria-label="שערים להפועל באר שבע" style="border: 2px dashed #C9A227; background: #FFFDF5;">
+              </div>
+              <span class="caption">הניחוש שלך</span>
+            </div>
+            <div class="team"><img class="crest" src="../assets/crests/hapoel-beer-sheva.png" alt=""><span class="tname">הפועל ב״ש</span></div>
+          </div>
+          <div class="strip" style="background: #FFF6DF; color: #6E5200;">
+            <span class="olabel"><svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>עוד לא ניחשת</span>
+            <span class="ptsc">ננעל בשריקת הפתיחה</span>
+          </div>
+        </article>
+      </div>
+
+      <!-- 2 -->
+      <div class="slot">
+        <span class="slotcap"><span class="num">2</span>ניחשת, המשחק עוד לא התחיל</span>
+        <article class="card">
+          <div class="meta">
+            <span class="pill" style="background: #EFEFEA; color: #55645A;"><span class="dot" style="background: #8E918A;"></span>טרם החל</span>
+            <span class="when">ראשון · 19:00</span>
+          </div>
+          <div class="row">
+            <div class="team"><img class="crest" src="../assets/crests/hapoel-tel-aviv.png" alt=""><span class="tname">הפועל ת״א</span></div>
+            <div class="center">
+              <div class="inputs">
+                <input class="sbox" inputmode="numeric" maxlength="1" value="1" aria-label="שערים להפועל תל אביב" style="border: 2px solid #1B6B3C; background: #FFFFFF;">
+                <span class="colon" style="font-family: Oswald, sans-serif;">:</span>
+                <input class="sbox" inputmode="numeric" maxlength="1" value="2" aria-label="שערים למכבי תל אביב" style="border: 2px solid #1B6B3C; background: #FFFFFF;">
+              </div>
+              <span class="caption">הניחוש שלך</span>
+            </div>
+            <div class="team"><img class="crest" src="../assets/crests/maccabi-tel-aviv.png" alt=""><span class="tname">מכבי ת״א</span></div>
+          </div>
+          <div class="strip" style="background: #E6F2EA; color: #14512D;">
+            <span class="olabel"><svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>הניחוש נשמר</span>
+            <span class="ptsc">אפשר לשנות עד הפתיחה</span>
+          </div>
+        </article>
+      </div>
+
+      <!-- explainer -->
+      <div style="align-self: end; background: #FFFFFF; border: 1px solid #E3E3DC; border-radius: 18px; padding: 18px 20px; display: flex; flex-direction: column; gap: 8px;">
+        <span style="font-size: 14px; font-weight: 800;">מה השתנה מהיום</span>
+        <ul style="margin: 0; padding-inline-start: 18px; font-size: 13px; line-height: 1.6; color: #3F4B43;">
+          <li>תיבות גדולות (46×52) במקום 28px, נוח לאגודל</li>
+          <li>מקווקו זהב = מחכה לך; מסגרת ירוקה = נשמר</li>
+          <li>רצועה תחתונה קבועה לכל המצבים, כך שהכרטיס לא קופץ כשהמשחק מתחיל</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ROW B: live -->
+  <section style="display: flex; flex-direction: column; gap: 14px;">
+    <h2 class="rowhead"><span class="rowtitle">במהלך המשחק</span><span class="rowsub">הניחוש נעול, התוצאה חיה, והנקודות זמניות</span></h2>
+    <div style="display: grid; grid-template-columns: repeat(3, 358px); gap: 48px;">
+
+      <!-- 3 live towards -->
+      <div class="slot">
+        <span class="slotcap"><span class="num">3</span>חי · בכיוון</span>
+        <article class="card" style="border: 1.5px solid #9CCAAE;">
+          <div class="meta">
+            <span class="pill" style="background: #E6F2EA; color: #14512D;"><span class="dot pulse" style="background: #1B6B3C;"></span>בשידור חי · 67׳</span>
+            <span class="when">תוצאה חיה</span>
+          </div>
+          <div class="row">
+            <div class="team"><img class="crest" src="../assets/crests/hapoel-petah-tikva.png" alt=""><span class="tname">הפועל פ״ת</span></div>
+            <div class="center">
+              <div class="score"><span>1</span><span class="colon">:</span><span>0</span></div>
+              <span class="pick">ניחשת <span class="pickn" style="background: #E6F2EA; color: #14512D;"><span>2</span><span>:</span><span>0</span></span></span>
+            </div>
+            <div class="team"><img class="crest" src="../assets/crests/beitar-jerusalem.png" alt=""><span class="tname">בית״ר י־ם</span></div>
+          </div>
+          <div class="paths">
+            <span class="pathshead">איך עוד אפשר להרוויח</span>
+            <div class="path"><span class="pathwho"><img class="mini" src="../assets/crests/hapoel-petah-tikva.png" alt="">עוד גול להפועל פ״ת</span><span class="pathres"><span class="psc"><span>2</span><span>:</span><span>0</span></span><span class="chip" style="background: linear-gradient(135deg, #F6E3A4 0%, #FFF8DC 45%, #F1DA92 100%); color: #5C4400;">בול +10</span></span></div>
+          </div>
+          <div class="peek"><button class="peekbtn" type="button">ניחושי כל המשתתפים<svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 9l6 6 6-6"></path></svg></button></div>
+          <div class="strip" style="background: #EEF6F0; color: #14512D; border-top: 1.5px dashed #9CCAAE;">
+            <span class="olabel"><svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16l6-6 4 4 6-6"></path><path d="M14 8h6v6"></path></svg>בכיוון</span>
+            <span class="pts"><span class="ptsn" dir="ltr">+5</span><span class="ptsc">כרגע</span></span>
+          </div>
+        </article>
+      </div>
+
+      <!-- 4 live exact -->
+      <div class="slot">
+        <span class="slotcap"><span class="num">4</span>חי · בול</span>
+        <article class="card" style="border: 2px solid transparent; background: linear-gradient(#FFFFFF, #FFFFFF) padding-box, linear-gradient(135deg, #B8901F 0%, #E8C65A 28%, #FFF1B8 48%, #E2BD48 68%, #B8901F 100%) border-box; box-shadow: 0 0 0 4px rgba(201,162,39,.16);">
+          <div class="meta">
+            <span class="pill" style="background: #E6F2EA; color: #14512D;"><span class="dot pulse" style="background: #1B6B3C;"></span>בשידור חי · 81׳</span>
+            <span class="when">תוצאה חיה</span>
+          </div>
+          <div class="row">
+            <div class="team"><img class="crest" src="../assets/crests/hapoel-jerusalem.png" alt=""><span class="tname">הפועל י־ם</span></div>
+            <div class="center">
+              <div class="score" style="color: #17231C;"><span>2</span><span class="colon" style="background: linear-gradient(135deg, #B8901F 0%, #E8C65A 28%, #FFF1B8 48%, #E2BD48 68%, #B8901F 100%); -webkit-background-clip: text; background-clip: text; color: transparent;">:</span><span>1</span></div>
+              <span class="pick" style="color: #6E5200;">ניחשת <span class="pickn" style="background: linear-gradient(135deg, #B8901F 0%, #E8C65A 28%, #FFF1B8 48%, #E2BD48 68%, #B8901F 100%); color: #2A2005;"><span>2</span><span>:</span><span>1</span></span></span>
+            </div>
+            <div class="team"><img class="crest" src="../assets/crests/maccabi-netanya.png" alt=""><span class="tname">מכבי נתניה</span></div>
+          </div>
+          <div class="peek"><button class="peekbtn" type="button">ניחושי כל המשתתפים<svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 9l6 6 6-6"></path></svg></button></div>
+          <div class="strip" style="background: linear-gradient(135deg, #F6E3A4 0%, #FFF8DC 45%, #F1DA92 100%); color: #5C4400; border-top: 1.5px dashed #E2C25A;">
+            <span class="olabel"><svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9l4.6 3.6L12 5.5l4.4 7.1L21 9l-1.8 9H4.8z"></path><rect x="4.8" y="19.2" width="14.4" height="2" rx="1"></rect><circle cx="3" cy="8" r="1.6"></circle><circle cx="12" cy="4.2" r="1.7"></circle><circle cx="21" cy="8" r="1.6"></circle></svg>בול! תחזיקו את התוצאה</span>
+            <span class="pts"><span class="ptsn" dir="ltr">+10</span><span class="ptsc">כרגע</span></span>
+          </div>
+        </article>
+      </div>
+
+      <!-- 5 live miss -->
+      <div class="slot">
+        <span class="slotcap"><span class="num">5</span>חי · פספוס</span>
+        <article class="card">
+          <div class="meta">
+            <span class="pill" style="background: #E6F2EA; color: #14512D;"><span class="dot pulse" style="background: #1B6B3C;"></span>בשידור חי · 54׳</span>
+            <span class="when">תוצאה חיה</span>
+          </div>
+          <div class="row">
+            <div class="team"><img class="crest" src="../assets/crests/maccabi-haifa.png" alt=""><span class="tname">מכבי חיפה</span></div>
+            <div class="center">
+              <div class="score"><span>0</span><span class="colon">:</span><span>2</span></div>
+              <span class="pick">ניחשת <span class="pickn"><span>2</span><span>:</span><span>1</span></span></span>
+            </div>
+            <div class="team"><img class="crest" src="../assets/crests/hapoel-beer-sheva.png" alt=""><span class="tname">הפועל ב״ש</span></div>
+          </div>
+          <div class="paths">
+            <span class="pathshead">איך עוד אפשר להרוויח</span>
+            <div class="path"><span class="pathwho"><img class="mini" src="../assets/crests/maccabi-haifa.png" alt="">3 גולים לחיפה</span><span class="pathres"><span class="psc"><span>3</span><span>:</span><span>2</span></span><span class="chip" style="background: #E6F2EA; color: #14512D;">כיוון + הפרש +6</span></span></div>
+          </div>
+          <div class="peek"><button class="peekbtn" type="button">ניחושי כל המשתתפים<svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 9l6 6 6-6"></path></svg></button></div>
+          <div class="strip" style="background: #F4F4F0; color: #4E534D; border-top: 1.5px dashed #D9DAD3;">
+            <span class="olabel"><svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>כרגע פספוס, עוד יש זמן</span>
+            <span class="pts"><span class="ptsn">0</span><span class="ptsc">כרגע</span></span>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ROW C: ended -->
+  <section style="display: flex; flex-direction: column; gap: 14px;">
+    <h2 class="rowhead"><span class="rowtitle">אחרי המשחק</span><span class="rowsub">תוצאה סופית, הנקודות נכנסו לטבלה</span></h2>
+    <div style="display: grid; grid-template-columns: repeat(3, 358px); gap: 48px;">
+
+      <!-- 6 ended towards -->
+      <div class="slot">
+        <span class="slotcap"><span class="num">6</span>הסתיים · בכיוון + הפרש מדויק</span>
+        <article class="card">
+          <div class="meta">
+            <span class="pill" style="background: #EFEFEA; color: #55645A;"><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4h11l-2 4 2 4H5"></path></svg>הסתיים</span>
+            <span class="when">תוצאה סופית</span>
+          </div>
+          <div class="row">
+            <div class="team"><img class="crest" src="../assets/crests/hapoel-tel-aviv.png" alt=""><span class="tname">הפועל ת״א</span></div>
+            <div class="center">
+              <div class="score"><span>1</span><span class="colon">:</span><span>3</span></div>
+              <span class="pick">ניחשת <span class="pickn" style="background: #E6F2EA; color: #14512D;"><span>0</span><span>:</span><span>2</span></span></span>
+            </div>
+            <div class="team"><img class="crest" src="../assets/crests/maccabi-tel-aviv.png" alt=""><span class="tname">מכבי ת״א</span></div>
+          </div>
+          <div class="peek"><button class="peekbtn" type="button">ניחושי כל המשתתפים<svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 9l6 6 6-6"></path></svg></button></div>
+          <div class="strip" style="background: #1B6B3C; color: #FFFFFF;">
+            <span class="olabel"><svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16l6-6 4 4 6-6"></path><path d="M14 8h6v6"></path></svg>בכיוון + הפרש מדויק</span>
+            <span class="pts"><span class="ptsn" dir="ltr">+6</span><span class="ptsc">נקודות</span></span>
+          </div>
+        </article>
+      </div>
+
+      <!-- 7 ended exact -->
+      <div class="slot">
+        <span class="slotcap"><span class="num">7</span>הסתיים · בול</span>
+        <article class="card" style="border: 2px solid transparent; background: linear-gradient(#FFFFFF, #FFFFFF) padding-box, linear-gradient(135deg, #B8901F 0%, #E8C65A 28%, #FFF1B8 48%, #E2BD48 68%, #B8901F 100%) border-box;">
+          <div class="meta">
+            <span class="pill" style="background: #EFEFEA; color: #55645A;"><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4h11l-2 4 2 4H5"></path></svg>הסתיים</span>
+            <span class="when">תוצאה סופית</span>
+          </div>
+          <div class="row">
+            <div class="team"><img class="crest" src="../assets/crests/hapoel-petah-tikva.png" alt=""><span class="tname">הפועל פ״ת</span></div>
+            <div class="center" style="position: relative;">
+              <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="url(#plgold12)" style="position: absolute; top: -6px; right: 2px;"><defs><linearGradient id="plgold12" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#A47A14"></stop><stop offset=".35" stop-color="#F3D36B"></stop><stop offset=".5" stop-color="#FFF3C4"></stop><stop offset=".65" stop-color="#E0BB45"></stop><stop offset="1" stop-color="#A47A14"></stop></linearGradient></defs><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8z"></path></svg>
+              <svg aria-hidden="true" width="10" height="10" viewBox="0 0 24 24" fill="url(#plgold13)" style="position: absolute; top: 18px; left: 0;"><defs><linearGradient id="plgold13" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#A47A14"></stop><stop offset=".35" stop-color="#F3D36B"></stop><stop offset=".5" stop-color="#FFF3C4"></stop><stop offset=".65" stop-color="#E0BB45"></stop><stop offset="1" stop-color="#A47A14"></stop></linearGradient></defs><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8z"></path></svg>
+              <div class="score"><span>2</span><span class="colon" style="background: linear-gradient(135deg, #B8901F 0%, #E8C65A 28%, #FFF1B8 48%, #E2BD48 68%, #B8901F 100%); -webkit-background-clip: text; background-clip: text; color: transparent;">:</span><span>0</span></div>
+              <span class="pick" style="color: #6E5200;">ניחשת <span class="pickn" style="background: linear-gradient(135deg, #B8901F 0%, #E8C65A 28%, #FFF1B8 48%, #E2BD48 68%, #B8901F 100%); color: #2A2005;"><span>2</span><span>:</span><span>0</span></span></span>
+            </div>
+            <div class="team"><img class="crest" src="../assets/crests/beitar-jerusalem.png" alt=""><span class="tname">בית״ר י־ם</span></div>
+          </div>
+          <div class="peek"><button class="peekbtn" type="button">ניחושי כל המשתתפים<svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 9l6 6 6-6"></path></svg></button></div>
+          <div class="strip" style="background: linear-gradient(135deg, #B8901F 0%, #E8C65A 28%, #FFF1B8 48%, #E2BD48 68%, #B8901F 100%); color: #2A2005;">
+            <span class="olabel"><svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9l4.6 3.6L12 5.5l4.4 7.1L21 9l-1.8 9H4.8z"></path><rect x="4.8" y="19.2" width="14.4" height="2" rx="1"></rect><circle cx="3" cy="8" r="1.6"></circle><circle cx="12" cy="4.2" r="1.7"></circle><circle cx="21" cy="8" r="1.6"></circle></svg>בול! ניחוש מדויק</span>
+            <span class="pts"><span class="ptsn" dir="ltr">+10</span><span class="ptsc">נקודות</span></span>
+          </div>
+        </article>
+      </div>
+
+      <!-- 8 ended miss -->
+      <div class="slot">
+        <span class="slotcap"><span class="num">8</span>הסתיים · פספוס</span>
+        <article class="card">
+          <div class="meta">
+            <span class="pill" style="background: #EFEFEA; color: #55645A;"><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4h11l-2 4 2 4H5"></path></svg>הסתיים</span>
+            <span class="when">תוצאה סופית</span>
+          </div>
+          <div class="row">
+            <div class="team"><img class="crest" src="../assets/crests/hapoel-jerusalem.png" alt=""><span class="tname">הפועל י־ם</span></div>
+            <div class="center">
+              <div class="score"><span>1</span><span class="colon">:</span><span>1</span></div>
+              <span class="pick">ניחשת <span class="pickn" style="text-decoration: line-through; color: #6B6F68;"><span>2</span><span>:</span><span>0</span></span></span>
+            </div>
+            <div class="team"><img class="crest" src="../assets/crests/maccabi-netanya.png" alt=""><span class="tname">מכבי נתניה</span></div>
+          </div>
+          <div class="peek"><button class="peekbtn" type="button">ניחושי כל המשתתפים<svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 9l6 6 6-6"></path></svg></button></div>
+          <div class="strip" style="background: #D9DAD3; color: #3F4440;">
+            <span class="olabel"><svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>פספוס</span>
+            <span class="pts"><span class="ptsn">0</span><span class="ptsc">נקודות</span></span>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1320,"height":1380}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

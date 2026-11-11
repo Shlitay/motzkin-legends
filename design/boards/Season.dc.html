@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>Leaderboard – season</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&amp;family=Oswald:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#1B6B3C}a:hover{color:#123F24}
+.osw{font-family:Oswald,'Arial Narrow',sans-serif}
+.goldtext{background:linear-gradient(135deg,#B8901F 0%,#E8C65A 28%,#FFF1B8 48%,#E2BD48 68%,#B8901F 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.seg{display:flex;background:#ECECE6;border-radius:999px;padding:4px;gap:4px}
+.segb{flex:1;min-height:38px;border:0;border-radius:999px;font:inherit;font-size:14px;font-weight:800;background:transparent;color:#55645A;display:flex;align-items:center;justify-content:center;text-decoration:none}
+.grid{display:grid;grid-template-columns:24px 30px minmax(0,1fr) 36px 36px 36px 44px;align-items:center;gap:6px;padding:0 10px}
+.row{min-height:50px;border-bottom:1px solid #F0F0EA;text-decoration:none;color:#17231C}
+.rank{font-family:Oswald,'Arial Narrow',sans-serif;font-size:14px;font-weight:600;text-align:center}
+.av{width:30px;height:30px;border-radius:50%;background:#F1F1EC;display:flex;align-items:center;justify-content:center;font-size:16px}
+.name{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.num{font-family:Oswald,'Arial Narrow',sans-serif;font-size:14px;font-weight:600;text-align:center}
+.pts{font-family:Oswald,'Arial Narrow',sans-serif;font-size:18px;font-weight:700;text-align:left}
+.nav{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:700;text-decoration:none;min-width:64px;min-height:44px;justify-content:center}
+</style>
+</helmet>
+<div dir="rtl" style="width: 390px; height: 1300px; box-sizing: border-box; background: #F7F5EC; color: #17231C; font-family: Heebo, system-ui, sans-serif; display: flex; flex-direction: column;">
+
+  <header style="height: 60px; flex-shrink: 0; background: #123F24; display: flex; align-items: center; justify-content: space-between; padding: 0 16px;">
+    <div dir="ltr" style="display: flex; align-items: center; gap: 8px;">
+      <svg role="img" aria-label="Prediction Legends" width="38" height="38" viewBox="0 0 96 96" style="direction: ltr;"><defs><linearGradient id="hdrsea1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#A47A14"></stop><stop offset=".35" stop-color="#F3D36B"></stop><stop offset=".5" stop-color="#FFF3C4"></stop><stop offset=".65" stop-color="#E0BB45"></stop><stop offset="1" stop-color="#A47A14"></stop></linearGradient></defs><rect x="4" y="12" width="88" height="80" rx="20" fill="#0B2A17" stroke="url(#hdrsea1)" stroke-width="3"></rect><rect x="14" y="30" width="28" height="48" rx="6" fill="#F7F3E3"></rect><rect x="54" y="30" width="28" height="48" rx="6" fill="url(#hdrsea1)"></rect><text x="28" y="67" text-anchor="middle" font-family="Oswald, Arial Narrow, sans-serif" font-weight="700" font-size="32" fill="#123F24">2</text><text x="68" y="67" text-anchor="middle" font-family="Oswald, Arial Narrow, sans-serif" font-weight="700" font-size="32" fill="#2A2005">1</text><circle cx="48" cy="46" r="2.8" fill="#F7F3E3"></circle><circle cx="48" cy="62" r="2.8" fill="#F7F3E3"></circle><path d="M33 21 L30.5 7.5 L40 13.5 L48 3.5 L56 13.5 L65.5 7.5 L63 21 Z" fill="url(#hdrsea1)" stroke="#123F24" stroke-width="2.5" stroke-linejoin="round"></path><circle cx="30.5" cy="6" r="2.4" fill="url(#hdrsea1)" stroke="#123F24" stroke-width="1.5"></circle><circle cx="48" cy="3" r="2.4" fill="url(#hdrsea1)" stroke="#123F24" stroke-width="1.5"></circle><circle cx="65.5" cy="6" r="2.4" fill="url(#hdrsea1)" stroke="#123F24" stroke-width="1.5"></circle><path d="M48 10.5 L48.85 12.83 L51.33 12.92 L49.38 14.45 L50.06 16.83 L48 15.45 L45.94 16.83 L46.62 14.45 L44.67 12.92 L47.15 12.83 Z" fill="#123F24"></path></svg>
+      <div style="display: flex; flex-direction: column; line-height: 1;"><span class="osw goldtext" style="font-size: 8px; font-weight: 600; letter-spacing: .38em;">PREDICTION</span><span class="osw" style="font-size: 19px; font-weight: 700; color: #F7F5EC;">LEGENDS</span></div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 6px;"><span style="font-size: 12px; font-weight: 800; background: linear-gradient(135deg, #B8901F 0%, #E8C65A 28%, #FFF1B8 48%, #E2BD48 68%, #B8901F 100%); color: #2A2005; border-radius: 999px; padding: 5px 10px;">קופה ₪[סכום]</span><button type="button" aria-label="שיתוף המשחק עם חבר" style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; border: 1px solid #2A5A3C; background: #0B2A17; padding: 0; flex-shrink: 0;"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F7F5EC" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.6"></circle><circle cx="6" cy="12" r="2.6"></circle><circle cx="18" cy="19" r="2.6"></circle><path d="M8.3 10.8l7.4-4.4M8.3 13.2l7.4 4.4"></path></svg></button><button type="button" aria-label="תרומה למשחק" style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; border: 1px solid #2A5A3C; background: #0B2A17; padding: 0; flex-shrink: 0;"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24"><defs><linearGradient id="dnseas" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#B8901F"></stop><stop offset=".5" stop-color="#FFF1B8"></stop><stop offset="1" stop-color="#C9A227"></stop></linearGradient></defs><path d="M12 20.5s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.6a4.3 4.3 0 0 1 7.5 2.7c0 5.6-7.5 10.2-7.5 10.2z" fill="url(#dnseas)"></path><text x="12" y="16" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="900" fill="#2A2005">$</text></svg></button></div>
+  </header>
+
+  <main style="flex: 1; padding: 16px; display: flex; flex-direction: column; gap: 14px;">
+    <h1 style="margin: 0; font-size: 26px; font-weight: 900;">טבלת הליגה</h1>
+
+    <div class="seg" role="tablist">
+      <a class="segb" href="Leaderboard.dc.html" role="tab" aria-selected="false">המחזור</a>
+      <button class="segb" type="button" role="tab" aria-selected="true" style="background: #123F24; color: #F7F5EC;">העונה</button>
+    </div>
+
+    <!-- season leader -->
+    <section style="display: flex; align-items: center; gap: 14px; border-radius: 20px; padding: 14px 16px; background: #123F24; color: #F7F5EC;">
+      <div style="width: 58px; height: 58px; border-radius: 50%; box-sizing: border-box; border: 3px solid transparent; background: linear-gradient(#FFFFFF, #FFFFFF) padding-box, linear-gradient(135deg, #B8901F 0%, #E8C65A 28%, #FFF1B8 48%, #E2BD48 68%, #B8901F 100%) border-box; display: flex; align-items: center; justify-content: center; font-size: 30px; flex-shrink: 0;"><img src="../assets/avatars/avatar-04.svg" alt="" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block;"></div>
+      <div style="flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0;">
+        <span style="display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 800; color: #E8C65A;"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9l4.6 3.6L12 5.5l4.4 7.1L21 9l-1.8 9H4.8z"></path><rect x="4.8" y="19.2" width="14.4" height="2" rx="1"></rect></svg>אגדת העונה</span>
+        <span style="font-size: 19px; font-weight: 900;">דניאל</span>
+        <span style="font-size: 12px; color: #CFE0D4;">14 בולים · 12 מחזורים</span>
+      </div>
+      <span class="osw goldtext" style="font-size: 34px; font-weight: 700; line-height: 1;">468</span>
+    </section>
+
+    <section style="background: #FFFFFF; border: 1px solid #E3E3DC; border-radius: 20px; overflow: hidden;">
+      <div class="grid" style="min-height: 38px; font-size: 11px; font-weight: 800; color: #55645A; background: #FAFAF7; border-bottom: 1px solid #ECECE6;">
+        <span style="text-align: center;">#</span><span></span><span>משתתף</span><span style="text-align: center;">בולים</span><span style="text-align: center;">כיוון</span><span style="text-align: center;">מחז׳</span><span style="text-align: left;">נק׳</span>
+      </div>
+      <sc-for list="{{rows}}" as="r" hint-placeholder-count="15">
+        <a class="grid row" href="#" style="background: {{r.bg}};">
+          <span class="rank" style="color: {{r.rankColor}};">{{r.rank}}</span>
+          <span class="av" style="overflow: hidden;"><img src="{{r.avatar}}" alt="" style="width: 100%; height: 100%; object-fit: cover; display: block;"></span>
+          <span class="name" style="font-weight: {{r.weight}};">{{r.name}}</span>
+          <span class="num" style="color: #6E5200;">{{r.ex}}</span>
+          <span class="num" style="color: #1B6B3C;">{{r.dr}}</span>
+          <span class="num" style="color: #55645A;">{{r.rounds}}</span>
+          <span class="pts">{{r.pts}}</span>
+        </a>
+      </sc-for>
+    </section>
+  </main>
+
+  <nav aria-label="ניווט ראשי" style="height: 68px; flex-shrink: 0; background: #FFFFFF; border-top: 1px solid #E3E3DC; display: flex; align-items: center; justify-content: space-around;">
+    <a class="nav" href="Screen.dc.html" style="color: #6B6F68;"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="7" height="14" rx="2"></rect><rect x="14" y="5" width="7" height="14" rx="2"></rect></svg>ניחושים</a>
+    <a class="nav" href="#" aria-current="page" style="color: #123F24;"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"></path><path d="M17 6h3v2a3 3 0 0 1-3 3M7 6H4v2a3 3 0 0 0 3 3"></path></svg>טבלה</a>
+    <a class="nav" href="Rules.dc.html" style="color: #6B6F68;"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"></path><path d="M9 12h7M9 16h7M9 8h4"></path></svg>חוקים</a>
+    <a class="nav" href="Profile.dc.html" aria-label="הפרופיל שלי" style="color: #6B6F68;"><span aria-hidden="true" style="width: 24px; height: 24px; box-sizing: border-box; border-radius: 50%; border: 2px solid transparent; background: linear-gradient(#F1F1EC, #F1F1EC) padding-box, linear-gradient(135deg, #B8901F 0%, #E8C65A 28%, #FFF1B8 48%, #E2BD48 68%, #B8901F 100%) border-box; display: flex; align-items: center; justify-content: center; font-size: 13px; line-height: 1;"><img src="../assets/avatars/avatar-06.svg" alt="" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block;"></span>פרופיל</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1300}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const data = [
+      ['דניאל', '../assets/avatars/avatar-04.svg', 14, 52, 12, 468],
+      ['נועם', '../assets/avatars/avatar-01.svg', 12, 55, 12, 452],
+      ['יונתן', '../assets/avatars/avatar-08.svg', 11, 50, 12, 421],
+      ['עומרי', '../assets/avatars/avatar-06.svg', 13, 41, 11, 409, true],
+      ['רועי', '../assets/avatars/avatar-14.svg', 9, 54, 12, 398],
+      ['אורי', '../assets/avatars/avatar-11.svg', 10, 47, 12, 385],
+      ['גיא', '../assets/avatars/avatar-18.svg', 8, 49, 12, 362],
+      ['עידו', '../assets/avatars/avatar-21.svg', 9, 43, 11, 351],
+      ['תומר', '../assets/avatars/avatar-24.svg', 7, 46, 12, 337],
+      ['אלון', '../assets/avatars/avatar-28.svg', 8, 40, 12, 322],
+      ['ניר', '../assets/avatars/avatar-16.svg', 6, 42, 10, 301],
+      ['שגיא', '../assets/avatars/avatar-26.svg', 6, 38, 11, 289],
+      ['אסף', '../assets/avatars/avatar-11.svg', 5, 37, 10, 262],
+      ['מתן', '../assets/avatars/avatar-14.svg', 4, 35, 9, 233],
+      ['איתי', '../assets/avatars/avatar-18.svg', 3, 30, 8, 191]
+    ];
+    const medal = ['#8A6A12', '#55606B', '#8A4B22'];
+    const rows = data.map((d, i) => ({
+      rank: i + 1, name: d[6] ? d[0] + ' (אתה)' : d[0], avatar: d[1],
+      ex: d[2], dr: d[3], rounds: d[4], pts: d[5],
+      bg: d[6] ? '#FFF6DF' : 'transparent',
+      weight: d[6] ? 800 : 600,
+      rankColor: i < 3 ? medal[i] : '#6B6F68'
+    }));
+    return { rows };
+  }
+}
+</script>
+</body>
+</html>
