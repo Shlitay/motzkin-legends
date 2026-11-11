@@ -301,8 +301,24 @@ export default function PredictionsPage() {
     return isFilled(e) && !!s && s.home === e.home && s.away === e.away;
   };
   const dirtyMatches = editableMatches.filter((m) => isFilled(entries[m.id]) && !isStored(m.id));
-  const waitingCount = editableMatches.filter((m) => !isStored(m.id)).length;
+  // Saving needs every still-editable match filled in (house rule).
+  const missingCount = editableMatches.filter((m) => !isFilled(entries[m.id])).length;
+  const allFilled = editableMatches.length > 0 && missingCount === 0;
   const storedCount = matches.filter((m) => saved[m.id]).length;
+
+  // Live first, then upcoming, then ended. Kickoff order within each group
+  // (stable sort), except ended matches: the ones that earned the most
+  // points come first.
+  const STATUS_ORDER = { live: 0, "not-started": 1, ended: 2 } as const;
+  const statusOf = (m: DbMatch) => matchStatus(m.kickoff_at, m.is_final, now);
+  const sortedMatches = [...matches].sort((a, b) => {
+    const sa = statusOf(a);
+    const sb = statusOf(b);
+    if (sa !== sb) return STATUS_ORDER[sa] - STATUS_ORDER[sb];
+    if (sa !== "ended") return 0;
+    return (saved[b.id]?.pointsEarned ?? 0) - (saved[a.id]?.pointsEarned ?? 0);
+  });
+  const GROUP_LABEL = { live: "בשידור חי", "not-started": "המשחקים הבאים", ended: "משחקים שהסתיימו" } as const;
 
   const firstKickoff = matches.length > 0 ? new Date(matches[0].kickoff_at).getTime() : null;
   const roundStarted = firstKickoff !== null && now.getTime() >= firstKickoff;
@@ -319,7 +335,7 @@ export default function PredictionsPage() {
   }
 
   async function sendPrediction() {
-    if (dirtyMatches.length === 0) return;
+    if (!allFilled || dirtyMatches.length === 0) return;
     setSaving(true);
     setError(null);
 
@@ -461,17 +477,27 @@ export default function PredictionsPage() {
           </div>
         )}
 
-        {/* Feed: kickoff order, one divider per day */}
+        {/* Feed: live → upcoming → ended. Upcoming matches get one divider
+            per day; live and ended get a single group divider. */}
         <div className="flex flex-col gap-3 pt-2">
-          {matches.map((m, i) => {
-            const status = matchStatus(m.kickoff_at, m.is_final, now);
-            const newDay = i === 0 || israelDateKey(matches[i - 1].kickoff_at) !== israelDateKey(m.kickoff_at);
+          {sortedMatches.map((m, i) => {
+            const status = statusOf(m);
+            const prev = i > 0 ? sortedMatches[i - 1] : null;
+            const prevStatus = prev ? statusOf(prev) : null;
+            const divider =
+              status === "not-started"
+                ? prevStatus !== "not-started" || israelDateKey(prev!.kickoff_at) !== israelDateKey(m.kickoff_at)
+                  ? formatIsraelDayLabel(m.kickoff_at)
+                  : null
+                : prevStatus !== status
+                ? GROUP_LABEL[status]
+                : null;
             const s = saved[m.id];
             return (
               <div key={m.id} className="flex flex-col gap-3">
-                {newDay && (
+                {divider && (
                   <span className={"flex items-center gap-2.5 text-[13px] font-extrabold text-[#3F4B43] after:h-px after:flex-1 after:bg-line after:content-[''] " + (i > 0 ? "mt-1.5" : "")}>
-                    {formatIsraelDayLabel(m.kickoff_at)}
+                    {divider}
                   </span>
                 )}
                 <MatchCard
@@ -507,18 +533,24 @@ export default function PredictionsPage() {
         {editableMatches.length > 0 && (
           <div className="flex flex-col items-stretch gap-1.5 pt-3">
             <button
-              disabled={dirtyMatches.length === 0 || saving}
+              disabled={!allFilled || dirtyMatches.length === 0 || saving}
               onClick={sendPrediction}
               className="h-[52px] rounded-[14px] bg-pitch-800 text-base font-extrabold text-chalk enabled:hover:bg-pitch-900 disabled:bg-[#B9C2BB]"
             >
-              {saving ? "שומר..." : justSaved && dirtyMatches.length === 0 ? "נשמר ✓" : "שמירת ניחושים"}
+              {saving
+                ? "שומר..."
+                : !allFilled
+                ? "השלימו את כל הניחושים"
+                : justSaved && dirtyMatches.length === 0
+                ? "נשמר ✓"
+                : "שמירת ניחושים"}
             </button>
             <span className="text-center text-xs font-semibold text-[#6E5200]">
-              {waitingCount === 0
+              {missingCount === 0
                 ? ""
-                : waitingCount === 1
-                ? "עוד משחק אחד מחכה לניחוש שלך"
-                : `עוד ${waitingCount} משחקים מחכים לניחוש שלך`}
+                : missingCount === 1
+                ? "עוד משחק אחד מחכה לניחוש שלך — אפשר לשמור רק כשכל המשחקים מנוחשים"
+                : `עוד ${missingCount} משחקים מחכים לניחוש שלך — אפשר לשמור רק כשכל המשחקים מנוחשים`}
             </span>
           </div>
         )}
