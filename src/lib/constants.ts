@@ -95,8 +95,6 @@ export const TEAM_LOGOS: Record<string, string> = {
   // National teams (season 2, round 1 — 14.11.2026). Flags from flagcdn.com.
   "קוסובו": "/team-logos/nt-kosovo.png",
   "ישראל": "/team-logos/nt-israel.png",
-  "גאורגיה": "/team-logos/nt-georgia.png",
-  "הונגריה": "/team-logos/nt-hungary.png",
   "צפון אירלנד": "/team-logos/nt-northern-ireland.png",
   "אוקראינה": "/team-logos/nt-ukraine.png",
   "פורטוגל": "/team-logos/nt-portugal.png",
@@ -113,6 +111,10 @@ export const TEAM_LOGOS: Record<string, string> = {
   "טורקיה": "/team-logos/nt-turkey.png",
   "בלגיה": "/team-logos/nt-belgium.png",
   "איטליה": "/team-logos/nt-italy.png",
+  "יוון": "/team-logos/nt-greece.png",
+  "סרביה": "/team-logos/nt-serbia.png",
+  "גרמניה": "/team-logos/nt-germany.png",
+  "הולנד": "/team-logos/nt-netherlands.png",
 };
 
 // Shortened display forms for full team names that wrap to two lines in

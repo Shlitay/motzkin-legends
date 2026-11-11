@@ -7,13 +7,15 @@
 --    getCurrentSeasonId() in src/lib/currentRound.ts use the same rule.
 -- 2) The already-seeded round 11 (28–30.11) moves to season 2 as round 2.
 --    Its matches and any predictions already sent stay attached.
--- 3) Round 1 of season 2: ten national-team matches, Saturday 14.11 (5)
---    and Sunday 15.11 (5, added later the same day).
+-- 3) Round 1 of season 2: eleven national-team matches — Saturday 14.11
+--    (4), Sunday 15.11 (5) and Monday 16.11 (2). Georgia–Hungary was in an
+--    earlier version of this file and was dropped by the owner; it's
+--    deleted below in case that version already ran.
 --    Source: user-provided screenshots, 2026-11-11. The team with the "1"
 --    odds (right side in the RTL screenshot) is home. Times IST (UTC+2,
 --    winter time) -> UTC -2h. Deadline = first kickoff. predictions_open_at
 --    left unset (open now), per migration 34.
---    The twenty national teams get team_api_ids rows by API-Football name
+--    The twenty-two national teams get team_api_ids rows by API-Football name
 --    (ids unknown), so the score feed can match them.
 -- 4) season_stats only counts the current season. Redefined from its latest
 --    definition (fix-season-stats-rounds-played-v2.sql); only the join is
@@ -21,8 +23,7 @@
 --    add-round-participant-count-function.sql).
 --
 -- Safe to re-run: every match is inserted only if that exact fixture isn't
--- in round 1 yet, so re-running after the Sunday matches were added only
--- adds those.
+-- in round 1 yet, so re-running an updated version only adds what's new.
 
 begin;
 
@@ -53,25 +54,25 @@ insert into leagues (name) values ('National Teams')
 on conflict (name) do nothing;
 
 insert into teams (name) values
-  ('קוסובו'), ('ישראל'), ('גאורגיה'), ('הונגריה'), ('צפון אירלנד'),
+  ('קוסובו'), ('ישראל'), ('צפון אירלנד'),
   ('אוקראינה'), ('פורטוגל'), ('דנמרק'), ('רומניה'), ('פולין'),
   ('בלארוס'), ('אלבניה'), ('ספרד'), ('אנגליה'), ('קרואטיה'),
-  ('צ׳כיה'), ('צרפת'), ('טורקיה'), ('בלגיה'), ('איטליה')
+  ('צ׳כיה'), ('צרפת'), ('טורקיה'), ('בלגיה'), ('איטליה'),
+  ('יוון'), ('סרביה'), ('גרמניה'), ('הולנד')
 on conflict (name) do nothing;
 
 insert into team_leagues (team_id, league_id)
 select t.id, l.id from teams t join leagues l on l.name = 'National Teams'
-where t.name in ('קוסובו', 'ישראל', 'גאורגיה', 'הונגריה', 'צפון אירלנד',
+where t.name in ('קוסובו', 'ישראל', 'צפון אירלנד',
                  'אוקראינה', 'פורטוגל', 'דנמרק', 'רומניה', 'פולין',
                  'בלארוס', 'אלבניה', 'ספרד', 'אנגליה', 'קרואטיה',
-                 'צ׳כיה', 'צרפת', 'טורקיה', 'בלגיה', 'איטליה')
+                 'צ׳כיה', 'צרפת', 'טורקיה', 'בלגיה', 'איטליה',
+                 'יוון', 'סרביה', 'גרמניה', 'הולנד')
 on conflict do nothing;
 
 insert into team_api_ids (team_name, api_team_id, api_name) values
   ('קוסובו',       null, 'Kosovo'),
   ('ישראל',        null, 'Israel'),
-  ('גאורגיה',      null, 'Georgia'),
-  ('הונגריה',      null, 'Hungary'),
   ('צפון אירלנד',  null, 'Northern Ireland'),
   ('אוקראינה',     null, 'Ukraine'),
   ('פורטוגל',      null, 'Portugal'),
@@ -87,7 +88,11 @@ insert into team_api_ids (team_name, api_team_id, api_name) values
   ('צרפת',         null, 'France'),
   ('טורקיה',       null, 'Turkey'),
   ('בלגיה',        null, 'Belgium'),
-  ('איטליה',       null, 'Italy')
+  ('איטליה',       null, 'Italy'),
+  ('יוון',         null, 'Greece'),
+  ('סרביה',        null, 'Serbia'),
+  ('גרמניה',       null, 'Germany'),
+  ('הולנד',        null, 'Netherlands')
 on conflict (team_name) do nothing;
 
 insert into rounds (season_id, round_number, deadline_at, status)
@@ -101,8 +106,8 @@ select r.id, f.home_team, f.away_team, f.kickoff_at
 from rounds r
 join seasons s on s.id = r.season_id and s.name = 'עונה 2'
 cross join (values
+  -- Saturday 14.11
   ('קוסובו',      'ישראל',    '2026-11-14T14:00:00Z'::timestamptz),
-  ('גאורגיה',     'הונגריה',  '2026-11-14T17:00:00Z'::timestamptz),
   ('צפון אירלנד', 'אוקראינה', '2026-11-14T19:45:00Z'::timestamptz),
   ('פורטוגל',     'דנמרק',    '2026-11-14T19:45:00Z'::timestamptz),
   ('רומניה',      'פולין',    '2026-11-14T19:45:00Z'::timestamptz),
@@ -111,13 +116,32 @@ cross join (values
   ('ספרד',        'אנגליה',   '2026-11-15T19:45:00Z'::timestamptz),
   ('קרואטיה',     'צ׳כיה',    '2026-11-15T19:45:00Z'::timestamptz),
   ('צרפת',        'טורקיה',   '2026-11-15T19:45:00Z'::timestamptz),
-  ('בלגיה',       'איטליה',   '2026-11-15T19:45:00Z'::timestamptz)
+  ('בלגיה',       'איטליה',   '2026-11-15T19:45:00Z'::timestamptz),
+  -- Monday 16.11
+  ('יוון',        'סרביה',    '2026-11-16T19:45:00Z'::timestamptz),
+  ('גרמניה',      'הולנד',    '2026-11-16T19:45:00Z'::timestamptz)
 ) as f(home_team, away_team, kickoff_at)
 where r.round_number = 1
   and not exists (
     select 1 from matches m
     where m.round_id = r.id and m.home_team = f.home_team and m.away_team = f.away_team
   );
+
+-- Georgia–Hungary was dropped from round 1 after an earlier version of this
+-- file may already have created it. Remove it (and any predictions on it).
+delete from predictions
+where match_id in (
+  select m.id from matches m
+  join rounds r on r.id = m.round_id and r.round_number = 1
+  join seasons s on s.id = r.season_id and s.name = 'עונה 2'
+  where m.home_team = 'גאורגיה' and m.away_team = 'הונגריה'
+);
+
+delete from matches m
+using rounds r, seasons s
+where r.id = m.round_id and r.round_number = 1
+  and s.id = r.season_id and s.name = 'עונה 2'
+  and m.home_team = 'גאורגיה' and m.away_team = 'הונגריה';
 
 -- 4) season_stats: current season only -----------------------------------------
 create or replace view season_stats as
@@ -161,7 +185,7 @@ alter view season_stats set (security_invoker = false);
 
 commit;
 
--- Check (optional): should list round 1 (10 matches) and round 2 (11 matches)
+-- Check (optional): should list round 1 (11 matches) and round 2 (11 matches)
 -- of עונה 2.
 -- select r.round_number, r.status, count(m.id)
 -- from rounds r join seasons s on s.id = r.season_id and s.name = 'עונה 2'
