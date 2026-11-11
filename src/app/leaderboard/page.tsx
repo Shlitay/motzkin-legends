@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Avatar from "@/components/Avatar";
 import BottomNav from "@/components/BottomNav";
-import NewsTicker from "@/components/NewsTicker";
 import ParticipantModal from "@/components/ParticipantModal";
 import RoundApprovalStatus from "@/components/RoundApprovalStatus";
 import RoundIntroPopup from "@/components/RoundIntroPopup";
@@ -364,7 +363,6 @@ export default function LeaderboardPage() {
       <RoundIntroPopup />
 
       <div className="flex w-full max-w-md flex-col gap-3.5 pt-4">
-        <NewsTicker />
         <RoundApprovalStatus />
 
         <div className="flex items-center justify-between gap-2">

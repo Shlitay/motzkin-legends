@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 import BottomNav from "@/components/BottomNav";
 import { scrollToNextUnpredicted } from "@/components/FloatingCountdown";
 import { ChevronIcon } from "@/components/icons";
-import NewsTicker from "@/components/NewsTicker";
 import RoundApprovalStatus, { ApprovalChip } from "@/components/RoundApprovalStatus";
 import RoundIntroPopup from "@/components/RoundIntroPopup";
 import TopBar from "@/components/TopBar";
@@ -428,7 +427,6 @@ export default function PredictionsPage() {
       <RoundIntroPopup />
 
       <div className="flex w-full max-w-md flex-col gap-3 pt-4">
-        <NewsTicker />
 
         {/* Round header */}
         <section className="flex flex-col gap-2.5">

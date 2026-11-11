@@ -3,16 +3,16 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import Avatar from "@/components/Avatar";
-import CloseButton from "@/components/CloseButton";
-import StatCard from "@/components/StatCard";
 import { TEAM_LOGOS, shortTeamName } from "@/lib/constants";
-import { deriveOutcome } from "@/lib/predictionOutcome";
+import { outcomeKind } from "@/lib/scoring";
 
-// Only the identity fields — the modal no longer shows season totals, but
-// season_stats is still where a participant's display name/avatar come from.
+// Identity + season totals, from season_stats.
 type SeasonRow = {
   display_name: string;
   avatar: string | null;
+  total_points: number;
+  rounds_played: number;
+  season_hits: number;
 };
 
 type LastRoundRow = {
@@ -35,6 +35,8 @@ type RoundMatchPrediction = {
   pointsEarned: number | null;
 };
 
+// Player details bottom sheet (opened from the leaderboard): identity,
+// season totals, the round's stats, and this player's picks for the round.
 export default function ParticipantModal({
   userId,
   round,
@@ -42,8 +44,7 @@ export default function ParticipantModal({
 }: {
   userId: string;
   // round_number is needed too, to exclude it (and anything after it) from
-  // "last round" candidates below — kept loose otherwise so callers can
-  // pass their own CurrentRound (or RoundMatch-shaped object) as-is.
+  // "last round" candidates below.
   round: { id: string; status: string; round_number: number } | null;
   onClose: () => void;
 }) {
@@ -52,12 +53,10 @@ export default function ParticipantModal({
   const [season, setSeason] = useState<SeasonRow | null>(null);
   const [lastRound, setLastRound] = useState<LastRoundRow | null>(null);
 
-  // This participant's picks for every match in the round the modal is
-  // viewed in context of, shown inline under the stats. Only meaningful
-  // once the round has started (locked or finished) — while it's still
-  // 'open' nobody but the predictor themselves can read these rows anyway
-  // (rls.sql). Which days are actually readable is RLS's call, per match
-  // day, not this component's — a hidden day just comes back as "-".
+  // This player's picks for every match of the round the sheet is viewed in
+  // context of. Only once that round has started — before, nobody but the
+  // predictor can read them (rls.sql). Which days are readable is RLS's
+  // call, per match day; a hidden day just comes back as "–".
   const [roundMatches, setRoundMatches] = useState<RoundMatchPrediction[]>([]);
   const roundStarted = !!round && round.status !== "open";
 
@@ -80,10 +79,9 @@ export default function ParticipantModal({
         return;
       }
 
-      // Relies on predictions_select_locked_round (see
-      // fix-predictions-locked-round-approved-only.sql) — readable here
-      // only because the *viewer* is themselves an approved participant
-      // of this round, regardless of whose predictions these are.
+      // Readable thanks to predictions_select_locked_round (fix-predictions-
+      // locked-round-approved-only.sql) — the *viewer* is approved for this
+      // round, whoever's predictions these are.
       const { data: predRows } = await supabase
         .from("predictions")
         .select("match_id, pred_home_score, pred_away_score, points_earned")
@@ -111,29 +109,18 @@ export default function ParticipantModal({
     (async () => {
       const { data: seasonRow } = await supabase
         .from("season_stats")
-        .select("display_name, avatar")
+        .select("display_name, avatar, total_points, rounds_played, season_hits")
         .eq("user_id", userId)
         .single();
       setSeason(seasonRow ?? null);
 
-      // "Last round" card: while the round this modal is viewed in context
-      // of (the `round` prop — the leaderboard's own selected round,
-      // defaulting to whichever is 'open') is still 'open' (not started),
-      // show the most recent round the user actually played *before* it —
-      // `round` itself may already have a real round_participation row
-      // despite having barely started (predictions open immediately and
-      // submitting one auto-creates that row — see /predictions'
-      // sendPrediction()), so a no-filter highest-round pick would show
-      // that near-empty round instead of the previous, fully-played one.
-      // But once `round` has actually started (status 'locked'/
-      // 'finished'), it IS the relevant round to show — live in-progress
-      // stats for the round underway, not the prior finished one.
+      // Which round's stats to show: while the viewed round is still 'open'
+      // (not started), the most recent round this player played *before*
+      // it — a just-opened round may already have a near-empty row. Once
+      // the viewed round has started, that round itself (live stats).
       //
-      // Sorted client-side, not via .order(..., { foreignTable }) — that
-      // option only reorders rows *nested inside* an embed, it does NOT
-      // reorder the outer query by a related table's column (confirmed
-      // against postgrest-js's own source/docs). The previous version of
-      // this query silently returned rows in unspecified order.
+      // Sorted client-side: .order(..., { foreignTable }) only reorders rows
+      // nested inside an embed, not the outer query.
       const { data: allParticipation } = await supabase
         .from("round_participation")
         .select("rank, total_points, exact_score_count, correct_result_count, rounds(round_number)")
@@ -156,84 +143,124 @@ export default function ParticipantModal({
           return round.status === "open" ? roundNumber < round.round_number : roundNumber <= round.round_number;
         })
         .sort((a, b) => (b.rounds?.round_number ?? -1) - (a.rounds?.round_number ?? -1))[0];
-      setLastRound(
-        participation
-          ? { ...participation, round_number: participation.rounds?.round_number ?? null }
-          : null
-      );
+      setLastRound(participation ? { ...participation, round_number: participation.rounds?.round_number ?? null } : null);
 
       setLoading(false);
     })();
   }, [supabase, userId, round?.round_number]);
 
-  // The shown round IS the round this modal is viewed in context of once
-  // that round has started — "live" while it's still locked (matches
-  // underway), plain "מחזור N" once finished. A fallback to an earlier
-  // round (this round not started yet, or this user has no row for it) is
-  // always "previous".
+  // Close on Escape.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
   const lastRoundIsSelected =
-    !!lastRound?.round_number &&
-    round != null &&
-    lastRound.round_number === round.round_number &&
-    round.status !== "open";
+    !!lastRound?.round_number && round != null && lastRound.round_number === round.round_number && round.status !== "open";
   const lastRoundTitle = !lastRound?.round_number
     ? "מחזור אחרון"
     : lastRoundIsSelected
       ? round?.status === "locked"
-        ? `מחזור חי נוכחי (מחזור ${lastRound.round_number})`
+        ? `מחזור ${lastRound.round_number} · חי`
         : `מחזור ${lastRound.round_number}`
-      : `מחזור קודם (מחזור ${lastRound.round_number})`;
+      : `מחזור קודם · ${lastRound.round_number}`;
+
+  const stats = [
+    { n: lastRound?.rank ?? "–", l: "מקום", gold: true },
+    { n: lastRound?.total_points ?? 0, l: "נקודות" },
+    { n: lastRound?.exact_score_count ?? 0, l: "בולים", crown: true },
+    { n: lastRound?.correct_result_count ?? 0, l: "בכיוון", green: true },
+  ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-6">
-      <div className="relative w-full max-w-sm">
-        <CloseButton onClick={onClose} />
-        <div className="max-h-[90vh] overflow-y-auto rounded-2xl bg-white px-8 pb-8 pt-[15px] text-center shadow-lg">
-          {loading ? (
-            <p className="text-sm text-muted">טוען...</p>
-          ) : !season ? (
-            <p className="text-sm text-danger">לא ניתן היה לטעון את המשתתף.</p>
-          ) : (
-            <div className="flex flex-col items-center gap-6">
-              <div className="-mb-2 flex flex-col items-center gap-2">
-                <span className="border-gold flex h-14 w-14 items-center justify-center overflow-hidden rounded-full">
-                  <Avatar avatar={season.avatar} size={52} />
-                </span>
-                <p className="font-medium text-ink">{season.display_name}</p>
-              </div>
-
-              <StatCard
-                title={lastRoundTitle}
-                headline={`מקום: ${lastRound?.rank ?? 0}`}
-                towards={lastRound?.correct_result_count ?? 0}
-                points={lastRound?.total_points ?? 0}
-                hit={lastRound?.exact_score_count ?? 0}
-              />
-
-              {roundStarted && roundMatches.length > 0 && (
-                <PredictionsList
-                  name={season.display_name}
-                  roundNumber={round.round_number}
-                  matches={roundMatches}
-                />
-              )}
-            </div>
-          )}
-
-          <button
-            onClick={onClose}
-            className="mt-6 rounded-full border border-neutral-300 px-6 py-2 font-medium hover:bg-neutral-50"
-          >
-            סגירה
-          </button>
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-[rgba(11,42,23,.55)]" onClick={onClose}>
+      <section
+        role="dialog"
+        aria-modal="true"
+        aria-label={season ? `הפרטים של ${season.display_name}` : "פרטי משתתף"}
+        onClick={(e) => e.stopPropagation()}
+        className="flex max-h-[92vh] w-full max-w-md flex-col gap-3.5 overflow-y-auto rounded-t-[26px] bg-chalk px-4 pb-5 pt-2.5 shadow-[0_-10px_30px_rgba(0,0,0,.25)]"
+      >
+        <div className="flex justify-center">
+          <span className="h-[5px] w-10 rounded-full bg-miss" />
         </div>
-      </div>
+
+        {loading ? (
+          <p className="py-10 text-center text-sm text-muted">טוען...</p>
+        ) : !season ? (
+          <p className="py-10 text-center text-sm text-danger">לא ניתן היה לטעון את המשתתף.</p>
+        ) : (
+          <>
+            {/* identity */}
+            <div className="relative flex items-center gap-3.5">
+              <span className="border-gold flex h-[72px] w-[72px] shrink-0 items-center justify-center overflow-hidden rounded-full [--gold-border:3px]">
+                <Avatar avatar={season.avatar} size={66} />
+              </span>
+              <div className="flex min-w-0 flex-col gap-0.5">
+                <span className="truncate text-[21px] font-black">{season.display_name}</span>
+                <span className="text-[13px] text-muted">
+                  העונה: <b className="font-display text-ink">{season.total_points}</b> נק׳ · {season.rounds_played} מחזורים ·{" "}
+                  {season.season_hits} בולים
+                </span>
+              </div>
+              <button
+                type="button"
+                aria-label="סגירה"
+                onClick={onClose}
+                className="absolute -top-1 left-0 flex h-10 w-10 items-center justify-center rounded-full bg-[#ECECE6]"
+              >
+                <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#17231C" strokeWidth="2.6" strokeLinecap="round">
+                  <path d="M6 6l12 12M18 6L6 18" />
+                </svg>
+              </button>
+            </div>
+
+            {/* round stats */}
+            <div className="flex flex-col gap-2">
+              <span className="text-xs font-extrabold text-muted">{lastRoundTitle}</span>
+              <div className="flex gap-2">
+                {stats.map((s) => (
+                  <div
+                    key={s.l}
+                    className={
+                      "flex flex-1 flex-col items-center gap-0.5 rounded-[14px] px-1 py-2.5 " +
+                      (s.gold ? "border-gold" : "border border-line bg-white")
+                    }
+                  >
+                    <span
+                      className={
+                        "inline-flex items-center gap-[3px] font-display text-2xl font-bold leading-none " +
+                        (s.green ? "text-pitch-600" : "")
+                      }
+                    >
+                      {s.crown && (
+                        <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="#C9A227">
+                          <path d="M3 9l4.6 3.6L12 5.5l4.4 7.1L21 9l-1.8 9H4.8z" />
+                          <rect x="4.8" y="19.2" width="14.4" height="2" rx="1" />
+                        </svg>
+                      )}
+                      {s.n}
+                    </span>
+                    <span className="text-[11px] font-bold text-muted">{s.l}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {roundStarted && roundMatches.length > 0 && (
+              <PredictionsList name={season.display_name} roundNumber={round.round_number} matches={roundMatches} />
+            )}
+          </>
+        )}
+      </section>
     </div>
   );
 }
 
-// One line per match: home team, this participant's predicted score, away
-// team — the whole current round at a glance, no per-match navigation.
+// One row per match: crests, this player's pick (flex row, so under RTL the
+// home digit sits on the right next to the home team, like the match
+// cards), an outcome chip once there's a score, and points earned.
 function PredictionsList({
   name,
   roundNumber,
@@ -244,63 +271,63 @@ function PredictionsList({
   matches: RoundMatchPrediction[];
 }) {
   return (
-    <div className="w-full">
-      <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">
-        ניחושי {name} — מחזור {roundNumber}
-      </p>
-
-      <ul className="space-y-2">
+    <div className="flex flex-col gap-2">
+      <span className="text-xs font-extrabold text-muted">
+        הניחושים של {name} · מחזור {roundNumber}
+      </span>
+      <ul className="overflow-hidden rounded-2xl border border-line bg-white">
         {matches.map((m) => {
-          // Only derivable once both a real result and a real prediction
-          // exist — same deriveOutcome() used by EndedMatchCard/MatchRow's
-          // live feedback, so this reads the same way everywhere else in
-          // the app. No outcome yet (not played, or no prediction) falls
-          // back to the existing plain/main-event border.
-          const outcome =
-            m.homeScore !== null && m.awayScore !== null && m.predHome !== null && m.predAway !== null
-              ? deriveOutcome(m.predHome, m.predAway, m.homeScore, m.awayScore)
+          const hasPred = m.predHome !== null && m.predAway !== null;
+          const kind =
+            hasPred && m.homeScore !== null && m.awayScore !== null
+              ? outcomeKind(m.predHome!, m.predAway!, m.homeScore, m.awayScore)
               : null;
-          const borderClass =
-            outcome === "exact"
-              ? "border-2 border-brand"
-              : outcome === "direction"
-              ? "border-2 border-draw"
-              : m.isMainEvent
-              ? "border-[#d4a017] bg-[#d4a017]/5"
-              : "border-neutral-200";
-
+          const chip =
+            kind === null
+              ? null
+              : kind === "exact"
+              ? { label: "בול", cls: "bg-gold-light text-[#5C4400]" }
+              : kind === "miss"
+              ? { label: "פספוס", cls: "bg-[#ECECE6] text-[#3F4440]" }
+              : { label: "בכיוון", cls: "bg-green-50 text-[#14512D]" };
           return (
             <li
               key={m.id}
-              className={`flex items-center gap-2 rounded-lg border bg-surface px-3 py-2 text-sm ${borderClass}`}
+              className={
+                "grid min-h-12 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)_68px] items-center gap-1.5 border-b border-[#F0F0EA] px-2.5 last:border-b-0 " +
+                (m.isMainEvent ? "bg-[#FFFCF2]" : "")
+              }
             >
-              <span className="flex flex-1 items-center gap-1.5 text-ink">
+              <span className="flex min-w-0 items-center gap-1.5">
                 <TeamLogo team={m.home_team} />
-                {shortTeamName(m.home_team)}
+                <span className="truncate text-[13px] font-bold">{shortTeamName(m.home_team)}</span>
               </span>
-              {/* Home box is DOM-first so it renders visually *right* under
-                  this row's RTL mirroring, away box visually *left* (same
-                  pattern as MatchRow/EndedMatchCard elsewhere in this app).
-                  A dir="ltr" span always reads left-to-right regardless of
-                  being one atomic chip rather than two stacked digits — a
-                  reader still associates the leftmost digit with whichever
-                  box sits on the left, so away has to come first here too,
-                  home second, same fix already needed twice elsewhere in
-                  this codebase for the identical reason. */}
               <span
-                className="shrink-0 font-display font-bold tabular-nums text-ink"
-                dir="ltr"
-                style={{ unicodeBidi: "isolate" }}
+                className={
+                  "inline-flex items-center gap-1 rounded-md px-2 py-px font-display text-[15px] font-semibold " +
+                  (kind === "exact" ? "bg-gold text-gold-ink" : "bg-[#F1F1EC] text-ink")
+                }
               >
-                {m.predAway ?? "-"}-{m.predHome ?? "-"}
+                <span>{m.predHome ?? "–"}</span>
+                <span>:</span>
+                <span>{m.predAway ?? "–"}</span>
               </span>
-              <span className="flex flex-1 items-center justify-end gap-1.5 text-end text-ink">
-                {shortTeamName(m.away_team)}
+              <span className="flex min-w-0 items-center justify-end gap-1.5">
+                <span className="truncate text-[13px] font-bold">{shortTeamName(m.away_team)}</span>
                 <TeamLogo team={m.away_team} />
               </span>
-              {!!m.pointsEarned && (
-                <span className="shrink-0 text-[12px] font-bold text-muted">+{m.pointsEarned}</span>
-              )}
+              <span className="flex items-center justify-end gap-1">
+                {chip && (
+                  <span className={"whitespace-nowrap rounded-full px-1.5 py-0.5 text-[10px] font-extrabold " + chip.cls}>
+                    {chip.label}
+                  </span>
+                )}
+                {m.pointsEarned !== null && m.pointsEarned > 0 && (
+                  <span dir="ltr" className="font-display text-xs font-bold text-[#14512D]">
+                    +{m.pointsEarned}
+                  </span>
+                )}
+              </span>
             </li>
           );
         })}
@@ -312,5 +339,6 @@ function PredictionsList({
 function TeamLogo({ team }: { team: string }) {
   const src = TEAM_LOGOS[team];
   if (!src) return null;
+  // eslint-disable-next-line @next/next/no-img-element
   return <img src={src} alt="" className="h-6 w-6 shrink-0 object-contain" />;
 }

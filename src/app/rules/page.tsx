@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import BottomNav from "@/components/BottomNav";
 import { ENTRY_FEE_ILS } from "@/components/JackpotBadge";
-import NewsTicker from "@/components/NewsTicker";
 import ProfileModal from "@/components/ProfileModal";
 import RoundApprovalStatus from "@/components/RoundApprovalStatus";
 import RoundIntroPopup from "@/components/RoundIntroPopup";
@@ -252,7 +251,6 @@ export default function RulesPage() {
       <RoundIntroPopup />
 
       <div className="flex w-full max-w-md flex-col gap-3.5 pt-[18px]">
-        <NewsTicker />
         <RoundApprovalStatus />
 
         <div className="flex flex-col gap-1">
