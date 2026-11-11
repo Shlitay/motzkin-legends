@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import Avatar from "@/components/Avatar";
 import CloseButton from "@/components/CloseButton";
 import StatCard from "@/components/StatCard";
 import { TEAM_LOGOS, shortTeamName } from "@/lib/constants";
@@ -195,9 +196,9 @@ export default function ParticipantModal({
           ) : (
             <div className="flex flex-col items-center gap-6">
               <div className="-mb-2 flex flex-col items-center gap-2">
-                <div className="flex h-[26px] w-[26px] items-center justify-center rounded-full bg-neutral-100 text-xs">
-                  {season.avatar ?? "🙂"}
-                </div>
+                <span className="border-gold flex h-14 w-14 items-center justify-center overflow-hidden rounded-full">
+                  <Avatar avatar={season.avatar} size={52} />
+                </span>
                 <p className="font-medium text-ink">{season.display_name}</p>
               </div>
 

@@ -127,10 +127,7 @@ export function shortTeamName(team: string): string {
   return TEAM_SHORT_NAMES[team] ?? team;
 }
 
-// Free, self-hosted "library": a curated set of fun emoji, picked once at
-// onboarding and shown next to the participant's name everywhere.
-export const AVATAR_LIBRARY = [
-  "🦊", "🐻", "🐼", "🐨", "🦁", "🐯", "🐸", "🐵", "🐙", "🦄",
-  "🦖", "🐢", "🦉", "🐺", "🦔", "🐰", "🐹", "🦝", "🐬", "🦈",
-  "🐲", "🤖", "👽", "👻", "🥷", "🎃", "🐝", "🦋", "🦥", "🐧",
-];
+// The 30-avatar library (DiceBear "Croodles", CC BY 4.0 — credited on
+// /privacy). Files live in public/avatars/<id>.svg; users.avatar stores the
+// id, unique per player (add-unique-avatars.sql).
+export const AVATAR_LIBRARY = Array.from({ length: 30 }, (_, i) => `avatar-${String(i + 1).padStart(2, "0")}`);

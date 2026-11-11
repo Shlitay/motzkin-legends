@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Avatar from "@/components/Avatar";
 import FloatingCountdown from "@/components/FloatingCountdown";
@@ -58,6 +58,7 @@ const itemClass =
 
 export default function BottomNav() {
   const pathname = usePathname();
+  const router = useRouter();
   const [supabase] = useState(() => createClient());
   const [showProfile, setShowProfile] = useState(false);
   const [avatar, setAvatar] = useState<string | null>(null);
@@ -72,12 +73,16 @@ export default function BottomNav() {
       } = await supabase.auth.getUser();
       if (!user) return;
       const { data } = await supabase.from("users").select("avatar").eq("id", user.id).single();
-      if (active) setAvatar(data?.avatar ?? null);
+      if (!active) return;
+      setAvatar(data?.avatar ?? null);
+      // No avatar (new player, or one whose emoji avatar was cleared by
+      // add-unique-avatars.sql) → pick one first.
+      if (data && data.avatar === null) router.replace("/onboarding");
     })();
     return () => {
       active = false;
     };
-  }, [supabase, showProfile]);
+  }, [supabase, showProfile, router]);
 
   return (
     <>

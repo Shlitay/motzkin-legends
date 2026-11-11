@@ -60,6 +60,25 @@ export default function PrivacyPage() {
         </a>
       </p>
 
+      <section>
+        <h2 className="mb-1 font-semibold text-ink">קרדיטים</h2>
+        <p dir="ltr" className="text-left text-sm leading-relaxed text-muted">
+          Avatars: remix of{" "}
+          <a href="https://www.figma.com/community/file/966199982810283152" target="_blank" rel="noopener noreferrer" className="underline">
+            “Croodles – Doodle your face”
+          </a>{" "}
+          by vijay verma, licensed under{" "}
+          <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer" className="underline">
+            CC BY 4.0
+          </a>
+          , via{" "}
+          <a href="https://www.dicebear.com" target="_blank" rel="noopener noreferrer" className="underline">
+            DiceBear
+          </a>
+          .
+        </p>
+      </section>
+
       <Link href="/" className="text-center text-sm text-muted underline">
         חזרה לדף הראשי
       </Link>

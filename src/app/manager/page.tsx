@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Avatar from "@/components/Avatar";
 import RoundIntroModal from "@/components/RoundIntroModal";
 import MatchResultsModal from "@/components/MatchResultsModal";
 import NewsTicker from "@/components/NewsTicker";
@@ -283,7 +284,7 @@ function NameList({
           <li key={person.participationId} className="flex items-center justify-between">
             <span className="flex items-center gap-2">
               <span className="text-muted">{i + 1}.</span>
-              <span className="text-base">{person.avatar}</span>
+              <Avatar avatar={person.avatar} size={24} />
               {person.name}
             </span>
             <span className="flex items-center gap-3">
