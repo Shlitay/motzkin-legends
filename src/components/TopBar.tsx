@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import Logo from "@/components/Logo";
+import DonateButton from "@/components/DonateButton";
 import InviteFriendsButton from "@/components/InviteFriendsButton";
 import JackpotBadge from "@/components/JackpotBadge";
 import { createClient } from "@/lib/supabase/client";
 
 type RightAction = { label: string; href: string };
 
-const DEFAULT_ACTION: RightAction = { label: "פאנל ניהול", href: "/manager" };
+const DEFAULT_ACTION: RightAction = { label: "ניהול", href: "/manager" };
 
 export default function TopBar({
   href = "/predictions",
@@ -71,11 +72,10 @@ export default function TopBar({
         mark
       )}
 
-      {/* Donate button from the design is left out until there's a link
-          for it (design/HANDOFF.md, open question 2). */}
       <div className="flex items-center gap-1.5">
         <JackpotBadge />
         <InviteFriendsButton />
+        <DonateButton />
 
         {resolvedAction && isManager && (
           <Link
