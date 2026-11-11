@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CheckCircleIcon, ClockIcon } from "@/components/icons";
 import { ENTRY_FEE_ILS } from "@/components/JackpotBadge";
 import { getCurrentRound, type CurrentRound } from "@/lib/currentRound";
 import { createClient } from "@/lib/supabase/client";
@@ -10,111 +9,100 @@ const PAYBOX_GROUP_LINK = "https://links.payboxapp.com/cnSpIALUP3b";
 
 type ParticipationStatus = "waiting" | "approved" | "rejected" | null;
 
-export default function RoundApprovalStatus() {
-  const [supabase] = useState(() => createClient());
-  const [loading, setLoading] = useState(true);
-
-  const [round, setRound] = useState<CurrentRound | null>(null);
-  const [status, setStatus] = useState<ParticipationStatus>(null);
+function useParticipation() {
+  const [state, setState] = useState<{ round: CurrentRound; status: ParticipationStatus } | null>(null);
 
   useEffect(() => {
+    const supabase = createClient();
     (async () => {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      if (!user) {
-        setLoading(false);
-        return;
-      }
-
-      const currentRound = await getCurrentRound(supabase);
-      setRound(currentRound);
-
-      if (currentRound) {
-        const { data: participation } = await supabase
-          .from("round_participation")
-          .select("payment_status")
-          .eq("user_id", user.id)
-          .eq("round_id", currentRound.id)
-          .maybeSingle();
-        setStatus(participation?.payment_status ?? null);
-      }
-
-      setLoading(false);
+      if (!user) return;
+      const round = await getCurrentRound(supabase);
+      if (!round) return;
+      const { data } = await supabase
+        .from("round_participation")
+        .select("payment_status")
+        .eq("user_id", user.id)
+        .eq("round_id", round.id)
+        .maybeSingle();
+      setState({ round, status: data?.payment_status ?? null });
     })();
-  }, [supabase]);
+  }, []);
 
-  // Approval is only meaningful before the round starts — once it's
-  // locked/finished, whether someone got approved in time is moot.
-  if (loading || !round || round.status !== "open") return null;
+  return state;
+}
 
-  const cardClass =
-    status === "approved"
-      ? "border-brand/30 bg-brand/10"
-      : status === "waiting"
-      ? "border-draw/40 bg-draw/10"
-      : "border-neutral-200 bg-surface";
+const checkIcon = (
+  <svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M5 12.5l4.5 4.5L19 7.5" />
+  </svg>
+);
 
+// Small status chip next to the round title on /predictions.
+export function ApprovalChip() {
+  const p = useParticipation();
+  if (!p || p.round.status !== "open") return null;
+
+  if (p.status === "approved") {
+    return (
+      <span className="inline-flex items-center gap-[5px] rounded-full bg-green-50 px-2.5 py-1 text-xs font-bold text-[#14512D]">
+        {checkIcon}
+        ההשתתפות אושרה
+      </span>
+    );
+  }
+  if (p.status === "waiting") {
+    return (
+      <span className="inline-flex items-center gap-[5px] rounded-full bg-cream px-2.5 py-1 text-xs font-bold text-[#6E5200]">
+        ממתין לאישור
+      </span>
+    );
+  }
+  return null;
+}
+
+function PayboxLink() {
   return (
-    <section className={`w-full max-w-md rounded-2xl border p-5 text-center ${cardClass}`}>
-      <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">
-        מחזור {round.round_number}
-      </p>
-
-      {status === "approved" && (
-        <>
-          <p className="flex items-center justify-center gap-2 text-sm font-medium text-brand">
-            <CheckCircleIcon size={18} />
-            אושרתם לשחק במחזור הזה.
-          </p>
-          <PayboxReminder />
-        </>
-      )}
-
-      {status === "waiting" && (
-        <>
-          <p className="flex items-center justify-center gap-2 text-sm font-medium text-draw">
-            <ClockIcon size={18} />
-            הבקשה נשלחה — ממתינים לאישור התשלום מהמנהל.
-          </p>
-          <PayboxReminder />
-        </>
-      )}
-
-      {status === "rejected" && (
-        <p className="text-sm text-danger">
-          לא אושרתם למחזור הזה. פנו למנהל אם זו טעות.
-        </p>
-      )}
-
-      {status === null && (
-        <p className="text-sm text-muted">
-          שלחו {ENTRY_FEE_ILS}₪ ל
-          <a
-            href={PAYBOX_GROUP_LINK}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-brand underline"
-          >
-            פייבוקס
-          </a>{" "}
-          כדי להשתתף
-        </p>
-      )}
-    </section>
+    <a
+      href={PAYBOX_GROUP_LINK}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex min-h-10 items-center justify-center rounded-xl bg-pitch-800 px-4 text-sm font-bold text-chalk hover:bg-pitch-900"
+    >
+      תשלום ₪{ENTRY_FEE_ILS}‏ בפייבוקס
+    </a>
   );
 }
 
-// Shared between "waiting" and "approved" — approval only means the
-// manager signed off on the request, not that payment was actually
-// confirmed received, so the reminder stays visible either way.
-function PayboxReminder() {
+// Payment / approval notice while the player isn't approved for the current
+// round yet. Nothing once approved (the chip covers that).
+export default function RoundApprovalStatus() {
+  const p = useParticipation();
+  if (!p || p.round.status !== "open" || p.status === "approved") return null;
+
+  if (p.status === "rejected") {
+    return (
+      <section className="w-full max-w-md rounded-2xl border border-[#F0C9C5] bg-[#FDF1F0] p-4 text-sm font-semibold text-danger">
+        לא אושרתם למחזור {p.round.round_number}. פנו למנהל אם זו טעות.
+      </section>
+    );
+  }
+
   return (
-    <p className="mt-2 text-sm text-muted">
-      עדיין לא שלחתם? שלחו {ENTRY_FEE_ILS}₪ ל
-      <a href={PAYBOX_GROUP_LINK} target="_blank" rel="noopener noreferrer" className="text-brand underline">
-        פייבוקס
-      </a>
-    </p>
+    <section className="flex w-full max-w-md flex-col gap-3 rounded-2xl border border-[#EAD9A6] bg-cream p-4">
+      <div className="flex flex-col gap-1">
+        <span className="text-[15px] font-extrabold text-ink">
+          {p.status === "waiting" ? "ממתינים לאישור התשלום" : `רוצים להשתתף במחזור ${p.round.round_number}?`}
+        </span>
+        <span className="text-[13px] text-[#6E5200]">
+          {p.status === "waiting"
+            ? "המנהל יאשר אתכם אחרי שהתשלום יתקבל. עוד לא שילמתם?"
+            : `שולחים ‎${ENTRY_FEE_ILS} ש״ח בפייבוקס ונכנסים לקופה.`}
+        </span>
+      </div>
+      <PayboxLink />
+    </section>
   );
 }

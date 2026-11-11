@@ -115,7 +115,7 @@ export default function NewsTicker() {
     // geometry the translateX(-50%) loop assumes, without affecting how
     // the Hebrew text itself renders (RTL character runs still shape
     // correctly regardless of the container's base direction).
-    <div className="w-full overflow-hidden border-y border-neutral-200 bg-legend/15 py-1.5" dir="ltr">
+    <div className="w-full overflow-hidden rounded-xl border border-[#EAD9A6] bg-cream py-1.5" dir="ltr">
       <div className="animate-marquee flex w-max whitespace-nowrap text-sm font-medium text-legend-contrast">
         {strip}
         {strip}

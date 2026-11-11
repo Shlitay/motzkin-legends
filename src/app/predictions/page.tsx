@@ -3,22 +3,19 @@
 import { sendGAEvent } from "@next/third-parties/google";
 import { useEffect, useState } from "react";
 import BottomNav from "@/components/BottomNav";
+import { scrollToNextUnpredicted } from "@/components/FloatingCountdown";
 import { ChevronIcon } from "@/components/icons";
 import NewsTicker from "@/components/NewsTicker";
-import RoundApprovalStatus from "@/components/RoundApprovalStatus";
-import RoundCountdown from "@/components/RoundCountdown";
-import SectionDivider from "@/components/SectionDivider";
-import TopBar from "@/components/TopBar";
+import RoundApprovalStatus, { ApprovalChip } from "@/components/RoundApprovalStatus";
 import RoundIntroPopup from "@/components/RoundIntroPopup";
-import EndedMatchWithParticipants from "@/components/predictions/EndedMatchWithParticipants";
-import MatchRow from "@/components/predictions/MatchRow";
-import MatchViewToggle from "@/components/predictions/MatchViewToggle";
+import TopBar from "@/components/TopBar";
+import MatchCard, { type ScorePair } from "@/components/predictions/MatchCard";
+import type { StandingsEntry } from "@/components/predictions/MatchParticipantsList";
 import { createClient } from "@/lib/supabase/client";
 import { formatIsraelDayLabel, formatIsraelDeadline, israelDateKey } from "@/lib/israelTime";
 import { lockExpiredRounds } from "@/lib/lockExpiredRounds";
-import { liveMinuteLabel, matchStatus, type LiveClock, type MatchStatus } from "@/lib/matchStatus";
-
-type ScoreEntry = { home: string; away: string; pointsEarned: number | null };
+import { liveMinuteLabel, matchStatus, type LiveClock } from "@/lib/matchStatus";
+import { useScoringRules } from "@/lib/scoring";
 
 type DbMatch = {
   id: string;
@@ -42,7 +39,7 @@ type DbRound = {
   predictions_open_at: string | null;
 };
 
-type StandingsEntry = { userId: string; name: string; avatar: string };
+type SavedPrediction = ScorePair & { isDefault: boolean; pointsEarned: number | null };
 
 type RawRoundParticipationRow = {
   user_id: string;
@@ -50,33 +47,60 @@ type RawRoundParticipationRow = {
   users: { full_name: string; nickname: string | null; avatar: string | null } | null;
 };
 
-const STATUS_ORDER: Record<MatchStatus, number> = { live: 0, "not-started": 1, ended: 2 };
+const EMPTY: ScorePair = { home: "", away: "" };
+
+// "משחקי יום ראשון ננעלים בעוד 22:41:08" — ticks every second, only while
+// the round is under way and a later day can still be predicted.
+function DayLockCountdown({ dayLabel, lockAt }: { dayLabel: string; lockAt: number }) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, []);
+  const left = Math.max(0, Math.floor((lockAt - now) / 1000));
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const text = `${pad(Math.floor(left / 3600))}:${pad(Math.floor((left % 3600) / 60))}:${pad(left % 60)}`;
+
+  return (
+    <div className="flex items-center gap-2.5 rounded-[14px] border border-line bg-white px-3 py-2.5">
+      <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1B6B3C" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="13.5" r="7.5" />
+        <path d="M12 9.5v4l2.5 1.6" />
+        <path d="M9.5 2.5h5M12 2.5v3.5" />
+      </svg>
+      <span className="text-[13px] font-semibold text-[#3F4B43]">משחקי {dayLabel} ננעלים בעוד</span>
+      <span dir="ltr" className="ms-auto font-display text-lg font-bold tracking-[.02em] tabular-nums">
+        {text}
+      </span>
+    </div>
+  );
+}
 
 export default function PredictionsPage() {
   const [supabase] = useState(() => createClient());
+  const rules = useScoringRules();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [justSaved, setJustSaved] = useState(false);
 
+  const [userId, setUserId] = useState<string | null>(null);
   const [rounds, setRounds] = useState<DbRound[]>([]);
   const [selectedRoundId, setSelectedRoundId] = useState<string | null>(null);
   const [matches, setMatches] = useState<DbMatch[]>([]);
-  const [entries, setEntries] = useState<Record<string, ScoreEntry>>({});
+  // What's typed in the inputs vs. what's stored in the DB.
+  const [entries, setEntries] = useState<Record<string, ScorePair>>({});
+  const [saved, setSaved] = useState<Record<string, SavedPrediction>>({});
   const [standingsOrder, setStandingsOrder] = useState<StandingsEntry[]>([]);
   const [now, setNow] = useState(() => new Date());
-  const [viewMode, setViewMode] = useState<"all" | "live" | "ended">("all");
-  // Whether this user already had at least one real prediction saved for
-  // this round the moment it loaded — combined with hasSavedThisVisit
-  // (for a 2nd+ save within the same page load, before a reload could
-  // re-check the DB) to decide whether a save click counts as an update
-  // for the update-predictions-click GA event, not this round's first
-  // submission.
+  // Whether this user already had a prediction for this round when it
+  // loaded, or saved during this visit — a save then counts as an update
+  // for the update-predictions-click GA event.
   const [hadPredictionsAtLoad, setHadPredictionsAtLoad] = useState(false);
   const [hasSavedThisVisit, setHasSavedThisVisit] = useState(false);
 
-  // Drives the not-started -> live transition for whichever match's kickoff
-  // just passed while this page is sitting open.
+  // Drives the not-started -> live transition while the page is open.
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 30_000);
     return () => clearInterval(t);
@@ -87,10 +111,14 @@ export default function PredictionsPage() {
     (async () => {
       await lockExpiredRounds(supabase);
 
-      const { data, error: roundsError } = await supabase
-        .from("rounds")
-        .select("id, round_number, deadline_at, status, predictions_open_at")
-        .order("round_number", { ascending: true });
+      const [{ data, error: roundsError }, { data: auth }] = await Promise.all([
+        supabase
+          .from("rounds")
+          .select("id, round_number, deadline_at, status, predictions_open_at")
+          .order("round_number", { ascending: true }),
+        supabase.auth.getUser(),
+      ]);
+      setUserId(auth.user?.id ?? null);
 
       if (roundsError) {
         setError(roundsError.message);
@@ -101,16 +129,13 @@ export default function PredictionsPage() {
       const roundList = data ?? [];
       setRounds(roundList);
       const openRound = roundList.find((r) => r.status === "open") ?? roundList[roundList.length - 1];
-      if (openRound) {
-        setSelectedRoundId(openRound.id);
-      } else {
-        setLoading(false);
-      }
+      if (openRound) setSelectedRoundId(openRound.id);
+      else setLoading(false);
     })();
   }, [supabase]);
 
   // Whenever the selected round changes, load its matches + this user's
-  // existing predictions for it.
+  // predictions for it.
   useEffect(() => {
     if (!selectedRoundId) return;
     setLoading(true);
@@ -138,30 +163,34 @@ export default function PredictionsPage() {
         pred_home_score: number;
         pred_away_score: number;
         points_earned: number | null;
+        is_default: boolean;
       }[] = [];
       if (user && matchList.length > 0) {
         const { data } = await supabase
           .from("predictions")
-          .select("match_id, pred_home_score, pred_away_score, points_earned")
+          .select("match_id, pred_home_score, pred_away_score, points_earned, is_default")
           .eq("user_id", user.id)
           .in("match_id", matchList.map((m) => m.id));
         predictionRows = data ?? [];
       }
 
-      const byMatch = new Map(predictionRows.map((p) => [p.match_id, p]));
-      const nextEntries: Record<string, ScoreEntry> = {};
+      const nextSaved: Record<string, SavedPrediction> = {};
+      predictionRows.forEach((p) => {
+        nextSaved[p.match_id] = {
+          home: String(p.pred_home_score),
+          away: String(p.pred_away_score),
+          isDefault: p.is_default,
+          pointsEarned: p.points_earned,
+        };
+      });
+      const nextEntries: Record<string, ScorePair> = {};
       matchList.forEach((m) => {
-        const existing = byMatch.get(m.id);
-        nextEntries[m.id] = existing
-          ? {
-              home: String(existing.pred_home_score),
-              away: String(existing.pred_away_score),
-              pointsEarned: existing.points_earned,
-            }
-          : { home: "", away: "", pointsEarned: null };
+        const s = nextSaved[m.id];
+        nextEntries[m.id] = s ? { home: s.home, away: s.away } : EMPTY;
       });
 
       setMatches(matchList);
+      setSaved(nextSaved);
       setEntries(nextEntries);
       setHadPredictionsAtLoad(predictionRows.length > 0);
       setHasSavedThisVisit(false);
@@ -170,11 +199,19 @@ export default function PredictionsPage() {
     })();
   }, [supabase, selectedRoundId]);
 
-  // While a match is live, re-read this round's scores, live minutes and
-  // the user's points every minute, so goals from the score feed (and a
-  // match turning final) show up without a page reload. Only the match
-  // rows and points_earned are refreshed: predictions being typed into
-  // editable matches are left alone.
+  // Arriving from the floating countdown on another page (?focus=next):
+  // jump to the first match still waiting for a prediction.
+  useEffect(() => {
+    if (loading) return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("focus") !== "next") return;
+    requestAnimationFrame(() => scrollToNextUnpredicted());
+    window.history.replaceState(null, "", window.location.pathname);
+  }, [loading]);
+
+  // While a match is live, re-read this round's scores, live minutes and the
+  // user's points every minute. Only match rows and points_earned are
+  // refreshed: predictions being typed into editable matches are left alone.
   const hasLiveMatch = matches.some((m) => matchStatus(m.kickoff_at, m.is_final, now) === "live");
   useEffect(() => {
     if (!selectedRoundId || !hasLiveMatch) return;
@@ -188,17 +225,14 @@ export default function PredictionsPage() {
       if (!fresh) return;
       setMatches(fresh);
 
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user || fresh.length === 0) return;
+      if (!userId || fresh.length === 0) return;
       const { data: points } = await supabase
         .from("predictions")
         .select("match_id, points_earned")
-        .eq("user_id", user.id)
+        .eq("user_id", userId)
         .in("match_id", fresh.map((m) => m.id));
       if (!points) return;
-      setEntries((prev) => {
+      setSaved((prev) => {
         const next = { ...prev };
         points.forEach((p) => {
           if (next[p.match_id]) next[p.match_id] = { ...next[p.match_id], pointsEarned: p.points_earned };
@@ -207,16 +241,10 @@ export default function PredictionsPage() {
       });
     }, 60_000);
     return () => clearInterval(t);
-  }, [supabase, selectedRoundId, hasLiveMatch]);
+  }, [supabase, selectedRoundId, hasLiveMatch, userId]);
 
-  // Current round standings order — fetched once per round (not once per
-  // match expanded) so every locked match's "who predicted what" list can
-  // share it. Same rank the round-points table on /leaderboard already
-  // sorts by (recompute_round_standings()'s tiebreak chain), not raw
-  // points, so the two stay consistent. RLS only returns rows once this
-  // round is locked, matching per-day visibility (fix-predictions-visible-
-  // per-day.sql) — before that, this list is just empty and no matches
-  // are readOnly yet anyway, so nothing tries to render it.
+  // Round standings order, fetched once per round and shared by every card's
+  // "everyone's predictions" drawer — same rank as /leaderboard.
   useEffect(() => {
     if (!selectedRoundId) return;
 
@@ -233,7 +261,7 @@ export default function PredictionsPage() {
           .map((r) => ({
             userId: r.user_id,
             name: r.users?.nickname ?? r.users?.full_name ?? "Unknown",
-            avatar: r.users?.avatar ?? "🙂",
+            avatar: r.users?.avatar ?? null,
           }))
       );
     })();
@@ -242,28 +270,17 @@ export default function PredictionsPage() {
   const selectedRound = rounds.find((r) => r.id === selectedRoundId) ?? null;
   const isOpenRound = selectedRound?.status === "open";
 
-  // A round can accept payment/approval before predictions can actually be
-  // submitted (house rule: predictions open Thursday 20:00 Israel time) —
-  // null means no restriction, keeping rounds seeded without this column
-  // set (or before this feature existed) working exactly as before.
+  // null predictions_open_at means no restriction.
   const predictionsOpen =
     !selectedRound?.predictions_open_at || now >= new Date(selectedRound.predictions_open_at);
 
-  // rounds is already ordered by round_number ascending (the fetch query's
-  // own sort), so adjacent array entries are adjacent rounds.
   const selectedRoundIndex = rounds.findIndex((r) => r.id === selectedRoundId);
   const previousRound = selectedRoundIndex > 0 ? rounds[selectedRoundIndex - 1] : null;
   const nextRound =
-    selectedRoundIndex >= 0 && selectedRoundIndex < rounds.length - 1
-      ? rounds[selectedRoundIndex + 1]
-      : null;
+    selectedRoundIndex >= 0 && selectedRoundIndex < rounds.length - 1 ? rounds[selectedRoundIndex + 1] : null;
 
-  // A round's matches can span several days (see seed-round4.sql) — instead
-  // of locking every match the moment the round's very first kickoff
-  // passes, lock a whole calendar day together once *that day's own*
-  // earliest kickoff passes, independent of the other days. A match is
-  // still editable right up until its own day's first game starts, even if
-  // an earlier day in the same round is already locked.
+  // Per-day locking: a whole Israel calendar day locks once that day's own
+  // earliest kickoff passes, independent of the round's other days.
   const earliestKickoffByDay = new Map<string, number>();
   matches.forEach((m) => {
     const day = israelDateKey(m.kickoff_at);
@@ -276,81 +293,33 @@ export default function PredictionsPage() {
     return earliest !== undefined && now.getTime() >= earliest;
   }
 
-  const editableMatches = matches.filter((m) => !isDayLocked(m));
-  const allFilled =
-    editableMatches.length > 0 &&
-    editableMatches.every((m) => entries[m.id]?.home !== "" && entries[m.id]?.away !== "");
-
-  // The whole toggle only exists while something is actually live —
-  // before kickoff there's nothing to switch between, and once every
-  // match in the round has ended, "all" and "ended" show the same thing
-  // anyway (sortedMatches already sorts a fully-ended round by points,
-  // same as the "ended" tab does), so the toggle would be pure clutter.
-  // "ended" itself still only shows as an option once something has
-  // actually ended (so it can't appear in the first half of a round
-  // before any match is done yet).
-  const showLiveOption = matches.some((m) => matchStatus(m.kickoff_at, m.is_final, now) === "live");
-  const showEndedOption = matches.some(
-    (m) => matchStatus(m.kickoff_at, m.is_final, now) === "ended"
-  );
-  const showViewToggle = showLiveOption;
-  const liveMatches = matches.filter((m) => matchStatus(m.kickoff_at, m.is_final, now) === "live");
-
-  const pointsSortDesc = (a: DbMatch, b: DbMatch) => {
-    const pointsA = entries[a.id]?.pointsEarned ?? 0;
-    const pointsB = entries[b.id]?.pointsEarned ?? 0;
-    if (pointsA > 0 || pointsB > 0) return pointsB - pointsA;
-    return 0;
+  const editableMatches = predictionsOpen ? matches.filter((m) => !isDayLocked(m)) : [];
+  const isFilled = (e: ScorePair | undefined) => !!e && e.home !== "" && e.away !== "";
+  const isStored = (id: string) => {
+    const e = entries[id];
+    const s = saved[id];
+    return isFilled(e) && !!s && s.home === e.home && s.away === e.away;
   };
-  const endedMatches = matches
-    .filter((m) => matchStatus(m.kickoff_at, m.is_final, now) === "ended")
-    .sort(pointsSortDesc);
+  const dirtyMatches = editableMatches.filter((m) => isFilled(entries[m.id]) && !isStored(m.id));
+  const waitingCount = editableMatches.filter((m) => !isStored(m.id)).length;
+  const storedCount = matches.filter((m) => saved[m.id]).length;
 
-  // Reset to "all" whenever the round changes, so switching rounds never
-  // carries over a "live"/"ended" selection that has nothing to do with
-  // the newly selected round.
-  useEffect(() => {
-    setViewMode("all");
-  }, [selectedRoundId]);
-
-  // Auto-fall back to "all" the moment the selected tab's own bucket is
-  // empty (nothing currently live, or — if a manager ever un-finalizes
-  // the round's last final match — nothing ended anymore), or the whole
-  // toggle has disappeared (round fully finished) — a hidden toggle must
-  // never leave a stale "live"/"ended" selection still filtering the list
-  // underneath it.
-  useEffect(() => {
-    if (!showViewToggle && viewMode !== "all") setViewMode("all");
-    if (viewMode === "live" && !showLiveOption) setViewMode("all");
-    if (viewMode === "ended" && !showEndedOption) setViewMode("all");
-  }, [viewMode, showViewToggle, showLiveOption, showEndedOption]);
-
-  // Live matches first, then upcoming, then ended — kickoff_at order (the
-  // DB query's own sort) is preserved within each group since Array#sort
-  // is stable. Ended matches are the exception: the ones that earned this
-  // participant points come first, most points on top, then every
-  // no-points match (0 or none) in kickoff order — same rule as the
-  // "ended" tab's own sort (pointsSortDesc), just applied within the one
-  // group here instead of across the whole list.
-  const sortedMatches = [...matches].sort((a, b) => {
-    const statusA = matchStatus(a.kickoff_at, a.is_final, now);
-    const statusB = matchStatus(b.kickoff_at, b.is_final, now);
-    if (statusA !== statusB) return STATUS_ORDER[statusA] - STATUS_ORDER[statusB];
-    if (statusA !== "ended") return 0;
-    return pointsSortDesc(a, b);
-  });
-  const firstEndedIndex = sortedMatches.findIndex(
-    (m) => matchStatus(m.kickoff_at, m.is_final, now) === "ended"
-  );
-  const displayedMatches =
-    viewMode === "live" ? liveMatches : viewMode === "ended" ? endedMatches : sortedMatches;
+  const firstKickoff = matches.length > 0 ? new Date(matches[0].kickoff_at).getTime() : null;
+  const roundStarted = firstKickoff !== null && now.getTime() >= firstKickoff;
+  // Next day that will lock (only meaningful once the round is under way —
+  // before that the floating countdown covers it).
+  const nextLock = roundStarted
+    ? [...earliestKickoffByDay.values()].filter((t) => t > now.getTime()).sort((a, b) => a - b)[0]
+    : undefined;
 
   function setScore(matchId: string, side: "home" | "away", value: string) {
     if (value !== "" && !/^\d$/.test(value)) return;
+    setJustSaved(false);
     setEntries((prev) => ({ ...prev, [matchId]: { ...prev[matchId], [side]: value } }));
   }
 
   async function sendPrediction() {
+    if (dirtyMatches.length === 0) return;
     setSaving(true);
     setError(null);
 
@@ -364,12 +333,8 @@ export default function PredictionsPage() {
       return;
     }
 
-    // Submitting predictions is itself proof of intent to play — register
-    // the participant on the manager's approval list the same way
-    // RoundApprovalStatus's "שלחתי כסף" button does, so that button is no
-    // longer the only path onto that list. ignoreDuplicates means this only
-    // ever creates the row; an existing waiting/approved/rejected status is
-    // never touched.
+    // Submitting predictions registers the player on the manager's approval
+    // list. ignoreDuplicates: an existing status is never touched.
     const { error: participationError } = await supabase
       .from("round_participation")
       .upsert(
@@ -383,19 +348,17 @@ export default function PredictionsPage() {
       return;
     }
 
-    // Only the still-editable matches — never re-write a match whose day
-    // already locked, since a never-predicted one would otherwise silently
-    // get pred_home_score/pred_away_score written as 0-0 (Number("") is 0).
-    const rows = editableMatches.map((m) => ({
+    // Only fully-filled, changed, still-editable matches — never a locked
+    // day, and never a half-typed score (Number("") would store 0).
+    const toSave = dirtyMatches.map((m) => ({ id: m.id, ...entries[m.id] }));
+    const rows = toSave.map((m) => ({
       user_id: user.id,
       match_id: m.id,
-      pred_home_score: Number(entries[m.id].home),
-      pred_away_score: Number(entries[m.id].away),
+      pred_home_score: Number(m.home),
+      pred_away_score: Number(m.away),
     }));
 
-    const { error: upsertError } = await supabase
-      .from("predictions")
-      .upsert(rows, { onConflict: "user_id,match_id" });
+    const { error: upsertError } = await supabase.from("predictions").upsert(rows, { onConflict: "user_id,match_id" });
 
     if (upsertError) {
       setError(upsertError.message);
@@ -403,21 +366,25 @@ export default function PredictionsPage() {
       return;
     }
 
-    // Fire only when this is a real *update* — the round's first-ever
-    // submission doesn't count. hadPredictionsAtLoad covers "already had
-    // predictions when the page loaded"; hasSavedThisVisit covers a 2nd+
-    // save within the same visit, before a reload would re-check the DB.
+    setSaved((prev) => {
+      const next = { ...prev };
+      toSave.forEach((m) => {
+        next[m.id] = { home: m.home, away: m.away, isDefault: false, pointsEarned: null };
+      });
+      return next;
+    });
+
     if (hadPredictionsAtLoad || hasSavedThisVisit) {
       sendGAEvent("event", "update-predictions-click");
     }
     setHasSavedThisVisit(true);
-
     setSaving(false);
+    setJustSaved(true);
   }
 
   if (loading) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center gap-4 px-6 pt-20 text-center">
+      <main className="flex min-h-screen flex-col items-center justify-center gap-4 px-4 pt-20 text-center">
         <TopBar />
         <p className="text-sm text-muted">טוען...</p>
       </main>
@@ -426,7 +393,7 @@ export default function PredictionsPage() {
 
   if (!selectedRound) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center gap-4 px-6 pt-20 text-center">
+      <main className="flex min-h-screen flex-col items-center justify-center gap-4 px-4 pt-20 text-center">
         <TopBar />
         <p className="text-sm text-muted">אין עדיין מחזור פתוח.</p>
         <BottomNav />
@@ -434,142 +401,130 @@ export default function PredictionsPage() {
     );
   }
 
-  const heading =
-    editableMatches.length === 0
-      ? "צפייה בניחושים שהגשתם"
-      : !predictionsOpen
-      ? "הגשת ניחושים עדיין לא נפתחה"
-      : "הזינו את הניחושים למחזור";
+  const nextLockDay =
+    nextLock !== undefined
+      ? formatIsraelDayLabel(new Date(nextLock).toISOString()).split(" · ")[0]
+      : null;
 
   return (
-    <main className="flex min-h-screen flex-col items-center gap-6 px-6 pb-24 pt-20">
+    <main className="flex min-h-screen flex-col items-center px-4 pb-32 pt-[60px]">
       <TopBar />
       <RoundIntroPopup />
-      <NewsTicker />
-      <RoundApprovalStatus />
-      <RoundCountdown />
-      <div className="text-center">
-        <h1 className="text-lg font-medium">{heading}</h1>
-        <div className="mt-1 flex items-center justify-center gap-3">
-          <button
-            onClick={() => previousRound && setSelectedRoundId(previousRound.id)}
-            disabled={!previousRound}
-            aria-label="מחזור קודם"
-            className="text-muted enabled:hover:text-ink disabled:cursor-not-allowed disabled:opacity-30"
-          >
-            <ChevronIcon size={16} className="rotate-180" />
-          </button>
-          <p className="text-sm text-muted">
-            מחזור {selectedRound.round_number} · ההגשה {isOpenRound ? "נסגרת" : "נסגרה"}{" "}
-            {formatIsraelDeadline(selectedRound.deadline_at)}
-          </p>
-          <button
-            onClick={() => nextRound && setSelectedRoundId(nextRound.id)}
-            disabled={!nextRound}
-            aria-label="מחזור הבא"
-            className="text-muted enabled:hover:text-ink disabled:cursor-not-allowed disabled:opacity-30"
-          >
-            <ChevronIcon size={16} />
-          </button>
-        </div>
-      </div>
 
-      {showViewToggle && (
-        <MatchViewToggle
-          value={viewMode}
-          onChange={setViewMode}
-          showLive={showLiveOption}
-          showEnded={showEndedOption}
-        />
-      )}
+      <div className="flex w-full max-w-md flex-col gap-3 pt-4">
+        <NewsTicker />
 
-      {isOpenRound && !predictionsOpen && selectedRound.predictions_open_at && (
-        <div className="w-full max-w-md rounded-2xl border border-draw/40 bg-draw/10 p-4 text-center text-sm font-medium text-draw">
-          הגשת ניחושים למחזור {selectedRound.round_number} תיפתח ב-
-          {formatIsraelDeadline(selectedRound.predictions_open_at)}. אפשר כבר עכשיו לשלוח תשלום
-          דרך Paybox ולהמתין לאישור.
-        </div>
-      )}
+        {/* Round header */}
+        <section className="flex flex-col gap-2.5">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => previousRound && setSelectedRoundId(previousRound.id)}
+                disabled={!previousRound}
+                aria-label="מחזור קודם"
+                className="flex h-9 w-7 items-center justify-center text-muted enabled:hover:text-ink disabled:opacity-25"
+              >
+                <ChevronIcon size={18} className="rotate-180" />
+              </button>
+              <h1 className="text-[26px] font-extrabold leading-none">מחזור {selectedRound.round_number}</h1>
+              <button
+                onClick={() => nextRound && setSelectedRoundId(nextRound.id)}
+                disabled={!nextRound}
+                aria-label="מחזור הבא"
+                className="flex h-9 w-7 items-center justify-center text-muted enabled:hover:text-ink disabled:opacity-25"
+              >
+                <ChevronIcon size={18} />
+              </button>
+            </div>
+            {isOpenRound && <ApprovalChip />}
+          </div>
 
-      <div className="w-full max-w-md space-y-4">
-        {displayedMatches.map((m, i) => {
-          const e = entries[m.id];
-          // Per-day locking, not round-wide: a round's status flips to
-          // "locked" the moment its very first match anywhere kicks off,
-          // so gating on isOpenRound here would lock every later day's
-          // matches too the instant day 1 starts — isDayLocked(m) is the
-          // real per-match gate (see its own comment above).
-          const readOnly = !predictionsOpen || isDayLocked(m);
-          const status = matchStatus(m.kickoff_at, m.is_final, now);
-          // Before the round starts, nothing is live/ended yet, so
-          // displayedMatches is plain kickoff order — a divider before
-          // each day's first match splits it into Sat/Sun/Mon groups.
-          // Once the round starts, the live/upcoming/ended sort takes over
-          // and these go away.
-          const showDayDivider =
-            isOpenRound &&
-            (i === 0 ||
-              israelDateKey(displayedMatches[i - 1].kickoff_at) !== israelDateKey(m.kickoff_at));
-          return (
-            <div key={m.id}>
-              {showDayDivider && <SectionDivider label={formatIsraelDayLabel(m.kickoff_at)} />}
-              {/* firstEndedIndex is an index into sortedMatches — only
-                  meaningful (and only ever hit) in the "all" view, since
-                  the "live" view's matches are never "ended". */}
-              {viewMode === "all" && i === firstEndedIndex && (
-                <SectionDivider label="משחקים שהסתיימו" />
-              )}
-              {status !== "ended" ? (
-                <MatchRow
+          {nextLock !== undefined && nextLockDay && editableMatches.length > 0 ? (
+            <DayLockCountdown dayLabel={nextLockDay} lockAt={nextLock} />
+          ) : !roundStarted && matches.length > 0 ? (
+            <span className="text-[13px] font-semibold text-muted">
+              {matches.length} משחקים · נשמרו {storedCount} מתוך {matches.length}
+            </span>
+          ) : (
+            <span className="text-[13px] font-semibold text-muted">
+              {matches.length} משחקים · ההגשה {isOpenRound ? "נסגרת" : "נסגרה"} {formatIsraelDeadline(selectedRound.deadline_at)}
+            </span>
+          )}
+        </section>
+
+        {isOpenRound && <RoundApprovalStatus />}
+
+        {isOpenRound && !predictionsOpen && selectedRound.predictions_open_at && (
+          <div className="rounded-2xl border border-[#EAD9A6] bg-cream p-4 text-sm font-semibold text-[#6E5200]">
+            הגשת הניחושים למחזור {selectedRound.round_number} תיפתח ב־
+            {formatIsraelDeadline(selectedRound.predictions_open_at)}. אפשר כבר עכשיו לשלם בפייבוקס ולהמתין לאישור.
+          </div>
+        )}
+
+        {/* Feed: kickoff order, one divider per day */}
+        <div className="flex flex-col gap-3 pt-2">
+          {matches.map((m, i) => {
+            const status = matchStatus(m.kickoff_at, m.is_final, now);
+            const newDay = i === 0 || israelDateKey(matches[i - 1].kickoff_at) !== israelDateKey(m.kickoff_at);
+            const s = saved[m.id];
+            return (
+              <div key={m.id} className="flex flex-col gap-3">
+                {newDay && (
+                  <span className={"flex items-center gap-2.5 text-[13px] font-extrabold text-[#3F4B43] after:h-px after:flex-1 after:bg-line after:content-[''] " + (i > 0 ? "mt-1.5" : "")}>
+                    {formatIsraelDayLabel(m.kickoff_at)}
+                  </span>
+                )}
+                <MatchCard
                   matchId={m.id}
                   homeTeam={m.home_team}
                   awayTeam={m.away_team}
-                  home={e.home}
-                  away={e.away}
-                  readOnly={readOnly}
-                  onChangeHome={readOnly ? undefined : (v) => setScore(m.id, "home", v)}
-                  onChangeAway={readOnly ? undefined : (v) => setScore(m.id, "away", v)}
-                  finalHomeScore={m.home_score}
-                  finalAwayScore={m.away_score}
-                  status={status}
                   kickoffAt={m.kickoff_at}
-                  isMainEvent={m.is_main_event}
-                  standingsOrder={standingsOrder}
+                  status={status}
+                  homeScore={m.home_score}
+                  awayScore={m.away_score}
                   liveMinute={status === "live" ? liveMinuteLabel(m, now) : null}
+                  isMainEvent={m.is_main_event}
+                  entry={entries[m.id] ?? EMPTY}
+                  saved={s ? { home: s.home, away: s.away } : null}
+                  isDefault={s?.isDefault ?? false}
+                  pointsEarned={s?.pointsEarned ?? null}
+                  editable={predictionsOpen && !isDayLocked(m)}
+                  notOpenYetLabel={
+                    !predictionsOpen && selectedRound.predictions_open_at
+                      ? formatIsraelDeadline(selectedRound.predictions_open_at)
+                      : null
+                  }
+                  onChange={(side, v) => setScore(m.id, side, v)}
+                  rules={rules}
+                  standingsOrder={standingsOrder}
+                  currentUserId={userId}
                 />
-              ) : (
-                m.home_score !== null &&
-                m.away_score !== null && (
-                  <EndedMatchWithParticipants
-                    matchId={m.id}
-                    standingsOrder={standingsOrder}
-                    homeTeam={m.home_team}
-                    awayTeam={m.away_team}
-                    predHome={Number(e.home)}
-                    predAway={Number(e.away)}
-                    actualHome={m.home_score}
-                    actualAway={m.away_score}
-                    points={e.pointsEarned}
-                    isMainEvent={m.is_main_event}
-                  />
-                )
-              )}
-            </div>
-          );
-        })}
+              </div>
+            );
+          })}
+        </div>
+
+        {editableMatches.length > 0 && (
+          <div className="flex flex-col items-stretch gap-1.5 pt-3">
+            <button
+              disabled={dirtyMatches.length === 0 || saving}
+              onClick={sendPrediction}
+              className="h-[52px] rounded-[14px] bg-pitch-800 text-base font-extrabold text-chalk enabled:hover:bg-pitch-900 disabled:bg-[#B9C2BB]"
+            >
+              {saving ? "שומר..." : justSaved && dirtyMatches.length === 0 ? "נשמר ✓" : "שמירת ניחושים"}
+            </button>
+            <span className="text-center text-xs font-semibold text-[#6E5200]">
+              {waitingCount === 0
+                ? ""
+                : waitingCount === 1
+                ? "עוד משחק אחד מחכה לניחוש שלך"
+                : `עוד ${waitingCount} משחקים מחכים לניחוש שלך`}
+            </span>
+          </div>
+        )}
+
+        {error && <p className="text-center text-sm text-danger">{error}</p>}
       </div>
-
-      {predictionsOpen && editableMatches.length > 0 && (
-        <button
-          disabled={!allFilled || saving}
-          onClick={sendPrediction}
-          className="rounded-full bg-brand px-8 py-2 font-medium text-white enabled:hover:bg-brand-dark disabled:cursor-not-allowed disabled:bg-neutral-300"
-        >
-          {saving ? "שומר..." : allFilled ? "שמירת ניחושים" : "השלימו את הניחושים"}
-        </button>
-      )}
-
-      {error && <p className="text-sm text-danger">{error}</p>}
 
       <BottomNav />
     </main>

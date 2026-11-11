@@ -7,7 +7,6 @@ import { ENTRY_FEE_ILS } from "@/components/JackpotBadge";
 import NewsTicker from "@/components/NewsTicker";
 import ProfileModal from "@/components/ProfileModal";
 import RoundApprovalStatus from "@/components/RoundApprovalStatus";
-import RoundCountdown from "@/components/RoundCountdown";
 import TopBar from "@/components/TopBar";
 import RoundIntroPopup from "@/components/RoundIntroPopup";
 import { createClient } from "@/lib/supabase/client";
@@ -70,7 +69,6 @@ export default function RulesPage() {
       <RoundIntroPopup />
       <NewsTicker />
       <RoundApprovalStatus />
-      <RoundCountdown />
 
       <div className="text-center">
         <h1 className="text-lg font-medium text-ink">חוקי המשחק</h1>

@@ -44,16 +44,16 @@ body {
 }
 
 /* Gold fill (pills, buttons, strips). */
-.bg-gold {
+@utility bg-gold {
   background: var(--gold);
 }
 
-.bg-gold-light {
+@utility bg-gold-light {
   background: var(--gold-light);
 }
 
 /* Gold gradient text. */
-.text-gold {
+@utility text-gold {
   background: var(--gold);
   -webkit-background-clip: text;
   background-clip: text;
@@ -61,12 +61,35 @@ body {
 }
 
 /* Gold border that keeps rounded corners. Set the inner fill with
-   --gold-fill (defaults to white). */
-.border-gold {
-  border: 2px solid transparent;
+   --gold-fill (default white) and the width with --gold-border (2px). */
+@utility border-gold {
+  border-style: solid;
+  border-color: transparent;
+  border-width: var(--gold-border, 2px);
   background:
     linear-gradient(var(--gold-fill, #fff), var(--gold-fill, #fff)) padding-box,
     var(--gold) border-box;
+}
+
+/* Live-match dot. */
+@keyframes pl-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+
+.pl-pulse {
+  animation: pl-pulse 1.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pl-pulse {
+    animation: none;
+  }
 }
 
 /* Browsers default <button> to a plain arrow cursor, unlike <a> — every

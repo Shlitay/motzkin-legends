@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import Avatar from "@/components/Avatar";
+import FloatingCountdown from "@/components/FloatingCountdown";
 import ProfileModal from "@/components/ProfileModal";
 import { createClient } from "@/lib/supabase/client";
 
@@ -53,15 +55,6 @@ const links = [
 
 const itemClass =
   "flex min-h-11 min-w-16 flex-col items-center justify-center gap-[3px] text-[11px] font-bold";
-
-// Avatars are either a library id ("avatar-07", the new SVG set) or a
-// legacy emoji from before the redesign.
-function AvatarFace({ avatar }: { avatar: string | null }) {
-  if (avatar?.startsWith("avatar-")) {
-    return <img src={`/avatars/${avatar}.svg`} alt="" className="h-full w-full rounded-full object-cover" />;
-  }
-  return <span className="text-[13px] leading-none">{avatar ?? ""}</span>;
-}
 
 export default function BottomNav() {
   const pathname = usePathname();
@@ -120,13 +113,15 @@ export default function BottomNav() {
                 aria-hidden="true"
                 className="border-gold flex h-6 w-6 items-center justify-center overflow-hidden rounded-full [--gold-fill:#F1F1EC]"
               >
-                <AvatarFace avatar={avatar} />
+                <Avatar avatar={avatar} size={20} />
               </span>
               פרופיל
             </button>
           </li>
         </ul>
       </nav>
+
+      <FloatingCountdown />
 
       {showProfile && <ProfileModal onClose={() => setShowProfile(false)} />}
     </>

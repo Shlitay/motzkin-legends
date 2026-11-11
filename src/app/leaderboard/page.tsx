@@ -8,7 +8,6 @@ import LeaderRow, { statColumnClass } from "@/components/LeaderRow";
 import NewsTicker from "@/components/NewsTicker";
 import ParticipantModal from "@/components/ParticipantModal";
 import RoundApprovalStatus from "@/components/RoundApprovalStatus";
-import RoundCountdown from "@/components/RoundCountdown";
 import TopBar from "@/components/TopBar";
 import RoundIntroPopup from "@/components/RoundIntroPopup";
 import { createClient } from "@/lib/supabase/client";
@@ -239,7 +238,6 @@ export default function LeaderboardPage() {
       <RoundIntroPopup />
       <NewsTicker />
       <RoundApprovalStatus />
-      <RoundCountdown />
       <h1 className="text-lg font-medium text-ink">טבלת הליגה</h1>
 
       {selectedRound && (
