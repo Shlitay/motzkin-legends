@@ -7,7 +7,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   // Absolute base for the share image (opengraph-image.jpg) — WhatsApp and
   // friends need a full URL.
-  metadataBase: new URL("https://motzkin-legends.vercel.app"),
+  metadataBase: new URL("https://prediction-legends.com"),
   title: "Prediction Legends",
   description: "ליגת הניחושים של החבר׳ה",
   applicationName: "Prediction Legends",

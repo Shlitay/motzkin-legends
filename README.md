@@ -6,7 +6,7 @@ Private prediction game for a closed friend group. One manager (you) approves
 participants each round after they pay via Paybox; participants predict the
 score of 7 Israeli league matches per round and compete for a jackpot.
 
-**Live:** https://motzkin-legends.vercel.app
+**Live:** https://prediction-legends.com (old address https://motzkin-legends.vercel.app redirects there)
 **Repo:** https://github.com/Shlitay/motzkin-legends
 **Supabase project:** `teuqvtarqminvutoozsx`
 **Manager account:** `contact@shlitay.com` (must have `role = 'manager'` in the `users` table — see below if it ever needs re-setting)
