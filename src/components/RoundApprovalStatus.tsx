@@ -5,7 +5,7 @@ import { ENTRY_FEE_ILS } from "@/components/JackpotBadge";
 import { getCurrentRound, type CurrentRound } from "@/lib/currentRound";
 import { createClient } from "@/lib/supabase/client";
 
-const PAYBOX_GROUP_LINK = "https://links.payboxapp.com/cnSpIALUP3b";
+const PAYBOX_GROUP_LINK = "https://links.payboxapp.com/61FepCDmZ7b";
 
 type ParticipationStatus = "waiting" | "approved" | "rejected" | null;
 

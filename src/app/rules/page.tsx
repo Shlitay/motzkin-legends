@@ -210,8 +210,8 @@ export default function RulesPage() {
   }, [supabase, showProfile]);
 
   const fee = ENTRY_FEE_ILS;
-  const smallEx = jackpotSplit(12);
-  const bigEx = jackpotSplit(18);
+  const smallEx = jackpotSplit(8);
+  const bigEx = jackpotSplit(15);
 
   const prizes = [
     {
@@ -469,8 +469,8 @@ export default function RulesPage() {
                 {icons.info}
                 <span>
                   {big
-                    ? `לדוגמה: קופה של ₪${bigEx.pot} (18 משתתפים): ₪${bigEx.first} לראשון, ₪${bigEx.second} לשני, ₪${bigEx.third} לשלישי`
-                    : `לדוגמה: קופה של ₪${smallEx.pot} (12 משתתפים): ₪${smallEx.first} לראשון, ₪${smallEx.second} לשני`}
+                    ? `לדוגמה: קופה של ₪${bigEx.pot} (15 משתתפים): ₪${bigEx.first} לראשון, ₪${bigEx.second} לשני, ₪${bigEx.third} לשלישי`
+                    : `לדוגמה: קופה של ₪${smallEx.pot} (8 משתתפים): ₪${smallEx.first} לראשון, ₪${smallEx.second} לשני`}
                 </span>
               </div>
               <span className="text-xs text-muted">

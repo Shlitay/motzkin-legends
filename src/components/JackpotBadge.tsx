@@ -8,7 +8,7 @@ import { getCurrentRound } from "@/lib/currentRound";
 // since that's what was asked for; worth revisiting if the buy-in ever
 // changes or needs to vary by round. Exported so /rules can state it
 // alongside the payout rules without duplicating the number.
-export const ENTRY_FEE_ILS = 20;
+export const ENTRY_FEE_ILS = 30;
 
 export default function JackpotBadge() {
   const [supabase] = useState(() => createClient());
