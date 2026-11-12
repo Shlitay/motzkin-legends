@@ -10,7 +10,7 @@ const PAYBOX_GROUP_LINK = "https://links.payboxapp.com/61FepCDmZ7b";
 type ParticipationStatus = "waiting" | "approved" | "rejected" | null;
 
 function useParticipation() {
-  const [state, setState] = useState<{ round: CurrentRound; status: ParticipationStatus } | null>(null);
+  const [state, setState] = useState<{ round: CurrentRound; status: ParticipationStatus; started: boolean } | null>(null);
 
   useEffect(() => {
     const supabase = createClient();
@@ -27,7 +27,12 @@ function useParticipation() {
         .eq("user_id", user.id)
         .eq("round_id", round.id)
         .maybeSingle();
-      setState({ round, status: data?.payment_status ?? null });
+      setState({
+        round,
+        status: data?.payment_status ?? null,
+        // First kickoff passed (deadline_at = the round's first kickoff).
+        started: Date.now() >= new Date(round.deadline_at).getTime(),
+      });
     })();
   }, []);
 
@@ -76,11 +81,13 @@ function PayboxLink() {
   );
 }
 
-// Payment / approval notice while the player isn't approved for the current
-// round yet. Nothing once approved (the chip covers that).
+// Payment / approval notice for the current round. The Paybox link stays
+// until the round's first kickoff — also for approved players (owner's call,
+// 2026-11-12) — and after that only for players not approved yet.
 export default function RoundApprovalStatus() {
   const p = useParticipation();
-  if (!p || p.round.status !== "open" || p.status === "approved") return null;
+  if (!p || p.round.status !== "open") return null;
+  if (p.status === "approved" && p.started) return null;
 
   if (p.status === "rejected") {
     return (
@@ -94,10 +101,16 @@ export default function RoundApprovalStatus() {
     <section className="flex w-full max-w-md flex-col gap-3 rounded-2xl border border-[#EAD9A6] bg-cream p-4">
       <div className="flex flex-col gap-1">
         <span className="text-[15px] font-extrabold text-ink">
-          {p.status === "waiting" ? "ממתינים לאישור התשלום" : `רוצים להשתתף במחזור ${p.round.round_number}?`}
+          {p.status === "approved"
+            ? "ההשתתפות שלכם אושרה ✓"
+            : p.status === "waiting"
+            ? "ממתינים לאישור התשלום"
+            : `רוצים להשתתף במחזור ${p.round.round_number}?`}
         </span>
         <span className="text-[13px] text-[#6E5200]">
-          {p.status === "waiting"
+          {p.status === "approved"
+            ? "קישור התשלום בפייבוקס נשאר כאן עד שהמחזור מתחיל."
+            : p.status === "waiting"
             ? "המנהל יאשר אתכם אחרי שהתשלום יתקבל. עוד לא שילמתם?"
             : `שולחים ‎${ENTRY_FEE_ILS} ש״ח בפייבוקס ונכנסים לקופה.`}
         </span>
