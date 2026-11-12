@@ -26,18 +26,6 @@ const ic = {
 };
 
 const icons = {
-  book: (
-    <svg {...ic} width={16} height={16}>
-      <path d="M6 3h9l4 4v14H6z" />
-      <path d="M9 12h7M9 16h7M9 8h4" />
-    </svg>
-  ),
-  trophy: (
-    <svg {...ic} width={16} height={16}>
-      <path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z" />
-      <path d="M17 6h3v2a3 3 0 0 1-3 3M7 6H4v2a3 3 0 0 0 3 3" />
-    </svg>
-  ),
   clock: (
     <svg {...ic}>
       <circle cx="12" cy="13" r="8" />
@@ -168,7 +156,6 @@ function ScoreRow({
 export default function RulesPage() {
   const [supabase] = useState(() => createClient());
   const rules = useScoringRules();
-  const [tab, setTab] = useState<"game" | "win">("game");
   const [big, setBig] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [matchCount, setMatchCount] = useState(11);
@@ -257,36 +244,10 @@ export default function RulesPage() {
         <div className="flex flex-col gap-1">
           <h1 className="text-[28px] font-black leading-tight">החוקים</h1>
           <p className="text-sm text-muted">
-            {tab === "game" ? "כל מה שצריך לדעת לפני שמנחשים" : "מי זוכה ואיך הקופה מתחלקת"}
+            כל מה שצריך לדעת: ניחושים, ניקוד ומי זוכה בקופה
           </p>
         </div>
 
-        <div role="tablist" aria-label="סוג החוקים" className="flex gap-1 rounded-full bg-[#ECECE6] p-1">
-          {(
-            [
-              ["game", "חוקי המשחק", icons.book],
-              ["win", "חלוקת הקופה", icons.trophy],
-            ] as const
-          ).map(([value, label, icon]) => (
-            <button
-              key={value}
-              type="button"
-              role="tab"
-              aria-selected={tab === value}
-              onClick={() => setTab(value)}
-              className={
-                "flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-full text-sm font-extrabold " +
-                (tab === value ? "bg-pitch-800 text-chalk" : "text-muted")
-              }
-            >
-              {icon}
-              {label}
-            </button>
-          ))}
-        </div>
-
-        {tab === "game" && (
-          <>
             <Card>
               <CardHead icon={icons.clock}>עד שריקת הפתיחה</CardHead>
               <p className="text-sm leading-relaxed text-[#2E3A32]">
@@ -392,10 +353,6 @@ export default function RulesPage() {
                 </button>
               </div>
             </Card>
-          </>
-        )}
-
-        {tab === "win" && (
           <Card gold>
             <CardHead icon={icons.crown} gold>
               מי זוכה בקופה
@@ -479,7 +436,6 @@ export default function RulesPage() {
               </span>
             </div>
           </Card>
-        )}
 
         <Link href="/privacy" className="mx-auto inline-flex min-h-9 items-center text-xs text-muted underline">
           מדיניות פרטיות
