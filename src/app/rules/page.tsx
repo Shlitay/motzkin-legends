@@ -25,6 +25,9 @@ const ic = {
   strokeLinejoin: "round" as const,
 };
 
+const MIN_PLAYERS = 2;
+const MAX_PLAYERS = 40;
+
 const icons = {
   clock: (
     <svg {...ic}>
@@ -72,12 +75,6 @@ const icons = {
   x: (
     <svg {...ic} width={15} height={15} strokeWidth={2.6}>
       <path d="M6 6l12 12M18 6L6 18" />
-    </svg>
-  ),
-  info: (
-    <svg {...ic} width={16} height={16} className="shrink-0">
-      <circle cx="12" cy="12" r="9" />
-      <path d="M12 11v5M12 8h.01" />
     </svg>
   ),
 };
@@ -156,7 +153,9 @@ function ScoreRow({
 export default function RulesPage() {
   const [supabase] = useState(() => createClient());
   const rules = useScoringRules();
-  const [big, setBig] = useState(false);
+  // Jackpot simulator: how many approved players to show the split for.
+  // Starts on the current round's real count (if it's at least 2).
+  const [players, setPlayers] = useState(10);
   const [showProfile, setShowProfile] = useState(false);
   const [matchCount, setMatchCount] = useState(11);
   const [defaultResult, setDefaultResult] = useState<{ h: number; a: number } | null>(null);
@@ -178,7 +177,7 @@ export default function RulesPage() {
           .select("id", { count: "exact", head: true })
           .eq("round_id", round.id)
           .eq("payment_status", "approved");
-        if (approved !== null) setBig(approved * ENTRY_FEE_ILS > BIG_POT_THRESHOLD);
+        if (approved !== null && approved >= 2) setPlayers(Math.min(approved, MAX_PLAYERS));
       }
 
       const {
@@ -197,39 +196,38 @@ export default function RulesPage() {
   }, [supabase, showProfile]);
 
   const fee = ENTRY_FEE_ILS;
-  const smallEx = jackpotSplit(8);
-  const bigEx = jackpotSplit(15);
+  const split = jackpotSplit(players);
+  const { big } = split;
+  const freeRounds = (amount: number) =>
+    amount === 0 ? "ללא פרס" : amount === fee ? "סיבוב חינם" : `${amount / fee} סיבובים חינם`;
 
   const prizes = [
     {
       place: 1,
       title: "מקום ראשון",
       detail: "כל שאר הקופה",
-      amount: "השאר",
+      amount: split.first,
       bg: "bg-gold-light",
       medal: "bg-gold text-gold-ink",
       amountFg: "text-[#6E5200]",
-      dim: false,
     },
     {
       place: 2,
       title: "מקום שני",
-      detail: big ? "2 סיבובים חינם" : "סיבוב חינם",
-      amount: `₪${big ? 2 * fee : fee}`,
+      detail: freeRounds(split.second),
+      amount: split.second,
       bg: "bg-[#F7F7F4]",
       medal: "bg-[linear-gradient(160deg,#E9ECEF_0%,#FFFFFF_45%,#C9CDD2_100%)] text-[#2E3A44]",
       amountFg: "text-ink",
-      dim: false,
     },
     {
       place: 3,
       title: "מקום שלישי",
-      detail: big ? "סיבוב חינם" : "ללא פרס",
-      amount: big ? `₪${fee}` : "—",
+      detail: freeRounds(split.third),
+      amount: split.third,
       bg: "bg-[#F7F7F4]",
       medal: "bg-[linear-gradient(160deg,#E7B48A_0%,#F6DCC4_45%,#B9774A_100%)] text-[#4A2810]",
-      amountFg: big ? "text-ink" : "text-[#8E918A]",
-      dim: !big,
+      amountFg: "text-ink",
     },
   ];
 
@@ -383,28 +381,68 @@ export default function RulesPage() {
 
             <div className="flex flex-col gap-3 border-t border-[#ECECE6] pt-3.5">
               <h3 className="text-[15px] font-black">חלוקת הקופה</h3>
-              <div role="radiogroup" aria-label="גודל הקופה" className="flex gap-1 rounded-full bg-[#ECECE6] p-1">
-                {[false, true].map((isBig) => (
-                  <button
-                    key={String(isBig)}
-                    type="button"
-                    role="radio"
-                    aria-checked={big === isBig}
-                    onClick={() => setBig(isBig)}
-                    className={
-                      "min-h-10 flex-1 rounded-full text-[13px] font-extrabold " +
-                      (big === isBig ? "bg-pitch-800 text-chalk" : "text-muted")
-                    }
-                  >
-                    {isBig ? `קופה מעל ₪${BIG_POT_THRESHOLD}` : `קופה עד ₪${BIG_POT_THRESHOLD}`}
-                  </button>
-                ))}
+              <div className="flex flex-col gap-2.5 rounded-[14px] bg-[#F4F4F0] p-3">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-[13px] font-extrabold">מספר משתתפים</span>
+                  <div className="flex items-center gap-2" dir="ltr">
+                    <button
+                      type="button"
+                      aria-label="פחות משתתפים"
+                      disabled={players <= MIN_PLAYERS}
+                      onClick={() => setPlayers((n) => Math.max(MIN_PLAYERS, n - 1))}
+                      className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-white text-lg font-black text-pitch-800 disabled:opacity-35"
+                    >
+                      −
+                    </button>
+                    <output
+                      aria-live="polite"
+                      className="w-10 text-center font-display text-[26px] font-bold leading-none text-pitch-800"
+                    >
+                      {players}
+                    </output>
+                    <button
+                      type="button"
+                      aria-label="יותר משתתפים"
+                      disabled={players >= MAX_PLAYERS}
+                      onClick={() => setPlayers((n) => Math.min(MAX_PLAYERS, n + 1))}
+                      className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-white text-lg font-black text-pitch-800 disabled:opacity-35"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+                <input
+                  type="range"
+                  min={MIN_PLAYERS}
+                  max={MAX_PLAYERS}
+                  value={players}
+                  onChange={(e) => setPlayers(Number(e.target.value))}
+                  aria-label="מספר משתתפים"
+                  dir="ltr"
+                  className="w-full accent-[#14512D]"
+                />
+                <div className="flex items-center justify-between text-[13px]">
+                  <span className="text-muted">
+                    {players} × ₪{fee} =
+                  </span>
+                  <span className="inline-flex items-center gap-2">
+                    <span className="font-display text-xl font-bold">₪{split.pot}</span>
+                    <span
+                      className={
+                        "rounded-full px-2 py-px text-[11px] font-extrabold " +
+                        (big ? "bg-gold text-gold-ink" : "bg-white text-muted")
+                      }
+                    >
+                      {big ? `מעל ₪${BIG_POT_THRESHOLD}` : `עד ₪${BIG_POT_THRESHOLD}`}
+                    </span>
+                  </span>
+                </div>
               </div>
               <div className="flex flex-col gap-2">
                 {prizes.map((p) => (
                   <div
                     key={p.place}
-                    className={"flex items-center gap-3 rounded-[14px] px-3 py-2.5 " + p.bg + (p.dim ? " opacity-55" : "")}
+                    className={"flex items-center gap-3 rounded-[14px] px-3 py-2.5 " + p.bg + (p.amount === 0 ? " opacity-55" : "")}
                   >
                     <span
                       className={
@@ -418,21 +456,15 @@ export default function RulesPage() {
                       <span className="text-sm font-extrabold">{p.title}</span>
                       <span className="text-xs text-muted">{p.detail}</span>
                     </span>
-                    <span className={"font-display text-xl font-bold " + p.amountFg}>{p.amount}</span>
+                    <span className={"font-display text-xl font-bold " + (p.amount === 0 ? "text-[#8E918A]" : p.amountFg)}>
+                      {p.amount === 0 ? "—" : `₪${p.amount}`}
+                    </span>
                   </div>
                 ))}
               </div>
-              <div className="flex items-center gap-2 rounded-xl bg-[#F4F4F0] px-3 py-[9px] text-xs leading-normal text-[#3F4B43]">
-                {icons.info}
-                <span>
-                  {big
-                    ? `לדוגמה: קופה של ₪${bigEx.pot} (15 משתתפים): ₪${bigEx.first} לראשון, ₪${bigEx.second} לשני, ₪${bigEx.third} לשלישי`
-                    : `לדוגמה: קופה של ₪${smallEx.pot} (8 משתתפים): ₪${smallEx.first} לראשון, ₪${smallEx.second} לשני`}
-                </span>
-              </div>
               <span className="text-xs text-muted">
-                ״סיבוב חינם״ = החזר של דמי השתתפות אחד, ‎{fee} ש״ח. קופה של בדיוק ₪{BIG_POT_THRESHOLD} נחשבת ״עד ₪
-                {BIG_POT_THRESHOLD}״.
+                ״סיבוב חינם״ = החזר של דמי השתתפות אחד, ‎{fee} ש״ח. עד ₪{BIG_POT_THRESHOLD} בקופה: פרס למקום השני בלבד.
+                מעל ₪{BIG_POT_THRESHOLD}: גם למקום השלישי.
               </span>
             </div>
           </Card>
