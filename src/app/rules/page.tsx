@@ -61,7 +61,13 @@ const icons = {
     </svg>
   ),
   crown: (
-    <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+    <svg
+      aria-hidden="true"
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+    >
       <path d="M3 9l4.6 3.6L12 5.5l4.4 7.1L21 9l-1.8 9H4.8z" />
       <rect x="4.8" y="19.2" width="14.4" height="2" rx="1" />
     </svg>
@@ -79,11 +85,18 @@ const icons = {
   ),
 };
 
-function Card({ children, gold }: { children: React.ReactNode; gold?: boolean }) {
+function Card({
+  children,
+  gold,
+}: {
+  children: React.ReactNode;
+  gold?: boolean;
+}) {
   return (
     <section
       className={
-        "flex flex-col gap-3 rounded-[20px] p-4 " + (gold ? "border-gold" : "border border-line bg-white")
+        "flex flex-col gap-3 rounded-[20px] p-4 " +
+        (gold ? "border-gold" : "border border-line bg-white")
       }
     >
       {children}
@@ -91,7 +104,15 @@ function Card({ children, gold }: { children: React.ReactNode; gold?: boolean })
   );
 }
 
-function CardHead({ icon, children, gold }: { icon: React.ReactNode; children: React.ReactNode; gold?: boolean }) {
+function CardHead({
+  icon,
+  children,
+  gold,
+}: {
+  icon: React.ReactNode;
+  children: React.ReactNode;
+  gold?: boolean;
+}) {
   return (
     <h2 className="flex items-center gap-2.5 text-[17px] font-extrabold">
       <span
@@ -107,9 +128,22 @@ function CardHead({ icon, children, gold }: { icon: React.ReactNode; children: R
   );
 }
 
-function Pair({ h, a, className = "" }: { h: number | string; a: number | string; className?: string }) {
+function Pair({
+  h,
+  a,
+  className = "",
+}: {
+  h: number | string;
+  a: number | string;
+  className?: string;
+}) {
   return (
-    <span className={"inline-flex gap-[3px] font-display text-[13px] font-semibold text-ink " + className}>
+    <span
+      className={
+        "inline-flex gap-[3px] font-display text-[13px] font-semibold text-ink " +
+        className
+      }
+    >
       <span>{h}</span>
       <span>:</span>
       <span>{a}</span>
@@ -137,15 +171,33 @@ function ScoreRow({
   pointsClass: string;
 }) {
   return (
-    <div className={"grid grid-cols-[30px_minmax(0,1fr)_auto] items-center gap-2.5 rounded-[14px] px-3 py-2.5 " + bg}>
-      <span className={"flex h-[30px] w-[30px] items-center justify-center rounded-full " + iconClass}>{icon}</span>
+    <div
+      className={
+        "grid grid-cols-[30px_minmax(0,1fr)_auto] items-center gap-2.5 rounded-[14px] px-3 py-2.5 " +
+        bg
+      }
+    >
+      <span
+        className={
+          "flex h-[30px] w-[30px] items-center justify-center rounded-full " +
+          iconClass
+        }
+      >
+        {icon}
+      </span>
       <span className="flex flex-col gap-0.5">
         <span className={"text-sm font-extrabold " + nameClass}>{name}</span>
         <span className="inline-flex flex-wrap items-center gap-1.5 text-xs font-semibold text-muted">
           ניחשת <Pair h={ex[0]} a={ex[1]} /> · נגמר <Pair h={ex[2]} a={ex[3]} />
         </span>
       </span>
-      <span className={"font-display text-[26px] font-bold leading-none " + pointsClass}>{points}</span>
+      <span
+        className={
+          "font-display text-[26px] font-bold leading-none " + pointsClass
+        }
+      >
+        {points}
+      </span>
     </div>
   );
 }
@@ -158,7 +210,10 @@ export default function RulesPage() {
   const [players, setPlayers] = useState(10);
   const [showProfile, setShowProfile] = useState(false);
   const [matchCount, setMatchCount] = useState(11);
-  const [defaultResult, setDefaultResult] = useState<{ h: number; a: number } | null>(null);
+  const [defaultResult, setDefaultResult] = useState<{
+    h: number;
+    a: number;
+  } | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -177,7 +232,8 @@ export default function RulesPage() {
           .select("id", { count: "exact", head: true })
           .eq("round_id", round.id)
           .eq("payment_status", "approved");
-        if (approved !== null && approved >= 2) setPlayers(Math.min(approved, MAX_PLAYERS));
+        if (approved !== null && approved >= 2)
+          setPlayers(Math.min(approved, MAX_PLAYERS));
       }
 
       const {
@@ -189,8 +245,15 @@ export default function RulesPage() {
         .select("default_home_score, default_away_score")
         .eq("id", user.id)
         .single();
-      if (data && data.default_home_score !== null && data.default_away_score !== null) {
-        setDefaultResult({ h: data.default_home_score, a: data.default_away_score });
+      if (
+        data &&
+        data.default_home_score !== null &&
+        data.default_away_score !== null
+      ) {
+        setDefaultResult({
+          h: data.default_home_score,
+          a: data.default_away_score,
+        });
       }
     })();
   }, [supabase, showProfile]);
@@ -199,7 +262,11 @@ export default function RulesPage() {
   const split = jackpotSplit(players);
   const { big } = split;
   const freeRounds = (amount: number) =>
-    amount === 0 ? "ללא פרס" : amount === fee ? "סיבוב חינם" : `${amount / fee} סיבובים חינם`;
+    amount === 0
+      ? "ללא פרס"
+      : amount === fee
+        ? "סיבוב חינם"
+        : `${amount / fee} סיבובים חינם`;
 
   const prizes = [
     {
@@ -217,7 +284,8 @@ export default function RulesPage() {
       detail: freeRounds(split.second),
       amount: split.second,
       bg: "bg-[#F7F7F4]",
-      medal: "bg-[linear-gradient(160deg,#E9ECEF_0%,#FFFFFF_45%,#C9CDD2_100%)] text-[#2E3A44]",
+      medal:
+        "bg-[linear-gradient(160deg,#E9ECEF_0%,#FFFFFF_45%,#C9CDD2_100%)] text-[#2E3A44]",
       amountFg: "text-ink",
     },
     {
@@ -226,7 +294,8 @@ export default function RulesPage() {
       detail: freeRounds(split.third),
       amount: split.third,
       bg: "bg-[#F7F7F4]",
-      medal: "bg-[linear-gradient(160deg,#E7B48A_0%,#F6DCC4_45%,#B9774A_100%)] text-[#4A2810]",
+      medal:
+        "bg-[linear-gradient(160deg,#E7B48A_0%,#F6DCC4_45%,#B9774A_100%)] text-[#4A2810]",
       amountFg: "text-ink",
     },
   ];
@@ -246,230 +315,267 @@ export default function RulesPage() {
           </p>
         </div>
 
-            <Card>
-              <CardHead icon={icons.clock}>עד שריקת הפתיחה</CardHead>
-              <p className="text-sm leading-relaxed text-[#2E3A32]">
-                מנחשים תוצאה מדויקת לכל <b>{matchCount} המשחקים</b> במחזור. אפשר לשנות ניחוש עד שהמשחק הראשון של אותו
-                יום מתחיל.
-              </p>
-              <div className="flex gap-2">
-                <div className="flex flex-1 flex-col gap-1 rounded-xl bg-[#F4F4F0] p-2.5">
-                  <span className="inline-flex items-center gap-[5px] text-xs font-extrabold text-[#3F4440]">
-                    {icons.lock}
-                    שבת 20:30
-                  </span>
-                  <span className="text-xs leading-snug text-muted">כל משחקי שבת ננעלים</span>
-                </div>
-                <div className="flex flex-1 flex-col gap-1 rounded-xl bg-green-50 p-2.5">
-                  <span className="inline-flex items-center gap-[5px] text-xs font-extrabold text-[#14512D]">
-                    {icons.pencil}
-                    ראשון ושני
-                  </span>
-                  <span className="text-xs leading-snug text-[#14512D]">עדיין פתוחים לעריכה</span>
-                </div>
-              </div>
-            </Card>
-
-            <Card>
-              <CardHead icon={icons.target}>ניקוד</CardHead>
-              <ScoreRow
-                bg="bg-gold-light"
-                iconClass="bg-gold text-gold-ink"
-                icon={icons.crown}
-                nameClass="text-[#5C4400]"
-                name="בול: תוצאה מדויקת"
-                ex={[2, 1, 2, 1]}
-                points={rules.winHit}
-                pointsClass="text-[#6E5200]"
-              />
-              <ScoreRow
-                bg="bg-green-50"
-                iconClass="bg-pitch-600 text-white"
-                icon={icons.trend}
-                nameClass="text-[#14512D]"
-                name="כיוון + הפרש שערים זהה"
-                ex={[2, 0, 3, 1]}
-                points={rules.winTowards + rules.sameDiffBonus}
-                pointsClass="text-[#14512D]"
-              />
-              <ScoreRow
-                bg="bg-green-50"
-                iconClass="bg-pitch-600 text-white"
-                icon={icons.trend}
-                nameClass="text-[#14512D]"
-                name="כיוון תיקו (לא מדויק)"
-                ex={[1, 1, 0, 0]}
-                points={rules.drawTowards}
-                pointsClass="text-[#14512D]"
-              />
-              <ScoreRow
-                bg="bg-[#EEF6F0]"
-                iconClass="border-2 border-pitch-600 bg-white text-pitch-600"
-                icon={icons.trend}
-                nameClass="text-[#14512D]"
-                name="כיוון בלבד"
-                ex={[1, 0, 3, 1]}
-                points={rules.winTowards}
-                pointsClass="text-[#14512D]"
-              />
-              <ScoreRow
-                bg="bg-[#F4F4F0]"
-                iconClass="bg-miss text-[#3F4440]"
-                icon={icons.x}
-                nameClass="text-[#3F4440]"
-                name="פספוס"
-                ex={[2, 1, 1, 1]}
-                points={0}
-                pointsClass="text-[#6B6F68]"
-              />
-              {rules.drawHit !== rules.winHit && (
-                <p className="text-xs text-muted">בול על תיקו שווה {rules.drawHit} נקודות.</p>
-              )}
-              <p className="text-xs text-muted">ערכי הניקוד נקבעים ע״י המנהל ועשויים להשתנות בין מחזורים.</p>
-            </Card>
-
-            <Card>
-              <CardHead icon={icons.alarm}>פספסתם את המועד?</CardHead>
-              <p className="text-sm leading-relaxed text-[#2E3A32]">
-                תוצאת ברירת המחדל שלכם נכנסת אוטומטית לכל משחק שלא ניחשתם עד הפתיחה.
-              </p>
-              <div className="flex items-center justify-between rounded-[14px] bg-[#F4F4F0] px-3 py-2">
-                <span className="inline-flex items-center gap-2 text-[13px] font-bold">
-                  ברירת המחדל שלך
-                  {defaultResult ? (
-                    <Pair h={defaultResult.h} a={defaultResult.a} className="rounded-md bg-white px-2 py-px text-base" />
-                  ) : (
-                    <span className="text-muted">לא נקבעה</span>
-                  )}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setShowProfile(true)}
-                  className="inline-flex min-h-9 items-center text-[13px] font-extrabold text-pitch-600 underline-offset-2 hover:underline"
-                >
-                  שינוי בפרופיל
-                </button>
-              </div>
-            </Card>
-          <Card gold>
-            <CardHead icon={icons.crown} gold>
-              מי זוכה בקופה
-            </CardHead>
-            <p className="text-sm leading-relaxed text-[#2E3A32]">
-              מי שצובר הכי הרבה נקודות במחזור לוקח את הקופה. בשוויון, לפי הסדר:
-            </p>
-            <ol className="flex flex-col gap-2.5">
-              {[
-                "הכי הרבה נקודות",
-                "הכי הרבה בולים",
-                <span key="3">
-                  יותר נקודות ב
-                  <span className="bg-gold-light mx-[3px] inline-flex items-center rounded-full px-2 py-px text-xs font-extrabold text-[#5C4400]">
-                    המשחק המרכזי
-                  </span>
-                  של המחזור
-                </span>,
-              ].map((text, i) => (
-                <li key={i} className="flex items-start gap-2.5 text-sm leading-normal">
-                  <span className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full bg-pitch-800 font-display text-[13px] font-semibold text-chalk">
-                    {i + 1}
-                  </span>
-                  {text}
-                </li>
-              ))}
-            </ol>
-
-            <div className="flex flex-col gap-3 border-t border-[#ECECE6] pt-3.5">
-              <h3 className="text-[15px] font-black">חלוקת הקופה</h3>
-              <div className="flex flex-col gap-2.5 rounded-[14px] bg-[#F4F4F0] p-3">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-[13px] font-extrabold">מספר משתתפים</span>
-                  <div className="flex items-center gap-2" dir="ltr">
-                    <button
-                      type="button"
-                      aria-label="פחות משתתפים"
-                      disabled={players <= MIN_PLAYERS}
-                      onClick={() => setPlayers((n) => Math.max(MIN_PLAYERS, n - 1))}
-                      className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-white text-lg font-black text-pitch-800 disabled:opacity-35"
-                    >
-                      −
-                    </button>
-                    <output
-                      aria-live="polite"
-                      className="w-10 text-center font-display text-[26px] font-bold leading-none text-pitch-800"
-                    >
-                      {players}
-                    </output>
-                    <button
-                      type="button"
-                      aria-label="יותר משתתפים"
-                      disabled={players >= MAX_PLAYERS}
-                      onClick={() => setPlayers((n) => Math.min(MAX_PLAYERS, n + 1))}
-                      className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-white text-lg font-black text-pitch-800 disabled:opacity-35"
-                    >
-                      +
-                    </button>
-                  </div>
-                </div>
-                <input
-                  type="range"
-                  min={MIN_PLAYERS}
-                  max={MAX_PLAYERS}
-                  value={players}
-                  onChange={(e) => setPlayers(Number(e.target.value))}
-                  aria-label="מספר משתתפים"
-                  dir="ltr"
-                  className="w-full accent-[#14512D]"
-                />
-                <div className="flex items-center justify-between text-[13px]">
-                  <span className="text-muted">
-                    {players} × ₪{fee} =
-                  </span>
-                  <span className="inline-flex items-center gap-2">
-                    <span className="font-display text-xl font-bold">₪{split.pot}</span>
-                    <span
-                      className={
-                        "rounded-full px-2 py-px text-[11px] font-extrabold " +
-                        (big ? "bg-gold text-gold-ink" : "bg-white text-muted")
-                      }
-                    >
-                      {big ? `מעל ₪${BIG_POT_THRESHOLD}` : `עד ₪${BIG_POT_THRESHOLD}`}
-                    </span>
-                  </span>
-                </div>
-              </div>
-              <div className="flex flex-col gap-2">
-                {prizes.map((p) => (
-                  <div
-                    key={p.place}
-                    className={"flex items-center gap-3 rounded-[14px] px-3 py-2.5 " + p.bg + (p.amount === 0 ? " opacity-55" : "")}
-                  >
-                    <span
-                      className={
-                        "flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-full font-display text-[17px] font-bold " +
-                        p.medal
-                      }
-                    >
-                      {p.place}
-                    </span>
-                    <span className="flex flex-1 flex-col gap-px">
-                      <span className="text-sm font-extrabold">{p.title}</span>
-                      <span className="text-xs text-muted">{p.detail}</span>
-                    </span>
-                    <span className={"font-display text-xl font-bold " + (p.amount === 0 ? "text-[#8E918A]" : p.amountFg)}>
-                      {p.amount === 0 ? "—" : `₪${p.amount}`}
-                    </span>
-                  </div>
-                ))}
-              </div>
-              <span className="text-xs text-muted">
-                ״סיבוב חינם״ = החזר של דמי השתתפות אחד, ‎{fee} ש״ח. עד ₪{BIG_POT_THRESHOLD} בקופה: פרס למקום השני בלבד.
-                מעל ₪{BIG_POT_THRESHOLD}: גם למקום השלישי.
+        <Card>
+          <CardHead icon={icons.clock}>עד שריקת הפתיחה</CardHead>
+          <p className="text-sm leading-relaxed text-[#2E3A32]">
+            מנחשים תוצאה מדויקת לכל <b>{matchCount} המשחקים</b> במחזור. אפשר
+            לשנות ניחוש עד שהמשחק הראשון של אותו יום מתחיל.
+          </p>
+          <div className="flex gap-2">
+            <div className="flex flex-1 flex-col gap-1 rounded-xl bg-[#F4F4F0] p-2.5">
+              <span className="inline-flex items-center gap-[5px] text-xs font-extrabold text-[#3F4440]">
+                {icons.lock}
+                שבת 20:30
+              </span>
+              <span className="text-xs leading-snug text-muted">
+                כל משחקי שבת ננעלים
               </span>
             </div>
-          </Card>
+            <div className="flex flex-1 flex-col gap-1 rounded-xl bg-green-50 p-2.5">
+              <span className="inline-flex items-center gap-[5px] text-xs font-extrabold text-[#14512D]">
+                {icons.pencil}
+                ראשון ושני
+              </span>
+              <span className="text-xs leading-snug text-[#14512D]">
+                עדיין פתוחים לעריכה
+              </span>
+            </div>
+          </div>
+        </Card>
 
-        <Link href="/privacy" className="mx-auto inline-flex min-h-9 items-center text-xs text-muted underline">
+        <Card gold>
+          <CardHead icon={icons.crown} gold>
+            מי זוכה בקופה
+          </CardHead>
+          <p className="text-sm leading-relaxed text-[#2E3A32]">
+            מי שצובר הכי הרבה נקודות במחזור לוקח את הקופה. בשוויון, לפי הסדר:
+          </p>
+          <ol className="flex flex-col gap-2.5">
+            {[
+              "הכי הרבה נקודות",
+              "הכי הרבה בולים",
+              <span key="3">
+                יותר נקודות ב
+                <span className="bg-gold-light mx-[3px] inline-flex items-center rounded-full px-2 py-px text-xs font-extrabold text-[#5C4400]">
+                  המשחק המרכזי
+                </span>
+                של המחזור
+              </span>,
+            ].map((text, i) => (
+              <li
+                key={i}
+                className="flex items-start gap-2.5 text-sm leading-normal"
+              >
+                <span className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full bg-pitch-800 font-display text-[13px] font-semibold text-chalk">
+                  {i + 1}
+                </span>
+                {text}
+              </li>
+            ))}
+          </ol>
+
+          <div className="flex flex-col gap-3 border-t border-[#ECECE6] pt-3.5">
+            <h3 className="text-[15px] font-black">חלוקת הקופה</h3>
+            <div className="flex flex-col gap-2.5 rounded-[14px] bg-[#F4F4F0] p-3">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-[13px] font-extrabold">מספר משתתפים</span>
+                <div className="flex items-center gap-2" dir="ltr">
+                  <button
+                    type="button"
+                    aria-label="פחות משתתפים"
+                    disabled={players <= MIN_PLAYERS}
+                    onClick={() =>
+                      setPlayers((n) => Math.max(MIN_PLAYERS, n - 1))
+                    }
+                    className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-white text-lg font-black text-pitch-800 disabled:opacity-35"
+                  >
+                    −
+                  </button>
+                  <output
+                    aria-live="polite"
+                    className="w-10 text-center font-display text-[26px] font-bold leading-none text-pitch-800"
+                  >
+                    {players}
+                  </output>
+                  <button
+                    type="button"
+                    aria-label="יותר משתתפים"
+                    disabled={players >= MAX_PLAYERS}
+                    onClick={() =>
+                      setPlayers((n) => Math.min(MAX_PLAYERS, n + 1))
+                    }
+                    className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-white text-lg font-black text-pitch-800 disabled:opacity-35"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+              <input
+                type="range"
+                min={MIN_PLAYERS}
+                max={MAX_PLAYERS}
+                value={players}
+                onChange={(e) => setPlayers(Number(e.target.value))}
+                aria-label="מספר משתתפים"
+                dir="ltr"
+                className="w-full accent-[#14512D]"
+              />
+              <div className="flex items-center justify-between text-[13px]">
+                <span className="text-muted">
+                  {players} × ₪{fee} =
+                </span>
+                <span className="inline-flex items-center gap-2">
+                  <span className="font-display text-xl font-bold">
+                    ₪{split.pot}
+                  </span>
+                  <span
+                    className={
+                      "rounded-full px-2 py-px text-[11px] font-extrabold " +
+                      (big ? "bg-gold text-gold-ink" : "bg-white text-muted")
+                    }
+                  >
+                    {big
+                      ? `מעל ₪${BIG_POT_THRESHOLD}`
+                      : `עד ₪${BIG_POT_THRESHOLD}`}
+                  </span>
+                </span>
+              </div>
+            </div>
+            <div className="flex flex-col gap-2">
+              {prizes.map((p) => (
+                <div
+                  key={p.place}
+                  className={
+                    "flex items-center gap-3 rounded-[14px] px-3 py-2.5 " +
+                    p.bg +
+                    (p.amount === 0 ? " opacity-55" : "")
+                  }
+                >
+                  <span
+                    className={
+                      "flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-full font-display text-[17px] font-bold " +
+                      p.medal
+                    }
+                  >
+                    {p.place}
+                  </span>
+                  <span className="flex flex-1 flex-col gap-px">
+                    <span className="text-sm font-extrabold">{p.title}</span>
+                    <span className="text-xs text-muted">{p.detail}</span>
+                  </span>
+                  <span
+                    className={
+                      "font-display text-xl font-bold " +
+                      (p.amount === 0 ? "text-[#8E918A]" : p.amountFg)
+                    }
+                  >
+                    {p.amount === 0 ? "—" : `₪${p.amount}`}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <span className="text-xs text-muted">
+              ״סיבוב חינם״ = החזר של דמי השתתפות אחד, ‎{fee} ש״ח. עד ₪
+              {BIG_POT_THRESHOLD} בקופה: פרס למקום השני בלבד. מעל ₪
+              {BIG_POT_THRESHOLD}: גם למקום השלישי.
+            </span>
+          </div>
+        </Card>
+
+        <Card>
+          <CardHead icon={icons.target}>ניקוד</CardHead>
+          <ScoreRow
+            bg="bg-gold-light"
+            iconClass="bg-gold text-gold-ink"
+            icon={icons.crown}
+            nameClass="text-[#5C4400]"
+            name="בול: תוצאה מדויקת"
+            ex={[2, 1, 2, 1]}
+            points={rules.winHit}
+            pointsClass="text-[#6E5200]"
+          />
+          <ScoreRow
+            bg="bg-green-50"
+            iconClass="bg-pitch-600 text-white"
+            icon={icons.trend}
+            nameClass="text-[#14512D]"
+            name="כיוון + הפרש שערים זהה"
+            ex={[2, 0, 3, 1]}
+            points={rules.winTowards + rules.sameDiffBonus}
+            pointsClass="text-[#14512D]"
+          />
+          <ScoreRow
+            bg="bg-green-50"
+            iconClass="bg-pitch-600 text-white"
+            icon={icons.trend}
+            nameClass="text-[#14512D]"
+            name="כיוון תיקו (לא מדויק)"
+            ex={[1, 1, 0, 0]}
+            points={rules.drawTowards}
+            pointsClass="text-[#14512D]"
+          />
+          <ScoreRow
+            bg="bg-[#EEF6F0]"
+            iconClass="border-2 border-pitch-600 bg-white text-pitch-600"
+            icon={icons.trend}
+            nameClass="text-[#14512D]"
+            name="כיוון בלבד"
+            ex={[1, 0, 3, 1]}
+            points={rules.winTowards}
+            pointsClass="text-[#14512D]"
+          />
+          <ScoreRow
+            bg="bg-[#F4F4F0]"
+            iconClass="bg-miss text-[#3F4440]"
+            icon={icons.x}
+            nameClass="text-[#3F4440]"
+            name="פספוס"
+            ex={[2, 1, 1, 1]}
+            points={0}
+            pointsClass="text-[#6B6F68]"
+          />
+          {rules.drawHit !== rules.winHit && (
+            <p className="text-xs text-muted">
+              בול על תיקו שווה {rules.drawHit} נקודות.
+            </p>
+          )}
+          <p className="text-xs text-muted">
+            ערכי הניקוד נקבעים ע״י המנהל ועשויים להשתנות בין מחזורים.
+          </p>
+        </Card>
+
+        <Card>
+          <CardHead icon={icons.alarm}>פספסתם את המועד?</CardHead>
+          <p className="text-sm leading-relaxed text-[#2E3A32]">
+            תוצאת ברירת המחדל שלכם נכנסת אוטומטית לכל משחק שלא ניחשתם עד הפתיחה.
+          </p>
+          <div className="flex items-center justify-between rounded-[14px] bg-[#F4F4F0] px-3 py-2">
+            <span className="inline-flex items-center gap-2 text-[13px] font-bold">
+              ברירת המחדל שלך
+              {defaultResult ? (
+                <Pair
+                  h={defaultResult.h}
+                  a={defaultResult.a}
+                  className="rounded-md bg-white px-2 py-px text-base"
+                />
+              ) : (
+                <span className="text-muted">לא נקבעה</span>
+              )}
+            </span>
+            <button
+              type="button"
+              onClick={() => setShowProfile(true)}
+              className="inline-flex min-h-9 items-center text-[13px] font-extrabold text-pitch-600 underline-offset-2 hover:underline"
+            >
+              שינוי בפרופיל
+            </button>
+          </div>
+        </Card>
+
+        <Link
+          href="/privacy"
+          className="mx-auto inline-flex min-h-9 items-center text-xs text-muted underline"
+        >
           מדיניות פרטיות
         </Link>
       </div>
