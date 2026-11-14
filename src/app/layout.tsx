@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import AdSense from "@/components/AdSense";
 import Analytics from "@/components/Analytics";
 import { InstallCatcher } from "@/components/InstallPrompt";
 import { heebo, oswald } from "@/lib/fonts";
@@ -34,19 +35,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="he" dir="rtl" className={`${oswald.variable} ${heebo.variable}`}>
-      <head>
-        {/* AdSense. Plain script tag rather than next/script so it is in the
-            server-rendered HTML, where Google's site check looks for it. The
-            anchor ad itself is switched on in the AdSense dashboard. */}
-        <script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5971476129281770"
-          crossOrigin="anonymous"
-        />
-      </head>
       <body>
         {children}
         <InstallCatcher />
+        {/* Content pages only — see AdSense.tsx. The anchor ad itself is
+            switched on in the AdSense dashboard. */}
+        <AdSense />
       </body>
       <Analytics />
     </html>

@@ -3,22 +3,11 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-export type ScoringRules = {
-  winHit: number;
-  winTowards: number;
-  sameDiffBonus: number;
-  drawHit: number;
-  drawTowards: number;
-};
+// Defaults live in a plain module so server pages (/about) can read them;
+// values exported from this "use client" file are not visible on the server.
+import { DEFAULT_RULES, type ScoringRules } from "@/lib/scoringDefaults";
 
-// Same defaults as the scoring_rules columns; used until the live row loads.
-export const DEFAULT_RULES: ScoringRules = {
-  winHit: 10,
-  winTowards: 5,
-  sameDiffBonus: 1,
-  drawHit: 10,
-  drawTowards: 6,
-};
+export { DEFAULT_RULES, type ScoringRules };
 
 // exact = bull's-eye, dirDiff = right winner + same goal difference,
 // drawDir = predicted a draw and it ended a draw (not exact), dir = right

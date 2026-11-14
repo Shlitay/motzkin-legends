@@ -138,6 +138,15 @@ export default function LoginPage() {
             המשך עם Google
           </GoogleSignInButton>
 
+          <div className="flex justify-center gap-[18px] text-[13px] font-bold">
+            <Link href="/about" className="inline-flex min-h-9 items-center text-pitch-600 underline">
+              איך זה עובד
+            </Link>
+            <Link href="/rules" className="inline-flex min-h-9 items-center text-pitch-600 underline">
+              החוקים והקופה
+            </Link>
+          </div>
+
           <div className="mt-auto flex justify-center gap-[18px] text-xs">
             <Link href="/manager/login" className="inline-flex min-h-8 items-center text-muted underline">
               מנהל/ת המשחק? התחברו כאן

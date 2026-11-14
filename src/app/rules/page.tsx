@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import BottomNav from "@/components/BottomNav";
 import { ENTRY_FEE_ILS } from "@/components/JackpotBadge";
 import ProfileModal from "@/components/ProfileModal";
+import PublicHeader from "@/components/PublicHeader";
 import RoundApprovalStatus from "@/components/RoundApprovalStatus";
 import RoundIntroPopup from "@/components/RoundIntroPopup";
 import TopBar from "@/components/TopBar";
@@ -209,11 +210,19 @@ export default function RulesPage() {
   // Starts on the current round's real count (if it's at least 2).
   const [players, setPlayers] = useState(10);
   const [showProfile, setShowProfile] = useState(false);
+  // null until known. Logged-out visitors (and Google) get the public version:
+  // same rules, no player-only boxes.
+  const [authed, setAuthed] = useState<boolean | null>(null);
   const [matchCount, setMatchCount] = useState(11);
   const [defaultResult, setDefaultResult] = useState<{
     h: number;
     a: number;
   } | null>(null);
+
+  // Own effect so the header settles even if a round query fails.
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setAuthed(!!data.user));
+  }, [supabase]);
 
   useEffect(() => {
     (async () => {
@@ -302,11 +311,19 @@ export default function RulesPage() {
 
   return (
     <main className="flex min-h-screen flex-col items-center px-4 pb-32 pt-[60px]">
-      <TopBar />
-      <RoundIntroPopup />
+      {authed ? (
+        <>
+          <TopBar />
+          <RoundIntroPopup />
+        </>
+      ) : authed === false ? (
+        <PublicHeader />
+      ) : (
+        <div className="fixed inset-x-0 top-0 z-40 h-[60px] bg-pitch-800" />
+      )}
 
       <div className="flex w-full max-w-md flex-col gap-3.5 pt-[18px]">
-        <RoundApprovalStatus />
+        {authed && <RoundApprovalStatus />}
 
         <div className="flex flex-col gap-1">
           <h1 className="text-[28px] font-black leading-tight">החוקים</h1>
@@ -549,6 +566,7 @@ export default function RulesPage() {
           <p className="text-sm leading-relaxed text-[#2E3A32]">
             תוצאת ברירת המחדל שלכם נכנסת אוטומטית לכל משחק שלא ניחשתם עד הפתיחה.
           </p>
+          {authed && (
           <div className="flex items-center justify-between rounded-[14px] bg-[#F4F4F0] px-3 py-2">
             <span className="inline-flex items-center gap-2 text-[13px] font-bold">
               ברירת המחדל שלך
@@ -570,7 +588,31 @@ export default function RulesPage() {
               שינוי בפרופיל
             </button>
           </div>
+          )}
+          {authed === false && (
+            <p className="text-xs text-muted">
+              את תוצאת ברירת המחדל בוחרים בפרופיל אחרי ההתחברות, ואפשר לשנות אותה
+              בכל רגע.
+            </p>
+          )}
         </Card>
+
+        {authed === false && (
+          <div className="flex flex-col gap-2 pt-1">
+            <Link
+              href="/"
+              className="flex min-h-[50px] items-center justify-center rounded-[14px] bg-pitch-800 text-[15px] font-extrabold text-chalk hover:bg-pitch-900"
+            >
+              מצטרפים לליגה
+            </Link>
+            <Link
+              href="/about"
+              className="mx-auto inline-flex min-h-9 items-center text-[13px] font-bold text-pitch-600 underline"
+            >
+              איך המשחק עובד, צעד אחר צעד
+            </Link>
+          </div>
+        )}
 
         <Link
           href="/privacy"
@@ -582,7 +624,7 @@ export default function RulesPage() {
 
       {showProfile && <ProfileModal onClose={() => setShowProfile(false)} />}
 
-      <BottomNav />
+      {authed && <BottomNav />}
     </main>
   );
 }

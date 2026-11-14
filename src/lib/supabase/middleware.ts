@@ -1,7 +1,9 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const PUBLIC_PATHS = new Set(["/", "/manager/login", "/auth/callback", "/privacy"]);
+// Readable without a login — Google (AdSense review, search) must see real
+// content, not just the sign-in screen.
+const PUBLIC_PATHS = new Set(["/", "/manager/login", "/auth/callback", "/privacy", "/rules", "/about"]);
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
