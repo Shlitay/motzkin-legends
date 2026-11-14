@@ -51,33 +51,6 @@ type RawRoundParticipationRow = {
 
 const EMPTY: ScorePair = { home: "", away: "" };
 
-// "משחקי יום ראשון ננעלים בעוד 22:41:08" — ticks every second, only while
-// the round is under way and a later day can still be predicted.
-function DayLockCountdown({ dayLabel, lockAt }: { dayLabel: string; lockAt: number }) {
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    const t = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(t);
-  }, []);
-  const left = Math.max(0, Math.floor((lockAt - now) / 1000));
-  const pad = (n: number) => String(n).padStart(2, "0");
-  const text = `${pad(Math.floor(left / 3600))}:${pad(Math.floor((left % 3600) / 60))}:${pad(left % 60)}`;
-
-  return (
-    <div className="flex items-center gap-2.5 rounded-[14px] border border-line bg-white px-3 py-2.5">
-      <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1B6B3C" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="13.5" r="7.5" />
-        <path d="M12 9.5v4l2.5 1.6" />
-        <path d="M9.5 2.5h5M12 2.5v3.5" />
-      </svg>
-      <span className="text-[13px] font-semibold text-[#3F4B43]">משחקי {dayLabel} ננעלים בעוד</span>
-      <span dir="ltr" className="ms-auto font-display text-lg font-bold tracking-[.02em] tabular-nums">
-        {text}
-      </span>
-    </div>
-  );
-}
-
 export default function PredictionsPage() {
   const [supabase] = useState(() => createClient());
   const rules = useScoringRules();
@@ -328,11 +301,6 @@ export default function PredictionsPage() {
 
   const firstKickoff = matches.length > 0 ? new Date(matches[0].kickoff_at).getTime() : null;
   const roundStarted = firstKickoff !== null && now.getTime() >= firstKickoff;
-  // Next day that will lock (only meaningful once the round is under way —
-  // before that the floating countdown covers it).
-  const nextLock = roundStarted
-    ? [...earliestKickoffByDay.values()].filter((t) => t > now.getTime()).sort((a, b) => a - b)[0]
-    : undefined;
 
   function setScore(matchId: string, side: "home" | "away", value: string) {
     if (value !== "" && !/^\d$/.test(value)) return;
@@ -427,11 +395,6 @@ export default function PredictionsPage() {
     );
   }
 
-  const nextLockDay =
-    nextLock !== undefined
-      ? formatIsraelDayLabel(new Date(nextLock).toISOString()).split(" · ")[0]
-      : null;
-
   return (
     <main className="flex min-h-screen flex-col items-center px-4 pb-32 pt-[60px]">
       <TopBar />
@@ -465,9 +428,7 @@ export default function PredictionsPage() {
             {isOpenRound && <ApprovalChip />}
           </div>
 
-          {nextLock !== undefined && nextLockDay && editableMatches.length > 0 ? (
-            <DayLockCountdown dayLabel={nextLockDay} lockAt={nextLock} />
-          ) : !roundStarted && matches.length > 0 ? (
+          {!roundStarted && matches.length > 0 ? (
             <span className="text-[13px] font-semibold text-muted">
               {matches.length} משחקים · נשמרו {storedCount} מתוך {matches.length}
             </span>
