@@ -140,21 +140,21 @@ const PODIUM = {
   1: {
     ring: "border-gold [--gold-border:3px]",
     size: 66,
-    block: "bg-gold h-[122px]",
+    block: "bg-gold h-[142px]",
     rank: "text-[#5C4400]",
     pts: "text-gold-ink text-[32px]",
   },
   2: {
     ring: "border-[3px] border-[#C9CDD2] bg-white",
     size: 54,
-    block: "h-[92px] bg-[linear-gradient(160deg,#E9ECEF_0%,#FFFFFF_45%,#C9CDD2_100%)]",
+    block: "h-[112px] bg-[linear-gradient(160deg,#E9ECEF_0%,#FFFFFF_45%,#C9CDD2_100%)]",
     rank: "text-[#55606B]",
     pts: "text-[#2E3A44] text-[26px]",
   },
   3: {
     ring: "border-[3px] border-[#C98A5A] bg-white",
     size: 54,
-    block: "h-[72px] bg-[linear-gradient(160deg,#E7B48A_0%,#F6DCC4_45%,#B9774A_100%)]",
+    block: "h-[94px] bg-[linear-gradient(160deg,#E7B48A_0%,#F6DCC4_45%,#B9774A_100%)]",
     rank: "text-[#6B3A17]",
     pts: "text-[#4A2810] text-[26px]",
   },
@@ -165,12 +165,14 @@ function PodiumSpot({
   place,
   me,
   prize,
+  live,
   onSelect,
 }: {
   row: RoundRow | undefined;
   place: 1 | 2 | 3;
   me: boolean;
   prize: number;
+  live: boolean;
   onSelect: (id: string) => void;
 }) {
   const s = PODIUM[place];
@@ -180,7 +182,7 @@ function PodiumSpot({
       type="button"
       onClick={() => onSelect(row.userId)}
       className="flex min-w-0 flex-1 flex-col items-center gap-1.5"
-      aria-label={`מקום ${place}: ${row.name}, ${row.points} נקודות`}
+      aria-label={`מקום ${place}: ${row.name}, ${row.points} נקודות, ${row.exact} בולים, ${row.towards} כיוונים`}
     >
       {place === 1 && (
         <svg aria-hidden="true" width="34" height="26" viewBox="0 0 24 18">
@@ -212,8 +214,25 @@ function PodiumSpot({
         {me && <span className="shrink-0 rounded-full bg-chalk px-1.5 py-px text-[11px] text-pitch-800">אתה</span>}
       </span>
       <span className={"flex w-full flex-col items-center gap-0.5 rounded-t-[14px] pt-2.5 " + s.block}>
-        <span className={"font-display text-[13px] font-semibold " + s.rank}>{place}</span>
+        <span className={"inline-flex items-center gap-1 font-display text-[13px] font-semibold " + s.rank}>
+          {place}
+          {live && row.move && (
+            <span className={"text-[10px] " + (row.move === "up" ? "text-pitch-600" : "text-danger")}>
+              {row.move === "up" ? "▲" : "▼"}
+            </span>
+          )}
+        </span>
         <span className={"font-display font-bold leading-none " + s.pts}>{row.points}</span>
+        <span className={"mt-0.5 inline-flex gap-2 font-display text-xs font-semibold " + s.rank}>
+          <span className="inline-flex items-center gap-[3px]">
+            <CrownSmall size={11} />
+            {row.exact}
+          </span>
+          <span className="inline-flex items-center gap-[3px]">
+            <TrendSmall />
+            {row.towards}
+          </span>
+        </span>
         {prize > 0 && (
           <span className={"mt-1 font-display text-xs font-semibold " + s.rank} dir="ltr">
             ₪{prize}
@@ -470,9 +489,9 @@ export default function LeaderboardPage() {
                   )}
                 </div>
                 <div className="flex items-end gap-2.5">
-                  <PodiumSpot row={second} place={2} me={second?.userId === currentUserId} prize={split?.second ?? 0} onSelect={setSelectedUserId} />
-                  <PodiumSpot row={first} place={1} me={first.userId === currentUserId} prize={split?.first ?? 0} onSelect={setSelectedUserId} />
-                  <PodiumSpot row={third} place={3} me={third?.userId === currentUserId} prize={split?.third ?? 0} onSelect={setSelectedUserId} />
+                  <PodiumSpot row={second} place={2} me={second?.userId === currentUserId} prize={split?.second ?? 0} live={isLive} onSelect={setSelectedUserId} />
+                  <PodiumSpot row={first} place={1} me={first.userId === currentUserId} prize={split?.first ?? 0} live={isLive} onSelect={setSelectedUserId} />
+                  <PodiumSpot row={third} place={3} me={third?.userId === currentUserId} prize={split?.third ?? 0} live={isLive} onSelect={setSelectedUserId} />
                 </div>
               </section>
             )}
