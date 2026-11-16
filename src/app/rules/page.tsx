@@ -378,6 +378,14 @@ export default function RulesPage() {
                 </span>
                 של המחזור
               </span>,
+              <span key="4" className="flex flex-col gap-0.5">
+                <span>מי שפגע במשחקים הקשים יותר</span>
+                <span className="text-xs leading-snug text-muted">
+                  על כל משחק שקיבלתם עליו נקודות (בול או כיוון) נספר יחס ההימור
+                  של התוצאה שהייתה, לפני שריקת הפתיחה. הסכום הגבוה מנצח — הפתעה
+                  ששווה 11.00 שווה הרבה יותר מפייבוריטית של 1.20.
+                </span>
+              </span>,
             ].map((text, i) => (
               <li
                 key={i}
