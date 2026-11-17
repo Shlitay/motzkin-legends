@@ -15,9 +15,9 @@ export function scrollToNextUnpredicted() {
   return true;
 }
 
-// Floating "time until the round starts" pill above the bottom nav
-// (design/boards/PreRound + Countdown). Shown on every bottom-nav page until
-// the round's first kickoff, then removed. HH:MM, hours may exceed 24.
+// Floating "predictions close dd/mm - hh:mm" pill above the bottom nav
+// (design/boards/PreRound). Shown on every bottom-nav page until the round's
+// first kickoff, then removed. Israel time; gold in the last hour.
 export default function FloatingCountdown() {
   const pathname = usePathname();
   const router = useRouter();
@@ -49,11 +49,21 @@ export default function FloatingCountdown() {
 
   if (firstKickoff === null || now >= firstKickoff) return null;
 
-  const totalMin = Math.ceil((firstKickoff - now) / 60_000);
-  const hours = Math.floor(totalMin / 60);
-  const minutes = totalMin % 60;
-  const pad = (n: number) => String(n).padStart(2, "0");
-  const urgent = totalMin <= 60;
+  const urgent = firstKickoff - now <= 60 * 60_000;
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Asia/Jerusalem",
+      day: "2-digit",
+      month: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hourCycle: "h23",
+    })
+      .formatToParts(new Date(firstKickoff))
+      .map((p) => [p.type, p.value])
+  );
+  const date = `${parts.day}/${parts.month}`;
+  const time = `${parts.hour}:${parts.minute}`;
 
   function onClick() {
     if (pathname === "/predictions") scrollToNextUnpredicted();
@@ -64,13 +74,12 @@ export default function FloatingCountdown() {
     <button
       type="button"
       onClick={onClick}
-      aria-label={`המחזור מתחיל בעוד ${hours} שעות ו־${minutes} דקות. מעבר למשחק הבא לניחוש`}
+      aria-label={`הניחושים נסגרים ב־${date} בשעה ${time}. מעבר למשחק הבא לניחוש`}
       className={
         // ::after widens the hit area to 48px without changing the look.
         "fixed bottom-[84px] left-4 z-40 flex h-10 items-center gap-[7px] rounded-full ps-[9px] pe-3 shadow-[0_7px_18px_rgba(11,42,23,.3)] after:absolute after:-inset-1 after:content-[''] " +
         (urgent ? "bg-gold border-[1.5px] border-[#8A6A12]" : "border-gold [--gold-fill:#123F24] [--gold-border:1.5px]")
       }
-      dir="ltr"
     >
       <span
         className={
@@ -84,8 +93,11 @@ export default function FloatingCountdown() {
           <path d="M9.5 2.5h5M12 2.5v3.5M18.6 6.4l1.4-1.4" />
         </svg>
       </span>
-      <span className={"font-display text-[15px] font-bold tracking-[.02em] " + (urgent ? "text-gold-ink" : "text-chalk")}>
-        {pad(hours)}:{pad(minutes)}
+      <span className={"flex items-baseline gap-1.5 whitespace-nowrap " + (urgent ? "text-gold-ink" : "text-chalk")}>
+        <span className="text-xs font-bold">הניחושים נסגרים</span>
+        <span dir="ltr" className="font-display text-[15px] font-bold tracking-[.02em]">
+          {date} - {time}
+        </span>
       </span>
     </button>
   );
