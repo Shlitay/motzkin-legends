@@ -5,7 +5,7 @@
 --    becomes round 3. Matches, predictions, tiebreaker star and popup are
 --    keyed by round id, so they all stay attached. Guarded by "its matches
 --    start on 28.11", so re-running never renumbers the new round 2.
--- 2) New round 2: Saturday 21.11 (5 matches) and Sunday 22.11 (3).
+-- 2) New round 2: Saturday 21.11 (5 matches) and Sunday 22.11 (4).
 --    Source: user-provided screenshots, 2026-11-18. Left team is home (LTR). Times IST (UTC+2)
 --    -> UTC -2h. Deadline = first kickoff. predictions_open_at left unset
 --    (open now), per migration 34. Odds are not seeded: score_feed_odds_tick()
@@ -94,7 +94,8 @@ cross join (values
   -- Sunday 22.11
   ('ברצלונה', 'ויאריאל',        '2026-11-22T13:00:00Z'::timestamptz),
   ('ליברפול', 'מנצ׳סטר יונייטד', '2026-11-22T16:30:00Z'::timestamptz),
-  ('אטלנטה',  'אינטר מילאן',    '2026-11-22T19:45:00Z'::timestamptz)
+  ('אטלנטה',  'אינטר מילאן',    '2026-11-22T19:45:00Z'::timestamptz),
+  ('חטאפה',   'אתלטיקו מדריד',  '2026-11-22T20:00:00Z'::timestamptz)
 ) as f(home_team, away_team, kickoff_at)
 where r.round_number = 2
   -- only the new round (its matches are all before 28.11)
@@ -111,7 +112,7 @@ where r.round_number = 2
 
 commit;
 
--- Check: round 2 = 8 matches on 21–22.11, round 3 = 11 matches on 28–30.11.
+-- Check: round 2 = 9 matches on 21–22.11, round 3 = 11 matches on 28–30.11.
 select r.round_number, count(m.id) as matches,
        min(m.kickoff_at) as first_kickoff, max(m.kickoff_at) as last_kickoff
 from rounds r
