@@ -96,6 +96,7 @@ export const TEAM_LOGOS: Record<string, string> = {
   "ניוקאסל": "/team-logos/newcastle-united.png",
   "ניס": "/team-logos/nice.png",
   "אטלנטה": "/team-logos/atalanta.png",
+  "בורוסיה מנשנגלדבאך": "/team-logos/borussia-monchengladbach.png",
   // National teams (season 2, round 1 — 14–16.11.2026). Crests from football-logos.cc, 256x256.
   "קוסובו": "/team-logos/nt-kosovo.png",
   "ישראל": "/team-logos/nt-israel.png",
@@ -142,6 +143,7 @@ export const TEAM_SHORT_NAMES: Record<string, string> = {
   "אתלטיקו מדריד": "אתלטיקו",
   "באיירן מינכן": "באיירן",
   "באייר לברקוזן": "לברקוזן",
+  "בורוסיה מנשנגלדבאך": "גלדבאך",
   "שחטאר דונייצק": "שחטאר",
   "פריז סן ז׳רמן": "PSG",
   "בוקה ג׳וניורס": "בוקה",
