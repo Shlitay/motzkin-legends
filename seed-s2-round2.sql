@@ -5,12 +5,13 @@
 --    becomes round 3. Matches, predictions, tiebreaker star and popup are
 --    keyed by round id, so they all stay attached. Guarded by "its matches
 --    start on 28.11", so re-running never renumbers the new round 2.
--- 2) New round 2, Saturday 21.11 (5 matches). Source: user-provided
---    screenshots, 2026-11-18. Left team is home (LTR). Times IST (UTC+2)
+-- 2) New round 2: Saturday 21.11 (5 matches) and Sunday 22.11 (3).
+--    Source: user-provided screenshots, 2026-11-18. Left team is home (LTR). Times IST (UTC+2)
 --    -> UTC -2h. Deadline = first kickoff. predictions_open_at left unset
 --    (open now), per migration 34. Odds are not seeded: score_feed_odds_tick()
 --    fetches them from the API after each match (add-odds-tiebreak.sql).
--- 3) Two new teams: Newcastle (Premier League) and Nice (Ligue 1). Crests in
+-- 3) Three new teams: Newcastle (Premier League), Nice (Ligue 1) and
+--    Atalanta (Serie A). Crests in
 --    public/team-logos/. team_api_ids rows (API-Football IDs) for every team
 --    in this round the score feed didn't know yet.
 --
@@ -35,7 +36,8 @@ where r.season_id = (select id from seasons where name = 'עונה 2')
 -- 2) new teams ---------------------------------------------------------------
 insert into teams (name) values
   ('ניוקאסל'),   -- Newcastle United
-  ('ניס')        -- OGC Nice
+  ('ניס'),       -- OGC Nice
+  ('אטלנטה')     -- Atalanta
 on conflict (name) do nothing;
 
 insert into team_leagues (team_id, league_id)
@@ -48,6 +50,11 @@ select t.id, l.id from teams t join leagues l on l.name = 'Ligue 1'
 where t.name = 'ניס'
 on conflict do nothing;
 
+insert into team_leagues (team_id, league_id)
+select t.id, l.id from teams t join leagues l on l.name = 'Serie A'
+where t.name = 'אטלנטה'
+on conflict do nothing;
+
 -- No conflict target: skips a team that already has a row *or* an ID that's
 -- already mapped, instead of failing the whole migration.
 insert into team_api_ids (team_name, api_team_id, api_name) values
@@ -58,7 +65,12 @@ insert into team_api_ids (team_name, api_team_id, api_name) values
   ('ניס',            84,  'Nice'),
   ('פריז סן ז׳רמן',  85,  'Paris Saint Germain'),
   ('סביליה',         536, 'Sevilla'),
-  ('בטיס',           543, 'Real Betis')
+  ('בטיס',           543, 'Real Betis'),
+  ('ליברפול',        40,  'Liverpool'),
+  ('מנצ׳סטר יונייטד', 33,  'Manchester United'),
+  ('אטלנטה',         499, 'Atalanta'),
+  ('אינטר מילאן',    505, 'Inter'),
+  ('ויאריאל',        533, 'Villarreal')
 on conflict do nothing;
 
 -- 3) new round 2 -------------------------------------------------------------
@@ -78,7 +90,11 @@ cross join (values
   ('ניס',     'פריז סן ז׳רמן',  '2026-11-21T16:15:00Z'::timestamptz),
   ('ניוקאסל', 'ארסנל',          '2026-11-21T17:30:00Z'::timestamptz),
   ('סביליה',  'בטיס',           '2026-11-21T17:30:00Z'::timestamptz),
-  ('ליל',     'ליון',           '2026-11-21T19:45:00Z'::timestamptz)
+  ('ליל',     'ליון',           '2026-11-21T19:45:00Z'::timestamptz),
+  -- Sunday 22.11
+  ('ברצלונה', 'ויאריאל',        '2026-11-22T13:00:00Z'::timestamptz),
+  ('ליברפול', 'מנצ׳סטר יונייטד', '2026-11-22T16:30:00Z'::timestamptz),
+  ('אטלנטה',  'אינטר מילאן',    '2026-11-22T19:45:00Z'::timestamptz)
 ) as f(home_team, away_team, kickoff_at)
 where r.round_number = 2
   -- only the new round (its matches are all before 28.11)
@@ -95,7 +111,7 @@ where r.round_number = 2
 
 commit;
 
--- Check: round 2 = 5 matches on 21.11, round 3 = 11 matches on 28–30.11.
+-- Check: round 2 = 8 matches on 21–22.11, round 3 = 11 matches on 28–30.11.
 select r.round_number, count(m.id) as matches,
        min(m.kickoff_at) as first_kickoff, max(m.kickoff_at) as last_kickoff
 from rounds r

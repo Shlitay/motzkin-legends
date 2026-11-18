@@ -95,6 +95,7 @@ export const TEAM_LOGOS: Record<string, string> = {
   // Season 2 round 2 additions, 2026-11-18.
   "ניוקאסל": "/team-logos/newcastle-united.png",
   "ניס": "/team-logos/nice.png",
+  "אטלנטה": "/team-logos/atalanta.png",
   // National teams (season 2, round 1 — 14–16.11.2026). Crests from football-logos.cc, 256x256.
   "קוסובו": "/team-logos/nt-kosovo.png",
   "ישראל": "/team-logos/nt-israel.png",
