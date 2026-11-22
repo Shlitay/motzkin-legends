@@ -27,13 +27,15 @@ const POINTS_COLOR: Record<OutcomeKind, string> = {
 
 // Drawer inside a started match's card (design/boards/Participants.dc.html):
 // everyone's pick for this match, ordered by round rank, with a 3-segment
-// exact / towards / miss summary bar. RLS only returns other players'
-// predictions once the match's day has locked.
+// exact / towards / miss summary bar. Also shown before kickoff once the
+// match's day has begun (picks only, no points yet). RLS only returns other
+// players' predictions once the match's day has locked.
 export default function MatchParticipantsList({
   matchId,
   homeScore,
   awayScore,
   final,
+  started,
   rules,
   standingsOrder,
   currentUserId,
@@ -42,6 +44,7 @@ export default function MatchParticipantsList({
   homeScore: number | null;
   awayScore: number | null;
   final: boolean;
+  started: boolean;
   rules: ScoringRules;
   standingsOrder: StandingsEntry[];
   currentUserId: string | null;
@@ -93,9 +96,9 @@ export default function MatchParticipantsList({
         <>
           <div className="flex items-center justify-between text-xs font-bold text-[#3F4B43]">
             <span>
-              {rows.length} ניחושים · {final ? "סופי" : "נכון לעכשיו"}
+              {rows.length} ניחושים · {final ? "סופי" : started ? "נכון לעכשיו" : "לפני שריקת הפתיחה"}
             </span>
-            <span className="font-semibold text-muted">{final ? "נקודות" : "נקודות כרגע"}</span>
+            {started && <span className="font-semibold text-muted">{final ? "נקודות" : "נקודות כרגע"}</span>}
           </div>
 
           {hasScore && (

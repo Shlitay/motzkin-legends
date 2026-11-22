@@ -246,6 +246,7 @@ export default function MatchCard({
   isDefault,
   pointsEarned,
   editable,
+  dayLocked,
   notOpenYetLabel,
   onChange,
   rules,
@@ -268,6 +269,9 @@ export default function MatchCard({
   pointsEarned: number | null;
   // Inputs accept typing (predictions open and this match's day not locked).
   editable: boolean;
+  // The match's day has begun (its first kickoff passed), so everyone's
+  // predictions for it are final and visible, even before this match starts.
+  dayLocked: boolean;
   // Set when predictions for the round haven't opened yet, e.g. "חמישי 20:00".
   notOpenYetLabel: string | null;
   onChange: (side: "home" | "away", value: string) => void;
@@ -498,8 +502,8 @@ export default function MatchCard({
 
       {paths.length > 0 && <EarnPanel paths={paths} homeTeam={homeTeam} awayTeam={awayTeam} />}
 
-      {/* everyone's predictions — only after kickoff */}
-      {started && (
+      {/* everyone's predictions — once the match's day has begun */}
+      {(started || dayLocked) && (
         <>
           <div className="flex justify-center pb-1">
             <button
@@ -530,6 +534,7 @@ export default function MatchCard({
               homeScore={homeScore}
               awayScore={awayScore}
               final={final}
+              started={started}
               rules={rules}
               standingsOrder={standingsOrder}
               currentUserId={currentUserId}

@@ -486,6 +486,7 @@ export default function PredictionsPage() {
                   isDefault={s?.isDefault ?? false}
                   pointsEarned={s?.pointsEarned ?? null}
                   editable={predictionsOpen && !isDayLocked(m)}
+                  dayLocked={isDayLocked(m)}
                   notOpenYetLabel={
                     !predictionsOpen && selectedRound.predictions_open_at
                       ? formatIsraelDeadline(selectedRound.predictions_open_at)
