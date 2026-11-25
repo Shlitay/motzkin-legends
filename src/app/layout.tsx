@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import AdSense from "@/components/AdSense";
 import Analytics from "@/components/Analytics";
+import EzoicRouteAds from "@/components/Ezoic";
+import Script from "next/script";
 import { InstallCatcher } from "@/components/InstallPrompt";
 import { heebo, oswald } from "@/lib/fonts";
 import "./globals.css";
@@ -35,12 +37,27 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="he" dir="rtl" className={`${oswald.variable} ${heebo.variable}`}>
+      <head>
+        {/* Ezoic (https://docs.ezoic.com/docs/ezoicads/integration/): the
+            privacy (consent) scripts first and not delayed, then the
+            header script. Page changes are handled in components/Ezoic.tsx. */}
+        <Script data-cfasync="false" src="https://cmp.gatekeeperconsent.com/min.js" strategy="beforeInteractive" />
+        <Script data-cfasync="false" src="https://the.gatekeeperconsent.com/cmp.min.js" strategy="beforeInteractive" />
+        <script async src="https://www.ezojs.com/ezoic/sa.min.js" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: "window.ezstandalone = window.ezstandalone || {}; ezstandalone.cmd = ezstandalone.cmd || [];",
+          }}
+        />
+        <script async src="https://ezoicanalytics.com/analytics.js" />
+      </head>
       <body>
         {children}
         <InstallCatcher />
         {/* Content pages only — see AdSense.tsx. The anchor ad itself is
             switched on in the AdSense dashboard. */}
         <AdSense />
+        <EzoicRouteAds />
       </body>
       <Analytics />
     </html>
