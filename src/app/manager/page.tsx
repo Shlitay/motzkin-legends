@@ -17,12 +17,15 @@ import { matchStatus } from "@/lib/matchStatus";
 import { DEFAULT_RULES, type ScoringRules } from "@/lib/scoring";
 import { createClient } from "@/lib/supabase/client";
 
-type Participant = { participationId: string; userId: string; name: string; avatar: string | null };
+// selfConfirmed: approved by the player's own "I already sent" (PaymentPrompt),
+// so the manager knows to check it against Paybox.
+type Participant = { participationId: string; userId: string; name: string; avatar: string | null; selfConfirmed: boolean };
 
 type RawParticipationRow = {
   id: string;
   user_id: string;
   payment_status: string;
+  self_confirmed_at: string | null;
   users: { full_name: string; nickname: string | null; avatar: string | null } | null;
 };
 
@@ -139,7 +142,7 @@ export default function ManagerDashboard() {
       const [{ data: rows, error: rowsError }, , { data: rule }, { count: seen }] = await Promise.all([
         supabase
           .from("round_participation")
-          .select("id, user_id, payment_status, users(full_name, nickname, avatar)")
+          .select("id, user_id, payment_status, self_confirmed_at, users(full_name, nickname, avatar)")
           .eq("round_id", round.id)
           .overrideTypes<RawParticipationRow[], { merge: false }>(),
         loadMatches(round.id),
@@ -163,6 +166,7 @@ export default function ManagerDashboard() {
         userId: row.user_id,
         name: row.users?.nickname ?? row.users?.full_name ?? "לא ידוע",
         avatar: row.users?.avatar ?? null,
+        selfConfirmed: row.self_confirmed_at !== null,
       });
       const all = rows ?? [];
       setWaiting(all.filter((r) => r.payment_status === "waiting").map(toParticipant));
@@ -186,7 +190,8 @@ export default function ManagerDashboard() {
   async function setPaymentStatus(participationId: string, status: "waiting" | "approved" | "rejected") {
     const { error: updateError } = await supabase
       .from("round_participation")
-      .update({ payment_status: status })
+      // A manager decision replaces the player's own "I already sent".
+      .update({ payment_status: status, self_confirmed_at: null })
       .eq("id", participationId);
     setError(updateError ? updateError.message : null);
     return !updateError;
@@ -195,7 +200,7 @@ export default function ManagerDashboard() {
   async function approve(person: Participant) {
     if (!(await setPaymentStatus(person.participationId, "approved"))) return;
     setWaiting((w) => w.filter((p) => p.participationId !== person.participationId));
-    setApproved((a) => [...a, person]);
+    setApproved((a) => [...a, { ...person, selfConfirmed: false }]);
     // Backfills default predictions for matches that already kicked off
     // (approval after the round locked), then recomputes standings. No-op
     // for an on-time approval.
@@ -211,7 +216,7 @@ export default function ManagerDashboard() {
   async function unapprove(person: Participant) {
     if (!(await setPaymentStatus(person.participationId, "waiting"))) return;
     setApproved((a) => a.filter((p) => p.participationId !== person.participationId));
-    setWaiting((w) => [...w, person]);
+    setWaiting((w) => [...w, { ...person, selfConfirmed: false }]);
   }
 
   // Clears someone off the waiting list WITHOUT deleting their row: every
@@ -230,7 +235,7 @@ export default function ManagerDashboard() {
     setResetting(true);
     const { error: updateError } = await supabase
       .from("round_participation")
-      .update({ payment_status: "waiting" })
+      .update({ payment_status: "waiting", self_confirmed_at: null })
       .eq("round_id", roundId)
       .eq("payment_status", "approved");
     setResetting(false);
@@ -238,7 +243,7 @@ export default function ManagerDashboard() {
       setError(updateError.message);
       return;
     }
-    setWaiting((w) => [...w, ...approved]);
+    setWaiting((w) => [...w, ...approved.map((p) => ({ ...p, selfConfirmed: false }))]);
     setApproved([]);
     setConfirmReset(false);
   }
@@ -419,7 +424,10 @@ export default function ManagerDashboard() {
                 {approved.map((p) => (
                   <div key={p.participationId} className="flex min-h-11 items-center gap-[7px] rounded-xl bg-chalk py-[5px] pe-[5px] ps-2">
                     <Avatar avatar={p.avatar} size={30} />
-                    <span className="min-w-0 flex-1 truncate text-[13px] font-bold">{p.name}</span>
+                    <span className="flex min-w-0 flex-1 flex-col">
+                      <span className="truncate text-[13px] font-bold">{p.name}</span>
+                      {p.selfConfirmed && <span className="text-[10px] font-bold text-[#6E5200]">דיווח עצמי</span>}
+                    </span>
                     <button
                       type="button"
                       onClick={() => unapprove(p)}

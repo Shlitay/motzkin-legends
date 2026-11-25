@@ -8,6 +8,7 @@ import { scrollToNextUnpredicted } from "@/components/FloatingCountdown";
 import { ChevronIcon } from "@/components/icons";
 import RoundApprovalStatus, { ApprovalChip } from "@/components/RoundApprovalStatus";
 import InstallPrompt, { shouldOfferInstall } from "@/components/InstallPrompt";
+import PaymentPrompt from "@/components/PaymentPrompt";
 import RoundIntroPopup from "@/components/RoundIntroPopup";
 import TopBar from "@/components/TopBar";
 import MatchCard, { type ScorePair } from "@/components/predictions/MatchCard";
@@ -60,6 +61,7 @@ export default function PredictionsPage() {
   const [saving, setSaving] = useState(false);
   const [justSaved, setJustSaved] = useState(false);
   const [showInstall, setShowInstall] = useState(false);
+  const [showPayment, setShowPayment] = useState(false);
 
   const [userId, setUserId] = useState<string | null>(null);
   const [rounds, setRounds] = useState<DbRound[]>([]);
@@ -371,9 +373,29 @@ export default function PredictionsPage() {
     setHasSavedThisVisit(true);
     setSaving(false);
     setJustSaved(true);
-    // First time this round's predictions are sent: offer to save the game
-    // to the home screen (unless installed or "don't show again").
-    if (firstSave && shouldOfferInstall()) setShowInstall(true);
+    if (!firstSave) return;
+
+    // First time this round's predictions are sent: still waiting for
+    // approval -> the payment popup (Paybox / "I already sent"). The
+    // home-screen offer waits until it's closed.
+    const { data: participation } = await supabase
+      .from("round_participation")
+      .select("payment_status")
+      .eq("user_id", user.id)
+      .eq("round_id", selectedRoundId)
+      .maybeSingle();
+    if (participation?.payment_status === "waiting") {
+      setShowPayment(true);
+      return;
+    }
+    // Otherwise offer to save the game to the home screen (unless installed
+    // or "don't show again").
+    if (shouldOfferInstall()) setShowInstall(true);
+  }
+
+  function closePayment() {
+    setShowPayment(false);
+    if (shouldOfferInstall()) setShowInstall(true);
   }
 
   if (loading) {
@@ -399,6 +421,9 @@ export default function PredictionsPage() {
     <main className="flex min-h-screen flex-col items-center px-4 pb-32 pt-[60px]">
       <TopBar />
       <RoundIntroPopup />
+      {showPayment && selectedRound && (
+        <PaymentPrompt roundId={selectedRound.id} roundNumber={selectedRound.round_number} onClose={closePayment} />
+      )}
       {showInstall && <InstallPrompt onClose={() => setShowInstall(false)} />}
 
       <div className="flex w-full max-w-md flex-col gap-3 pt-4">

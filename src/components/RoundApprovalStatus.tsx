@@ -5,12 +5,24 @@ import { ENTRY_FEE_ILS } from "@/components/JackpotBadge";
 import { getCurrentRound, type CurrentRound } from "@/lib/currentRound";
 import { createClient } from "@/lib/supabase/client";
 
-const PAYBOX_GROUP_LINK = "https://links.payboxapp.com/61FepCDmZ7b";
+export const PAYBOX_GROUP_LINK = "https://links.payboxapp.com/61FepCDmZ7b";
+
+// Fired after a player confirms payment themselves (PaymentPrompt), so the
+// chip and the notice reload their status without a page refresh.
+export const PARTICIPATION_CHANGED = "participation-changed";
 
 type ParticipationStatus = "waiting" | "approved" | "rejected" | null;
 
 function useParticipation() {
   const [state, setState] = useState<{ round: CurrentRound; status: ParticipationStatus; started: boolean } | null>(null);
+
+  const [version, setVersion] = useState(0);
+
+  useEffect(() => {
+    const bump = () => setVersion((v) => v + 1);
+    window.addEventListener(PARTICIPATION_CHANGED, bump);
+    return () => window.removeEventListener(PARTICIPATION_CHANGED, bump);
+  }, []);
 
   useEffect(() => {
     const supabase = createClient();
@@ -34,7 +46,7 @@ function useParticipation() {
         started: Date.now() >= new Date(round.deadline_at).getTime(),
       });
     })();
-  }, []);
+  }, [version]);
 
   return state;
 }
@@ -111,11 +123,46 @@ export default function RoundApprovalStatus() {
           {p.status === "approved"
             ? "קישור התשלום בפייבוקס נשאר כאן עד שהמחזור מתחיל."
             : p.status === "waiting"
-            ? "המנהל יאשר אתכם אחרי שהתשלום יתקבל. עוד לא שילמתם?"
+            ? "כבר שלחתם? אשרו כאן ותיכנסו מיד. עוד לא? הקישור לפייבוקס כאן."
             : `שולחים ‎${ENTRY_FEE_ILS} ש״ח בפייבוקס ונכנסים לקופה.`}
         </span>
       </div>
       <PayboxLink />
+      {p.status === "waiting" && <ConfirmPaidButton roundId={p.round.id} />}
     </section>
+  );
+}
+
+// "I already sent": approves the caller right away (confirm_my_payment in
+// add-self-confirm-payment.sql). The manager sees who confirmed themselves.
+export function ConfirmPaidButton({ roundId, onDone }: { roundId: string; onDone?: (status: string | null) => void }) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function confirm() {
+    setBusy(true);
+    setError(null);
+    const { data, error: rpcError } = await createClient().rpc("confirm_my_payment", { p_round_id: roundId });
+    setBusy(false);
+    if (rpcError) {
+      setError("משהו השתבש, נסו שוב.");
+      return;
+    }
+    window.dispatchEvent(new Event(PARTICIPATION_CHANGED));
+    onDone?.((data as string | null) ?? null);
+  }
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={confirm}
+        disabled={busy}
+        className="inline-flex min-h-10 items-center justify-center rounded-xl border-[1.5px] border-pitch-600 bg-white px-4 text-sm font-bold text-pitch-800 disabled:opacity-60"
+      >
+        {busy ? "מאשר..." : "כבר שלחתי ✓"}
+      </button>
+      {error && <span className="text-center text-xs font-semibold text-danger">{error}</span>}
+    </>
   );
 }
