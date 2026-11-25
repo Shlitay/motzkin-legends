@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from "next";
 import AdSense from "@/components/AdSense";
 import Analytics from "@/components/Analytics";
 import EzoicRouteAds from "@/components/Ezoic";
-import Script from "next/script";
 import { InstallCatcher } from "@/components/InstallPrompt";
 import { heebo, oswald } from "@/lib/fonts";
 import "./globals.css";
@@ -40,9 +39,13 @@ export default function RootLayout({
       <head>
         {/* Ezoic (https://docs.ezoic.com/docs/ezoicads/integration/): the
             privacy (consent) scripts first and not delayed, then the
-            header script. Page changes are handled in components/Ezoic.tsx. */}
-        <Script data-cfasync="false" src="https://cmp.gatekeeperconsent.com/min.js" strategy="beforeInteractive" />
-        <Script data-cfasync="false" src="https://the.gatekeeperconsent.com/cmp.min.js" strategy="beforeInteractive" />
+            header script. Page changes are handled in components/Ezoic.tsx.
+            Plain tags, not next/script: its beforeInteractive scripts land
+            after the other head tags, and Ezoic needs the consent ones first. */}
+        {/* eslint-disable-next-line @next/next/no-sync-scripts */}
+        <script data-cfasync="false" src="https://cmp.gatekeeperconsent.com/min.js" />
+        {/* eslint-disable-next-line @next/next/no-sync-scripts */}
+        <script data-cfasync="false" src="https://the.gatekeeperconsent.com/cmp.min.js" />
         <script async src="https://www.ezojs.com/ezoic/sa.min.js" />
         <script
           dangerouslySetInnerHTML={{
