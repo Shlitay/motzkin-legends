@@ -40,19 +40,24 @@ export default function RootLayout({
         {/* Ezoic (https://docs.ezoic.com/docs/ezoicads/integration/): the
             privacy (consent) scripts first and not delayed, then the
             header script. Page changes are handled in components/Ezoic.tsx.
-            Plain tags, not next/script: its beforeInteractive scripts land
-            after the other head tags, and Ezoic needs the consent ones first. */}
+            Plain tags, not next/script, so they keep their place first. */}
         {/* eslint-disable-next-line @next/next/no-sync-scripts */}
         <script data-cfasync="false" src="https://cmp.gatekeeperconsent.com/min.js" />
         {/* eslint-disable-next-line @next/next/no-sync-scripts */}
         <script data-cfasync="false" src="https://the.gatekeeperconsent.com/cmp.min.js" />
-        <script async src="https://www.ezojs.com/ezoic/sa.min.js" />
+        {/* React hoists <script async src> to the top of <head>, ahead of the
+            consent scripts, so these two are added from an inline script that
+            runs right after them (still async, still in <head>). */}
         <script
           dangerouslySetInnerHTML={{
-            __html: "window.ezstandalone = window.ezstandalone || {}; ezstandalone.cmd = ezstandalone.cmd || [];",
+            __html: [
+              "window.ezstandalone = window.ezstandalone || {}; ezstandalone.cmd = ezstandalone.cmd || [];",
+              "['https://www.ezojs.com/ezoic/sa.min.js','https://ezoicanalytics.com/analytics.js'].forEach(function (u) {",
+              "  var s = document.createElement('script'); s.async = true; s.src = u; document.head.appendChild(s);",
+              "});",
+            ].join(" "),
           }}
         />
-        <script async src="https://ezoicanalytics.com/analytics.js" />
       </head>
       <body>
         {children}
