@@ -135,7 +135,7 @@ export default function RoundApprovalStatus() {
 
 // "I already sent": approves the caller right away (confirm_my_payment in
 // add-self-confirm-payment.sql). The manager sees who confirmed themselves.
-export function ConfirmPaidButton({ roundId, onDone }: { roundId: string; onDone?: (status: string | null) => void }) {
+export function useConfirmPaid(roundId: string, onDone?: (status: string | null) => void) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -146,11 +146,18 @@ export function ConfirmPaidButton({ roundId, onDone }: { roundId: string; onDone
     setBusy(false);
     if (rpcError) {
       setError("משהו השתבש, נסו שוב.");
-      return;
+      return false;
     }
     window.dispatchEvent(new Event(PARTICIPATION_CHANGED));
     onDone?.((data as string | null) ?? null);
+    return true;
   }
+
+  return { confirm, busy, error };
+}
+
+export function ConfirmPaidButton({ roundId, onDone }: { roundId: string; onDone?: (status: string | null) => void }) {
+  const { confirm, busy, error } = useConfirmPaid(roundId, onDone);
 
   return (
     <>
